@@ -10,10 +10,17 @@ This workflow handles the main Android build process with Firebase integration.
 - Pull requests to `main` branch
 
 **Key Steps:**
-- Sets up JDK 11
+- Sets up JDK 17
 - Creates `google-services.json` from repository secrets
 - Builds the Android app
 - Uploads the debug APK as an artifact
+
+**Downloading Build Artifacts:**
+1. Go to the Actions tab in your GitHub repository
+2. Click on the completed Android CI workflow run
+3. Scroll down to the Artifacts section
+4. Click on the "app-debug" artifact to download the APK
+5. The downloaded file will contain the debug APK from the build
 
 ### 2. Code Quality (code-quality.yml)
 This workflow runs code quality checks using ktlint.

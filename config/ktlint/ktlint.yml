@@ -1,0 +1,41 @@
+# Ktlint configuration file
+# See https://pinterest.github.io/ktlint/ for more information
+
+# Enable all rules by default
+disabled_rules = []
+
+# Enable specific rules
+standard_rules = enabled
+experimental_rules = enabled
+
+# Custom rules
+custom_rules = []
+
+# Editor config
+editorconfig:
+  # Maximum line length
+  max_line_length = 100
+  
+  # Indent size
+  indent_size = 4
+  
+  # Continuation indent size
+  continuation_indent_size = 8
+  
+  # Insert final newline
+  insert_final_newline = true
+  
+  # Trim trailing whitespace
+  trim_trailing_whitespace = true
+  
+  # Charset
+  charset = utf-8
+  
+  # End of line
+  end_of_line = lf
+  
+  # Indent style
+  indent_style = space
+  
+  # Continuation indent style
+  continuation_indent_style = space 

@@ -25,18 +25,12 @@ jobs:
         echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
         echo "Created google-services.json file in app/"
 
-    - name: Setup Gradle
+    - name: Build app
       uses: gradle/gradle-build-action@v3
       with:
         gradle-version: wrapper
         arguments: build
         cache-read-only: false
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    - name: Build with Gradle
-      run: ./gradlew build
 
     # This step uploads the debug APK as an artifact that can be downloaded from the Actions tab
     # The artifact will be available under the name "app-debug" in the workflow run

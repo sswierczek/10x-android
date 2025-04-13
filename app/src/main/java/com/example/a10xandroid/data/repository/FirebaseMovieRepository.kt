@@ -20,7 +20,9 @@ class FirebaseMovieRepository @Inject constructor(
     private val moviesRef = database.getReference("movies")
 
     override suspend fun addMovieEntry(movieEntry: MovieEntry): MovieEntry {
-        val entryWithId = movieEntry.copy(id = moviesRef.push().key ?: throw IllegalStateException("Failed to generate key"))
+        val entryWithId = movieEntry.copy(
+            id = moviesRef.push().key ?: throw IllegalStateException("Failed to generate key")
+        )
         moviesRef.child(entryWithId.id).setValue(entryWithId).await()
         return entryWithId
     }
@@ -50,8 +52,10 @@ class FirebaseMovieRepository @Inject constructor(
 
     override suspend fun getMovieEntries(userId: String): List<MovieEntry> {
         return try {
-            moviesRef.orderByChild("userId").equalTo(userId).get().await().children.mapNotNull { 
-                it.getValue(MovieEntry::class.java) 
+            moviesRef.orderByChild("userId").equalTo(userId).get().await().children.mapNotNull {
+                it.getValue(
+                    MovieEntry::class.java
+                )
             }.sortedByDescending { it.watchDate }
         } catch (e: Exception) {
             emptyList()
@@ -62,8 +66,8 @@ class FirebaseMovieRepository @Inject constructor(
         val listener = moviesRef.orderByChild("userId").equalTo(userId)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val entries = snapshot.children.mapNotNull { 
-                        it.getValue(MovieEntry::class.java) 
+                    val entries = snapshot.children.mapNotNull {
+                        it.getValue(MovieEntry::class.java)
                     }.sortedByDescending { it.watchDate }
                     trySend(entries)
                 }

@@ -29,8 +29,10 @@ jobs:
       uses: gradle/gradle-build-action@v3
       with:
         gradle-version: wrapper
-        arguments: build
+        arguments: assembleDebug
         cache-read-only: false
+        cache-enabled: true
+        cache-key-prefix: android
 
     # This step uploads the debug APK as an artifact that can be downloaded from the Actions tab
     # The artifact will be available under the name "app-debug" in the workflow run

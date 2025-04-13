@@ -1,7 +1,8 @@
 # MovieMind
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Android CI](https://github.com/yourusername/moviemind/actions/workflows/android.yml/badge.svg)](https://github.com/yourusername/moviemind/actions/workflows/android.yml)
+[![Android CI](https://github.com/sswierczek/10x-android/actions/workflows/android.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
+[![Code Quality](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml)
 
 ## Spis treści
 - [Opis projektu](#opis-projektu)

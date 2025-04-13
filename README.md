@@ -1,12 +1,14 @@
 # MovieMind
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Android CI](https://github.com/yourusername/moviemind/actions/workflows/android.yml/badge.svg)](https://github.com/yourusername/moviemind/actions/workflows/android.yml)
 
 ## Spis treści
 - [Opis projektu](#opis-projektu)
 - [Stos technologiczny](#stos-technologiczny)
 - [Rozpoczęcie pracy](#rozpoczęcie-pracy)
 - [Dostępne skrypty](#dostępne-skrypty)
+- [CI/CD](#cicd)
 - [Zakres projektu](#zakres-projektu)
 - [Status projektu](#status-projektu)
 - [Licencja](#licencja)
@@ -31,7 +33,7 @@ MovieMind to aplikacja mobilna dla systemu Android, która pomaga użytkownikom 
 ### Główne technologie
 - **Firebase** - backend i autentykacja
   - Firebase Authentication dla logowania użytkowników
-  - Firebase Firestore do przechowywania danych filmowych
+  - Firebase Realtime Database do przechowywania danych filmowych
   - Firebase Security Rules do zabezpieczenia danych
 
 - **Jetpack Compose** - nowoczesny framework UI
@@ -81,6 +83,7 @@ MovieMind to aplikacja mobilna dla systemu Android, która pomaga użytkownikom 
    - Utwórz projekt w [Firebase Console](https://console.firebase.google.com/)
    - Pobierz plik `google-services.json` i umieść go w katalogu `app/`
    - Włącz autentykację email/hasło w Firebase Console
+   - Włącz Firebase Realtime Database w Firebase Console
 
 4. (Opcjonalnie) Skonfiguruj TMDB API:
    - Zarejestruj się w [TMDB](https://www.themoviedb.org/documentation/api)
@@ -98,42 +101,44 @@ Skrypt do budowania i instalacji aplikacji na urządzeniu Android:
 ```bash
 ./run.bat
 ```
-Skrypt wykonuje następujące operacje:
-- Sprawdza połączenie z urządzeniem Android
-- Buduje aplikację
-- Instaluje aplikację na urządzeniu
-- Uruchamia aplikację
+
+## CI/CD
+
+Projekt wykorzystuje GitHub Actions do ciągłej integracji i dostarczania (CI/CD). Workflow automatycznie buduje aplikację przy każdym pushu do gałęzi `main` oraz przy tworzeniu pull requestów.
+
+### GitHub Workflow
+
+Workflow wykonuje następujące kroki:
+1. Konfiguruje środowisko Java 11
+2. Tworzy plik `google-services.json` z sekretu repozytorium
+3. Buduje aplikację za pomocą Gradle
+4. Przesyła zbudowany APK jako artefakt
+
+### Konfiguracja sekretów
+
+Aby workflow działał poprawnie, należy dodać następujące sekrety do repozytorium:
+- `GOOGLE_SERVICES_JSON` - zawartość pliku `google-services.json` z Firebase Console
+
+Szczegółowe instrukcje dotyczące konfiguracji sekretów znajdują się w pliku [.github/workflows/README.md](.github/workflows/README.md).
 
 ## Zakres projektu
 
-### Funkcje MVP
-- System autentykacji oparty na Firebase (email/hasło)
-- Dziennik filmowy z możliwością dodawania i usuwania wpisów
-- Proste rekomendacje filmów na podstawie preferencji użytkownika
-- Opcjonalna integracja z TMDB API do wyszukiwania i auto-uzupełniania danych
+### MVP (Minimum Viable Product)
+- System autentykacji użytkowników
+- Podstawowy dziennik filmowy (dodawanie, edycja, usuwanie wpisów)
+- Proste rekomendacje filmowe
+- Podstawowy interfejs użytkownika
 
-### Ograniczenia MVP
-- Brak systemu tagów i kategoryzacji
-- Brak funkcji powiadomień i przypomnień
-- Brak procesu onboardingu
-- Brak eksportu danych
-- Brak możliwości dodawania notatek do rekomendacji
-- Brak możliwości oceniania rekomendacji
-- Brak funkcji udostępniania recenzji
-- Brak listy "do obejrzenia"
-
-### Metryki sukcesu
-- Użytkownik może dodać wpis filmowy w < 30 sekund
-- AI generuje rekomendacje w < 10 sekund
-- Lista filmów ładuje się w < 3 sekundy
-- 70% użytkowników dodaje więcej niż jeden film
-- 50% użytkowników wraca w ciągu tygodnia
-- 30% użytkowników korzysta z funkcji AI
+### Przyszłe funkcje
+- Zaawansowane rekomendacje z wykorzystaniem AI
+- Integracja z serwisami streamingowymi
+- Statystyki i analizy preferencji filmowych
+- Funkcje społecznościowe (dzielenie się listami filmów)
 
 ## Status projektu
 
-Projekt jest obecnie w fazie rozwoju MVP. Główne funkcje są w trakcie implementacji.
+Projekt jest obecnie w fazie rozwoju. Główne funkcje MVP są w trakcie implementacji.
 
 ## Licencja
 
-Ten projekt jest licencjonowany na podstawie licencji Apache 2.0 - szczegóły znajdziesz w pliku [LICENSE](LICENSE). 
+Ten projekt jest licencjonowany na podstawie licencji Apache 2.0 - szczegóły znajdują się w pliku [LICENSE](LICENSE). 

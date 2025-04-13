@@ -1,8 +1,10 @@
 package com.example.a10xandroid.data.repository
 
 import com.example.a10xandroid.data.model.MovieEntry
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -12,35 +14,26 @@ import javax.inject.Singleton
 
 @Singleton
 class FirebaseMovieRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val database: FirebaseDatabase
 ) : MovieRepository {
 
-    private val movieCollection = firestore.collection("movies")
+    private val moviesRef = database.getReference("movies")
 
     override suspend fun addMovieEntry(movieEntry: MovieEntry): MovieEntry {
-        val entryWithId = movieEntry.copy(id = movieCollection.document().id)
-        movieCollection
-            .document(entryWithId.id)
-            .set(entryWithId)
-            .await()
+        val entryWithId = movieEntry.copy(id = moviesRef.push().key ?: throw IllegalStateException("Failed to generate key"))
+        moviesRef.child(entryWithId.id).setValue(entryWithId).await()
         return entryWithId
     }
 
     override suspend fun updateMovieEntry(movieEntry: MovieEntry): MovieEntry {
         val updatedEntry = movieEntry.copy(updatedAt = System.currentTimeMillis())
-        movieCollection
-            .document(updatedEntry.id)
-            .set(updatedEntry)
-            .await()
+        moviesRef.child(updatedEntry.id).setValue(updatedEntry).await()
         return updatedEntry
     }
 
     override suspend fun deleteMovieEntry(movieEntryId: String): Boolean {
         return try {
-            movieCollection
-                .document(movieEntryId)
-                .delete()
-                .await()
+            moviesRef.child(movieEntryId).removeValue().await()
             true
         } catch (e: Exception) {
             false
@@ -49,50 +42,47 @@ class FirebaseMovieRepository @Inject constructor(
 
     override suspend fun getMovieEntry(movieEntryId: String): MovieEntry? {
         return try {
-            movieCollection
-                .document(movieEntryId)
-                .get()
-                .await()
-                .toObject(MovieEntry::class.java)
+            moviesRef.child(movieEntryId).get().await().getValue(MovieEntry::class.java)
         } catch (e: Exception) {
             null
         }
     }
 
     override suspend fun getMovieEntries(userId: String): List<MovieEntry> {
-        return movieCollection
-            .whereEqualTo("userId", userId)
-            .orderBy("watchDate", Query.Direction.DESCENDING)
-            .get()
-            .await()
-            .toObjects(MovieEntry::class.java)
+        return try {
+            moviesRef.orderByChild("userId").equalTo(userId).get().await().children.mapNotNull { 
+                it.getValue(MovieEntry::class.java) 
+            }.sortedByDescending { it.watchDate }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     override fun getMovieEntriesFlow(userId: String): Flow<List<MovieEntry>> = callbackFlow {
-        val subscription = movieCollection
-            .whereEqualTo("userId", userId)
-            .orderBy("watchDate", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val entries = snapshot.toObjects(MovieEntry::class.java)
+        val listener = moviesRef.orderByChild("userId").equalTo(userId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val entries = snapshot.children.mapNotNull { 
+                        it.getValue(MovieEntry::class.java) 
+                    }.sortedByDescending { it.watchDate }
                     trySend(entries)
                 }
-            }
-        awaitClose { subscription.remove() }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle error if needed
+                }
+            })
+        awaitClose { moviesRef.removeEventListener(listener) }
     }
 
     override suspend fun searchMovieEntries(userId: String, query: String): List<MovieEntry> {
-        return movieCollection
-            .whereEqualTo("userId", userId)
-            .orderBy("title")
-            .startAt(query)
-            .endAt(query + '\uf8ff')
-            .get()
-            .await()
-            .toObjects(MovieEntry::class.java)
+        return try {
+            moviesRef.orderByChild("userId").equalTo(userId).get().await().children
+                .mapNotNull { it.getValue(MovieEntry::class.java) }
+                .filter { it.title.contains(query, ignoreCase = true) }
+                .sortedByDescending { it.watchDate }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }

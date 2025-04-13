@@ -5,7 +5,7 @@ import com.example.a10xandroid.data.repository.FirebaseAuthRepository
 import com.example.a10xandroid.data.repository.FirebaseMovieRepository
 import com.example.a10xandroid.data.repository.MovieRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,7 +22,11 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    fun provideFirebaseDatabase(): FirebaseDatabase {
+        val database = FirebaseDatabase.getInstance("https://moviemind-548bd-default-rtdb.europe-west1.firebasedatabase.app")
+        database.setPersistenceEnabled(true)
+        return database
+    }
 
     @Provides
     @Singleton

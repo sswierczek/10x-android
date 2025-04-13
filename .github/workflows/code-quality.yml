@@ -20,6 +20,11 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Create google-services.json
+      run: |
+        echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+        echo "Created google-services.json file in app/"
+
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v3
       with:
@@ -30,10 +35,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Create google-services.json
-      run: |
-        echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
-        echo "Created google-services.json file"
 
     - name: Run ktlint
       run: ./gradlew ktlintCheck

@@ -19,6 +19,11 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: gradle
+        
+    - name: Create google-services.json
+      run: |
+        echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+        echo "Created google-services.json file in app/"
 
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v3
@@ -26,11 +31,6 @@ jobs:
         gradle-version: wrapper
         arguments: build
         cache-read-only: false
-
-    - name: Create google-services.json
-      run: |
-        echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
-        echo "Created google-services.json file"
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew

@@ -35,8 +35,8 @@ jobs:
     # The artifact will be available under the name "app-debug" in the workflow run
     # For instructions on downloading artifacts, see the workflow documentation in README.md
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
-        retention-days: 5 
+        overwrite: true 

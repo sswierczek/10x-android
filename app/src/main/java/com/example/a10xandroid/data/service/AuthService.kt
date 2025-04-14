@@ -1,7 +1,6 @@
 package com.example.a10xandroid.data.service
 
 import com.example.a10xandroid.data.model.MovieList
-import com.example.a10xandroid.data.model.User
 import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.data.repository.MovieListRepository
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +28,9 @@ class AuthService @Inject constructor(
 
     suspend fun resetPassword(email: String) = authRepository.resetPassword(email)
 
-    suspend fun updateProfile(displayName: String?, photoUrl: String?) = 
-        authRepository.updateProfile(displayName, photoUrl)
-} 
+    suspend fun updateProfile(displayName: String?, photoUrl: String?) =
+        authRepository.updateProfile(
+            displayName,
+            photoUrl
+        )
+}

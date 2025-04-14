@@ -33,7 +33,10 @@ class FirebaseAuthRepository @Inject constructor(
         val user = result.user?.toUser()
         if (user != null) {
             // Update last login time in the database
-            usersRef.child(user.uid).child("lastLoginAt").setValue(System.currentTimeMillis()).await()
+            usersRef.child(user.uid)
+                .child("lastLoginAt")
+                .setValue(System.currentTimeMillis())
+                .await()
             Result.success(user)
         } else {
             Result.failure(Exception("Failed to sign in"))
@@ -70,28 +73,29 @@ class FirebaseAuthRepository @Inject constructor(
         Result.failure(e)
     }
 
-    override suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit> = try {
-        val profileUpdates = UserProfileChangeRequest.Builder().apply {
-            displayName?.let { setDisplayName(it) }
-            photoUrl?.let { setPhotoUri(android.net.Uri.parse(it)) }
-        }.build()
+    override suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit> =
+        try {
+            val profileUpdates = UserProfileChangeRequest.Builder().apply {
+                displayName?.let { setDisplayName(it) }
+                photoUrl?.let { setPhotoUri(android.net.Uri.parse(it)) }
+            }.build()
 
-        auth.currentUser?.updateProfile(profileUpdates)?.await()
-        
-        // Update user data in the database
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            val userData = mapOf(
-                "displayName" to (displayName ?: currentUser.displayName),
-                "photoUrl" to (photoUrl ?: currentUser.photoUrl?.toString())
-            )
-            usersRef.child(currentUser.uid).updateChildren(userData).await()
+            auth.currentUser?.updateProfile(profileUpdates)?.await()
+
+            // Update user data in the database
+            val currentUser = auth.currentUser
+            if (currentUser != null) {
+                val userData = mapOf(
+                    "displayName" to (displayName ?: currentUser.displayName),
+                    "photoUrl" to (photoUrl ?: currentUser.photoUrl?.toString())
+                )
+                usersRef.child(currentUser.uid).updateChildren(userData).await()
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-        
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
-    }
 
     private fun FirebaseUser.toUser(): User {
         return User(

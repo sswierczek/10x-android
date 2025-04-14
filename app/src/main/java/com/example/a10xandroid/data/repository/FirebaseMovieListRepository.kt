@@ -74,7 +74,9 @@ class FirebaseMovieListRepository @Inject constructor(
         val listener = entriesRef.orderByChild("listId").equalTo(listId)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val entries = snapshot.children.mapNotNull { it.getValue(MovieListEntry::class.java) }
+                    val entries = snapshot.children.mapNotNull {
+                        it.getValue(MovieListEntry::class.java)
+                    }
                     trySend(entries)
                 }
 
@@ -121,7 +123,7 @@ class FirebaseMovieListRepository @Inject constructor(
         val entryId = UUID.randomUUID().toString()
         val entryWithId = entry.copy(id = entryId)
         entriesRef.child(entryId).setValue(entryWithId).await()
-        
+
         // Update movie count in the list
         val listSnapshot = listsRef.child(entry.listId).get().await()
         val currentList = listSnapshot.getValue(MovieList::class.java)
@@ -129,7 +131,7 @@ class FirebaseMovieListRepository @Inject constructor(
             val updatedList = it.copy(movieCount = it.movieCount + 1)
             listsRef.child(entry.listId).setValue(updatedList).await()
         }
-        
+
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
@@ -149,12 +151,12 @@ class FirebaseMovieListRepository @Inject constructor(
             .equalTo(listId)
             .get()
             .await()
-        
+
         entrySnapshot.children.forEach { child ->
             val entry = child.getValue(MovieListEntry::class.java)
             if (entry?.movieId == movieId) {
                 child.ref.removeValue().await()
-                
+
                 // Update movie count in the list
                 val listSnapshot = listsRef.child(listId).get().await()
                 val currentList = listSnapshot.getValue(MovieList::class.java)
@@ -164,9 +166,9 @@ class FirebaseMovieListRepository @Inject constructor(
                 }
             }
         }
-        
+
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
     }
-} 
+}

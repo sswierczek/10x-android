@@ -3,6 +3,19 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Android CI](https://github.com/sswierczek/10x-android/actions/workflows/android.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
 [![Code Quality](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml)
+[![Download Latest APK](https://img.shields.io/badge/Download-Latest_APK-brightgreen)](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
+
+## Latest Build
+
+You can download the latest debug APK from the most recent successful workflow run:
+
+1. Click the "Android CI" badge above or go to the [Actions tab](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
+2. Click on the most recent successful workflow run
+3. Scroll down to the "Artifacts" section
+4. Download the "app-debug" artifact
+5. Extract the APK from the downloaded zip file
+
+Note: You need to be logged into GitHub to download artifacts.
 
 ## Spis treści
 - [Opis projektu](#opis-projektu)

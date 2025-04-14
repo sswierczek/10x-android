@@ -7,13 +7,18 @@ import kotlinx.coroutines.flow.Flow
  * Interface for authentication operations.
  */
 interface AuthRepository {
-    suspend fun signIn(email: String, password: String): User?
-
-    suspend fun signUp(email: String, password: String, displayName: String?): User?
-
-    suspend fun signOut()
-
-    suspend fun getCurrentUser(): User?
-
-    fun getAuthState(): Flow<User?>
+    val currentUser: Flow<User?>
+    suspend fun signIn(email: String, password: String): Result<User>
+    suspend fun signUp(email: String, password: String): Result<User>
+    suspend fun signOut(): Result<Unit>
+    suspend fun resetPassword(email: String): Result<Unit>
+    suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit>
 }
+
+data class User(
+    val uid: String,
+    val email: String,
+    val displayName: String? = null,
+    val photoUrl: String? = null,
+    val isEmailVerified: Boolean = false
+)

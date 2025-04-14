@@ -3,7 +3,8 @@ package com.example.a10xandroid.data.repository
 import com.example.a10xandroid.data.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -14,62 +15,93 @@ import javax.inject.Singleton
 @Singleton
 class FirebaseAuthRepository @Inject constructor(
     private val auth: FirebaseAuth,
+    private val database: FirebaseDatabase
 ) : AuthRepository {
-    override suspend fun signIn(
-        email: String,
-        password: String,
-    ): User? {
-        return try {
-            val result = auth.signInWithEmailAndPassword(email, password).await()
-            result.user?.let { mapFirebaseUserToUser(it) }
-        } catch (e: Exception) {
-            null
-        }
-    }
 
-    override suspend fun signUp(
-        email: String,
-        password: String,
-        displayName: String?,
-    ): User? {
-        return try {
-            val result = auth.createUserWithEmailAndPassword(email, password).await()
-            result.user?.let { firebaseUser ->
-                displayName?.let {
-                    val profileUpdates = userProfileChangeRequest {
-                        this.displayName = it
-                    }
-                    firebaseUser.updateProfile(profileUpdates).await()
-                }
-                mapFirebaseUserToUser(firebaseUser)
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
+    private val usersRef = database.getReference("users")
 
-    override suspend fun signOut() {
-        auth.signOut()
-    }
-
-    override suspend fun getCurrentUser(): User? {
-        return auth.currentUser?.let { mapFirebaseUserToUser(it) }
-    }
-
-    override fun getAuthState(): Flow<User?> = callbackFlow {
+    override val currentUser: Flow<User?> = callbackFlow {
         val listener = FirebaseAuth.AuthStateListener { auth ->
-            trySend(auth.currentUser?.let { mapFirebaseUserToUser(it) })
+            trySend(auth.currentUser?.toUser())
         }
         auth.addAuthStateListener(listener)
         awaitClose { auth.removeAuthStateListener(listener) }
     }
 
-    private fun mapFirebaseUserToUser(firebaseUser: FirebaseUser): User {
+    override suspend fun signIn(email: String, password: String): Result<User> = try {
+        val result = auth.signInWithEmailAndPassword(email, password).await()
+        val user = result.user?.toUser()
+        if (user != null) {
+            // Update last login time in the database
+            usersRef.child(user.uid).child("lastLoginAt").setValue(System.currentTimeMillis()).await()
+            Result.success(user)
+        } else {
+            Result.failure(Exception("Failed to sign in"))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun signUp(email: String, password: String): Result<User> = try {
+        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        val user = result.user?.toUser()
+        if (user != null) {
+            // Store user data in the database
+            usersRef.child(user.uid).setValue(user).await()
+            Result.success(user)
+        } else {
+            Result.failure(Exception("Failed to create user"))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun signOut(): Result<Unit> = try {
+        auth.signOut()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun resetPassword(email: String): Result<Unit> = try {
+        auth.sendPasswordResetEmail(email).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit> = try {
+        val profileUpdates = UserProfileChangeRequest.Builder().apply {
+            displayName?.let { setDisplayName(it) }
+            photoUrl?.let { setPhotoUri(android.net.Uri.parse(it)) }
+        }.build()
+
+        auth.currentUser?.updateProfile(profileUpdates)?.await()
+        
+        // Update user data in the database
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            val userData = mapOf(
+                "displayName" to (displayName ?: currentUser.displayName),
+                "photoUrl" to (photoUrl ?: currentUser.photoUrl?.toString())
+            )
+            usersRef.child(currentUser.uid).updateChildren(userData).await()
+        }
+        
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    private fun FirebaseUser.toUser(): User {
         return User(
-            id = firebaseUser.uid,
-            email = firebaseUser.email ?: "",
-            displayName = firebaseUser.displayName,
-            createdAt = firebaseUser.metadata?.creationTimestamp ?: System.currentTimeMillis(),
+            uid = uid,
+            email = email ?: "",
+            displayName = displayName,
+            photoUrl = photoUrl?.toString(),
+            isEmailVerified = isEmailVerified,
+            createdAt = metadata?.creationTimestamp ?: System.currentTimeMillis(),
+            lastLoginAt = metadata?.lastSignInTimestamp ?: System.currentTimeMillis()
         )
     }
 }

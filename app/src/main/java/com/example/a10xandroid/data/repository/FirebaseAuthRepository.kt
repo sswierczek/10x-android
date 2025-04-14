@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import android.util.Log
 
 @Singleton
 class FirebaseAuthRepository @Inject constructor(
@@ -22,24 +23,62 @@ class FirebaseAuthRepository @Inject constructor(
 
     override val currentUser: Flow<User?> = callbackFlow {
         val listener = FirebaseAuth.AuthStateListener { auth ->
-            trySend(auth.currentUser?.toUser())
+            val firebaseUser = auth.currentUser
+            Log.d("FirebaseAuthRepository", "Firebase Auth state changed: ${firebaseUser?.uid}")
+            
+            if (firebaseUser != null) {
+                // Create user object directly from Firebase Auth user
+                val user = User(
+                    uid = firebaseUser.uid,
+                    email = firebaseUser.email ?: "",
+                    displayName = firebaseUser.displayName,
+                    photoUrl = firebaseUser.photoUrl?.toString(),
+                    isEmailVerified = firebaseUser.isEmailVerified
+                )
+                trySend(user)
+            } else {
+                trySend(null)
+            }
         }
+        
+        // Send initial state
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            val user = User(
+                uid = currentUser.uid,
+                email = currentUser.email ?: "",
+                displayName = currentUser.displayName,
+                photoUrl = currentUser.photoUrl?.toString(),
+                isEmailVerified = currentUser.isEmailVerified
+            )
+            trySend(user)
+        } else {
+            trySend(null)
+        }
+        
         auth.addAuthStateListener(listener)
-        awaitClose { auth.removeAuthStateListener(listener) }
+        
+        awaitClose {
+            auth.removeAuthStateListener(listener)
+        }
     }
 
     override suspend fun signIn(email: String, password: String): Result<User> = try {
         val result = auth.signInWithEmailAndPassword(email, password).await()
-        val user = result.user?.toUser()
-        if (user != null) {
-            // Update last login time in the database
-            usersRef.child(user.uid)
-                .child("lastLoginAt")
-                .setValue(System.currentTimeMillis())
-                .await()
+        val firebaseUser = result.user
+        if (firebaseUser != null) {
+            // Get additional user data from Realtime Database
+            val snapshot = database.reference.child("users").child(firebaseUser.uid).get().await()
+            val userData = snapshot.getValue(User::class.java)
+            val user = User(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email ?: "",
+                displayName = userData?.displayName ?: firebaseUser.displayName,
+                photoUrl = userData?.photoUrl ?: firebaseUser.photoUrl?.toString()
+            )
             Result.success(user)
         } else {
-            Result.failure(Exception("Failed to sign in"))
+            Result.failure(Exception("Authentication failed"))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -47,13 +86,28 @@ class FirebaseAuthRepository @Inject constructor(
 
     override suspend fun signUp(email: String, password: String): Result<User> = try {
         val result = auth.createUserWithEmailAndPassword(email, password).await()
-        val user = result.user?.toUser()
-        if (user != null) {
-            // Store user data in the database
-            usersRef.child(user.uid).setValue(user).await()
+        val firebaseUser = result.user
+        if (firebaseUser != null) {
+            // Create a new user entry in the database with additional fields
+            val user = User(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email ?: "",
+                displayName = firebaseUser.displayName,
+                photoUrl = firebaseUser.photoUrl?.toString(),
+                isEmailVerified = firebaseUser.isEmailVerified,
+                createdAt = System.currentTimeMillis(),
+                lastLoginAt = System.currentTimeMillis()
+            )
+            
+            // Ensure the user data is written to the database
+            database.reference.child("users").child(firebaseUser.uid)
+                .setValue(user)
+                .await()
+                
+            Log.d("FirebaseAuthRepository", "User data initialized in database for uid: ${firebaseUser.uid}")
             Result.success(user)
         } else {
-            Result.failure(Exception("Failed to create user"))
+            Result.failure(Exception("User creation failed"))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -73,40 +127,65 @@ class FirebaseAuthRepository @Inject constructor(
         Result.failure(e)
     }
 
-    override suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit> =
-        try {
-            val profileUpdates = UserProfileChangeRequest.Builder().apply {
-                displayName?.let { setDisplayName(it) }
-                photoUrl?.let { setPhotoUri(android.net.Uri.parse(it)) }
-            }.build()
-
-            auth.currentUser?.updateProfile(profileUpdates)?.await()
-
-            // Update user data in the database
-            val currentUser = auth.currentUser
-            if (currentUser != null) {
-                val userData = mapOf(
-                    "displayName" to (displayName ?: currentUser.displayName),
-                    "photoUrl" to (photoUrl ?: currentUser.photoUrl?.toString())
-                )
-                usersRef.child(currentUser.uid).updateChildren(userData).await()
+    override suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit> = try {
+        val firebaseUser = auth.currentUser
+        if (firebaseUser != null) {
+            // Update Firebase Auth profile
+            val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                .apply {
+                    displayName?.let { setDisplayName(it) }
+                    photoUrl?.let { setPhotoUri(android.net.Uri.parse(it)) }
+                }
+                .build()
+            
+            firebaseUser.updateProfile(profileUpdates).await()
+            
+            // Update user data in Realtime Database
+            val updates = mutableMapOf<String, Any?>()
+            displayName?.let { updates["displayName"] = it }
+            photoUrl?.let { updates["photoUrl"] = it }
+            
+            if (updates.isNotEmpty()) {
+                database.reference.child("users").child(firebaseUser.uid).updateChildren(updates).await()
             }
-
+            
             Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
+        } else {
+            Result.failure(Exception("No user is currently signed in"))
         }
-
-    private fun FirebaseUser.toUser(): User {
-        return User(
-            uid = uid,
-            email = email ?: "",
-            displayName = displayName,
-            photoUrl = photoUrl?.toString(),
-            isEmailVerified = isEmailVerified,
-            createdAt = metadata?.creationTimestamp ?: System.currentTimeMillis(),
-            lastLoginAt = metadata?.lastSignInTimestamp ?: System.currentTimeMillis()
-        )
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+    
+    override suspend fun refreshUserData(): Result<Unit> = try {
+        val firebaseUser = auth.currentUser
+        if (firebaseUser != null) {
+            // Force a token refresh to ensure we have the latest user data
+            firebaseUser.getIdToken(true).await()
+            
+            // Update the user data in the database if needed
+            val user = User(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email ?: "",
+                displayName = firebaseUser.displayName,
+                photoUrl = firebaseUser.photoUrl?.toString()
+            )
+            
+            database.reference.child("users").child(firebaseUser.uid)
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    if (!snapshot.exists()) {
+                        // If user doesn't exist in database, create it
+                        database.reference.child("users").child(firebaseUser.uid).setValue(user)
+                    }
+                }
+            
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception("No user is currently signed in"))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
     }
 }
 

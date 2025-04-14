@@ -1,15 +1,13 @@
 package com.example.a10xandroid
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.a10xandroid.ui.auth.AuthScreen
+import com.example.a10xandroid.ui.auth.AuthUiState
 import com.example.a10xandroid.ui.auth.AuthViewModel
 import com.example.a10xandroid.ui.profile.ProfileScreen
 import com.example.a10xandroid.ui.theme.AppTheme
@@ -21,25 +19,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AppTheme {
-                var isAuthenticated by remember { mutableStateOf(false) }
                 val authViewModel: AuthViewModel = hiltViewModel()
+                val currentUser by authViewModel.currentUser.collectAsState(initial = null)
 
-                LaunchedEffect(Unit) {
-                    authViewModel.currentUser.collect { user ->
-                        isAuthenticated = user != null
-                    }
+                // Log auth state changes
+                LaunchedEffect(currentUser) {
+                    Log.d("MainActivity", "Firebase Auth state changed - User: ${currentUser?.uid}")
                 }
 
-                if (isAuthenticated) {
+                // Show profile screen if Firebase Auth has a current user, otherwise show auth screen
+                if (currentUser != null) {
+                    Log.d("MainActivity", "Firebase Auth user exists, showing profile screen")
                     ProfileScreen(
                         onSignOut = {
-                            isAuthenticated = false
+                            Log.d("MainActivity", "Sign out triggered")
+                            authViewModel.signOut()
                         }
                     )
                 } else {
+                    Log.d("MainActivity", "No Firebase Auth user, showing auth screen")
                     AuthScreen(
                         onAuthSuccess = {
-                            isAuthenticated = true
+                            Log.d("MainActivity", "Auth success callback triggered")
                         }
                     )
                 }

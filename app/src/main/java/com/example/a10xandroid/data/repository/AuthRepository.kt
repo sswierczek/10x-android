@@ -13,6 +13,7 @@ interface AuthRepository {
     suspend fun signOut(): Result<Unit>
     suspend fun resetPassword(email: String): Result<Unit>
     suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit>
+    suspend fun refreshUserData(): Result<Unit>
 }
 
 data class User(

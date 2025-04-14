@@ -4,10 +4,11 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.a10xandroid.ui.auth.AuthScreen
-import com.example.a10xandroid.ui.auth.AuthUiState
 import com.example.a10xandroid.ui.auth.AuthViewModel
 import com.example.a10xandroid.ui.profile.ProfileScreen
 import com.example.a10xandroid.ui.theme.AppTheme

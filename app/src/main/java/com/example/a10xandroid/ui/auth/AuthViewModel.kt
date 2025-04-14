@@ -6,7 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.a10xandroid.data.model.User
 import com.example.a10xandroid.data.service.AuthService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -114,7 +117,7 @@ class AuthViewModel @Inject constructor(
     fun resetError() {
         _uiState.value = AuthUiState.Initial
     }
-    
+
     private fun getErrorMessage(e: Exception): String {
         return when {
             e.message?.contains("password") == true -> "Invalid password. Please try again."

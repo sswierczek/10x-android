@@ -27,6 +27,7 @@ fun ConnectionStatus(
             isLoading -> {
                 CircularProgressIndicator()
             }
+
             isConnected == true -> {
                 Text(
                     text = "Connected to Firebase",
@@ -34,6 +35,7 @@ fun ConnectionStatus(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
+
             isConnected == false -> {
                 Text(
                     text = "Failed to connect to Firebase",
@@ -41,6 +43,7 @@ fun ConnectionStatus(
                     color = MaterialTheme.colorScheme.error
                 )
             }
+
             else -> {
                 Text(
                     text = "Click the button to test connection",

@@ -61,7 +61,7 @@ fun ProfileScreen(
                 text = "Profile",
                 style = MaterialTheme.typography.headlineMedium
             )
-            
+
             IconButton(onClick = { viewModel.refreshUserData() }) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
@@ -81,9 +81,11 @@ fun ProfileScreen(
                     )
                 }
             }
+
             currentUser != null -> {
                 UserInfoCard(user = currentUser!!)
             }
+
             else -> {
                 Text(
                     text = "No user data available. Please try refreshing.",

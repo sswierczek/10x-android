@@ -1,9 +1,8 @@
 package com.example.a10xandroid.data.repository
 
+import android.util.Log
 import com.example.a10xandroid.data.model.User
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +10,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
-import android.util.Log
 
 @Singleton
 class FirebaseAuthRepository @Inject constructor(
@@ -25,7 +23,7 @@ class FirebaseAuthRepository @Inject constructor(
         val listener = FirebaseAuth.AuthStateListener { auth ->
             val firebaseUser = auth.currentUser
             Log.d("FirebaseAuthRepository", "Firebase Auth state changed: ${firebaseUser?.uid}")
-            
+
             if (firebaseUser != null) {
                 // Create user object directly from Firebase Auth user
                 val user = User(
@@ -40,7 +38,7 @@ class FirebaseAuthRepository @Inject constructor(
                 trySend(null)
             }
         }
-        
+
         // Send initial state
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -55,9 +53,9 @@ class FirebaseAuthRepository @Inject constructor(
         } else {
             trySend(null)
         }
-        
+
         auth.addAuthStateListener(listener)
-        
+
         awaitClose {
             auth.removeAuthStateListener(listener)
         }
@@ -98,13 +96,16 @@ class FirebaseAuthRepository @Inject constructor(
                 createdAt = System.currentTimeMillis(),
                 lastLoginAt = System.currentTimeMillis()
             )
-            
+
             // Ensure the user data is written to the database
             database.reference.child("users").child(firebaseUser.uid)
                 .setValue(user)
                 .await()
-                
-            Log.d("FirebaseAuthRepository", "User data initialized in database for uid: ${firebaseUser.uid}")
+
+            Log.d(
+                "FirebaseAuthRepository",
+                "User data initialized in database for uid: ${firebaseUser.uid}"
+            )
             Result.success(user)
         } else {
             Result.failure(Exception("User creation failed"))
@@ -127,42 +128,44 @@ class FirebaseAuthRepository @Inject constructor(
         Result.failure(e)
     }
 
-    override suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit> = try {
-        val firebaseUser = auth.currentUser
-        if (firebaseUser != null) {
-            // Update Firebase Auth profile
-            val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
-                .apply {
-                    displayName?.let { setDisplayName(it) }
-                    photoUrl?.let { setPhotoUri(android.net.Uri.parse(it)) }
+    override suspend fun updateProfile(displayName: String?, photoUrl: String?): Result<Unit> =
+        try {
+            val firebaseUser = auth.currentUser
+            if (firebaseUser != null) {
+                // Update Firebase Auth profile
+                val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                    .apply {
+                        displayName?.let { setDisplayName(it) }
+                        photoUrl?.let { setPhotoUri(android.net.Uri.parse(it)) }
+                    }
+                    .build()
+
+                firebaseUser.updateProfile(profileUpdates).await()
+
+                // Update user data in Realtime Database
+                val updates = mutableMapOf<String, Any?>()
+                displayName?.let { updates["displayName"] = it }
+                photoUrl?.let { updates["photoUrl"] = it }
+
+                if (updates.isNotEmpty()) {
+                    database.reference.child("users").child(firebaseUser.uid)
+                        .updateChildren(updates).await()
                 }
-                .build()
-            
-            firebaseUser.updateProfile(profileUpdates).await()
-            
-            // Update user data in Realtime Database
-            val updates = mutableMapOf<String, Any?>()
-            displayName?.let { updates["displayName"] = it }
-            photoUrl?.let { updates["photoUrl"] = it }
-            
-            if (updates.isNotEmpty()) {
-                database.reference.child("users").child(firebaseUser.uid).updateChildren(updates).await()
+
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("No user is currently signed in"))
             }
-            
-            Result.success(Unit)
-        } else {
-            Result.failure(Exception("No user is currently signed in"))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-    } catch (e: Exception) {
-        Result.failure(e)
-    }
-    
+
     override suspend fun refreshUserData(): Result<Unit> = try {
         val firebaseUser = auth.currentUser
         if (firebaseUser != null) {
             // Force a token refresh to ensure we have the latest user data
             firebaseUser.getIdToken(true).await()
-            
+
             // Update the user data in the database if needed
             val user = User(
                 uid = firebaseUser.uid,
@@ -170,7 +173,7 @@ class FirebaseAuthRepository @Inject constructor(
                 displayName = firebaseUser.displayName,
                 photoUrl = firebaseUser.photoUrl?.toString()
             )
-            
+
             database.reference.child("users").child(firebaseUser.uid)
                 .get()
                 .addOnSuccessListener { snapshot ->
@@ -179,7 +182,7 @@ class FirebaseAuthRepository @Inject constructor(
                         database.reference.child("users").child(firebaseUser.uid).setValue(user)
                     }
                 }
-            
+
             Result.success(Unit)
         } else {
             Result.failure(Exception("No user is currently signed in"))

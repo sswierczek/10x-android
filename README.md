@@ -87,7 +87,7 @@ MovieMind to aplikacja mobilna dla systemu Android, która pomaga użytkownikom 
    - Włącz Firebase Realtime Database w Firebase Console
 
 4. (Opcjonalnie) Skonfiguruj TMDB API:
-   - Zarejestruj się w [TMDB](https://www.themoviedb.org/documentation/api)
+   - Zarejestruj się w [TMDB](https://www.themoviedb.org/settings/api)
    - Uzyskaj klucz API
    - Dodaj klucz API do pliku konfiguracyjnego
 
@@ -142,4 +142,22 @@ Projekt jest obecnie w fazie rozwoju. Główne funkcje MVP są w trakcie impleme
 
 ## Licencja
 
-Ten projekt jest licencjonowany na podstawie licencji Apache 2.0 - szczegóły znajdują się w pliku [LICENSE](LICENSE). 
+Ten projekt jest licencjonowany na podstawie licencji Apache 2.0 - szczegóły znajdują się w pliku [LICENSE](LICENSE).
+
+## Setup
+
+### TMDB API Key Setup
+
+1. Get your API key from [TMDB](https://www.themoviedb.org/settings/api)
+2. Create or edit the `local.properties` file in the root directory of the project
+3. Add your API key to `local.properties`:
+   ```
+   TMDB_API_KEY=your_api_key_here
+   ```
+4. Sync your project with Gradle files
+5. The API key will be automatically loaded from `local.properties` into BuildConfig
+
+Note: 
+- Never commit your actual API key to version control
+- The `local.properties` file is already in `.gitignore`
+- The API key is securely stored in BuildConfig during build time 

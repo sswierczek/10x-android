@@ -1,9 +1,12 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.serialization)
     kotlin("kapt")
 }
 
@@ -19,6 +22,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Load TMDB API key from local.properties
+        val properties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+            buildConfigField("String", "TMDB_API_KEY", "\"${properties.getProperty("TMDB_API_KEY", "")}\"")
+        } else {
+            buildConfigField("String", "TMDB_API_KEY", "\"\"")
+        }
     }
 
     buildTypes {
@@ -39,6 +52,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -70,6 +84,15 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+
+    // Retrofit & OkHttp
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlin.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+
+    // Kotlin Serialization
+    implementation(libs.kotlin.serialization.json)
 
     // Testing
     testImplementation(libs.junit)

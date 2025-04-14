@@ -31,7 +31,6 @@ jobs:
         gradle-version: wrapper
         arguments: assembleDebug
         cache-read-only: false
-        cache-enabled: true
         cache-key-prefix: android
 
     # This step uploads the debug APK as an artifact that can be downloaded from the Actions tab

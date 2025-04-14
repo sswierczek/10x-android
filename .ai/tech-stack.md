@@ -3,6 +3,8 @@
 ## Proponowany stos technologiczny
 - **Android** - platforma docelowa
 - **Firebase** - backend i autentykacja
+  - **Firebase Authentication** - system autentykacji
+  - **Firebase Realtime Database** - baza danych w czasie rzeczywistym
 - **Jetpack Compose** - framework UI
 - **Kotlin Coroutines** - obsługa operacji asynchronicznych
 - **MVVM** - wzorzec architektoniczny
@@ -16,6 +18,7 @@
 Proponowany stos technologiczny jest dobrze dobrany do szybkiego dostarczenia MVP:
 
 - **Firebase** zapewnia gotowe rozwiązania dla autentykacji i przechowywania danych, co znacznie przyspiesza rozwój backendu. Nie wymaga tworzenia własnego serwera ani zarządzania bazą danych.
+  - **Firebase Realtime Database** oferuje synchronizację danych w czasie rzeczywistym, co jest idealne dla funkcji społecznościowych i współdzielonych list filmów.
 
 - **Jetpack Compose** pozwala na szybkie tworzenie interfejsu użytkownika z mniejszą ilością kodu w porównaniu do tradycyjnego podejścia XML. Jego deklaratywny charakter ułatwia iteracyjne tworzenie UI.
 
@@ -32,6 +35,7 @@ Proponowany stos technologiczny jest dobrze dobrany do szybkiego dostarczenia MV
 Proponowany stos technologiczny zapewnia dobrą skalowalność:
 
 - **Firebase** automatycznie skaluje się wraz z rosnącą liczbą użytkowników i danych. Oferuje również zaawansowane funkcje, które można włączyć w miarę rozwoju aplikacji (np. Cloud Functions, Analytics).
+  - **Firebase Realtime Database** zapewnia dobrą skalowalność dla aplikacji z wieloma równoczesnymi użytkownikami, oferując synchronizację w czasie rzeczywistym i efektywne zarządzanie połączeniami.
 
 - **Jetpack Compose** jest nowoczesnym frameworkiem UI, który będzie wspierany przez Google w długim terminie. Jego modułowa natura ułatwia rozbudowę interfejsu użytkownika.
 
@@ -48,6 +52,7 @@ Proponowany stos technologiczny zapewnia dobrą skalowalność:
 Koszty utrzymania i rozwoju powinny być akceptowalne:
 
 - **Firebase** oferuje darmowy plan z ograniczeniami, który powinien wystarczyć na początkowy etap rozwoju. W miarę wzrostu użytkowników, koszty będą skalować się proporcjonalnie do wykorzystania.
+  - **Firebase Realtime Database** ma elastyczny model cenowy oparty na wykorzystaniu, co pozwala na kontrolę kosztów w zależności od rzeczywistego ruchu.
 
 - **Jetpack Compose, Kotlin Coroutines, Retrofit** są częścią ekosystemu Kotlin/Android, co oznacza, że nie generują dodatkowych kosztów licencyjnych.
 
@@ -62,6 +67,7 @@ Koszty utrzymania i rozwoju powinny być akceptowalne:
 Dla MVP proponowany stos technologiczny jest odpowiednio złożony:
 
 - **Firebase** jest niezbędny dla autentykacji i przechowywania danych, co jest kluczowym wymaganiem MVP.
+  - **Firebase Realtime Database** zapewnia prosty sposób przechowywania i synchronizacji danych użytkowników, co jest kluczowe dla funkcji społecznościowych aplikacji.
 
 - **Jetpack Compose** może wydawać się nadmierny dla prostego MVP, ale zapewnia szybki rozwój UI i dobrą podstawę do przyszłych rozszerzeń.
 
@@ -76,6 +82,7 @@ Dla MVP proponowany stos technologiczny jest odpowiednio złożony:
 Istnieją prostsze alternatywy, ale proponowany stos technologiczny jest optymalny dla wymagań:
 
 - **Alternatywa dla Firebase**: Własny backend z prostą bazą danych (np. SQLite) byłby prostszy, ale wymagałby znacznie więcej pracy przy implementacji autentykacji i synchronizacji danych.
+  - **Alternatywa dla Firebase Realtime Database**: Lokalna baza danych SQLite byłaby prostsza, ale nie zapewniałaby synchronizacji w czasie rzeczywistym, co jest kluczowe dla funkcji społecznościowych.
 
 - **Alternatywa dla Jetpack Compose**: Tradycyjne podejście XML z RecyclerView byłoby prostsze dla prostego MVP, ale Compose oferuje szybszy rozwój i lepszą podstawę do przyszłych rozszerzeń.
 
@@ -90,6 +97,7 @@ Istnieją prostsze alternatywy, ale proponowany stos technologiczny jest optymal
 Proponowany stos technologiczny zapewnia dobre zabezpieczenia:
 
 - **Firebase** oferuje wbudowane zabezpieczenia dla autentykacji i przechowywania danych, w tym szyfrowanie danych w spoczynku i podczas transmisji.
+  - **Firebase Realtime Database** zapewnia reguły bezpieczeństwa, które pozwalają na precyzyjne kontrolowanie dostępu do danych na poziomie użytkownika i węzła.
 
 - **Jetpack Compose** jako framework UI nie ma bezpośredniego wpływu na bezpieczeństwo, ale pozwala na implementację bezpiecznych wzorców UI.
 
@@ -101,7 +109,7 @@ Proponowany stos technologiczny zapewnia dobre zabezpieczenia:
 
 Proponowany stos technologiczny jest dobrze dobrany do wymagań MVP aplikacji MovieMind:
 
-1. **Szybkość dostarczenia MVP**: Firebase, Jetpack Compose i Kotlin Coroutines znacznie przyspieszają rozwój.
+1. **Szybkość dostarczenia MVP**: Firebase (w tym Realtime Database), Jetpack Compose i Kotlin Coroutines znacznie przyspieszają rozwój.
 
 2. **Skalowalność**: Firebase automatycznie skaluje się wraz z rosnącą liczbą użytkowników, a MVVM zapewnia dobrą organizację kodu.
 

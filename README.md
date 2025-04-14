@@ -5,17 +5,17 @@
 [![Code Quality](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml)
 [![Download Latest APK](https://img.shields.io/badge/Download-Latest_APK-brightgreen)](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
 
-## Latest Build
+## Najnowsza wersja
 
-You can download the latest debug APK from the most recent successful workflow run:
+Możesz pobrać najnowszą wersję debugową APK z ostatniego udanego przebiegu workflow:
 
-1. Click the "Android CI" badge above or go to the [Actions tab](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
-2. Click on the most recent successful workflow run
-3. Scroll down to the "Artifacts" section
-4. Download the "app-debug" artifact
-5. Extract the APK from the downloaded zip file
+1. Kliknij odznakę "Android CI" powyżej lub przejdź do [zakładki Actions](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
+2. Kliknij na najnowszy udany przebieg workflow
+3. Przewiń w dół do sekcji "Artifacts"
+4. Pobierz artefakt "app-debug"
+5. Rozpakuj plik APK z pobranego archiwum ZIP
 
-Note: You need to be logged into GitHub to download artifacts.
+> **Uwaga:** Musisz być zalogowany do GitHub, aby pobrać artefakty.
 
 ## Spis treści
 - [Opis projektu](#opis-projektu)
@@ -157,20 +157,20 @@ Projekt jest obecnie w fazie rozwoju. Główne funkcje MVP są w trakcie impleme
 
 Ten projekt jest licencjonowany na podstawie licencji Apache 2.0 - szczegóły znajdują się w pliku [LICENSE](LICENSE).
 
-## Setup
+## Konfiguracja
 
-### TMDB API Key Setup
+### Konfiguracja klucza TMDB API
 
-1. Get your API key from [TMDB](https://www.themoviedb.org/settings/api)
-2. Create or edit the `local.properties` file in the root directory of the project
-3. Add your API key to `local.properties`:
+1. Uzyskaj klucz API z [TMDB](https://www.themoviedb.org/settings/api)
+2. Utwórz lub edytuj plik `local.properties` w katalogu głównym projektu
+3. Dodaj swój klucz API do `local.properties`:
    ```
-   TMDB_API_KEY=your_api_key_here
+   TMDB_API_KEY=twój_klucz_api
    ```
-4. Sync your project with Gradle files
-5. The API key will be automatically loaded from `local.properties` into BuildConfig
+4. Zsynchronizuj projekt z plikami Gradle
+5. Klucz API zostanie automatycznie załadowany z `local.properties` do BuildConfig
 
-Note: 
-- Never commit your actual API key to version control
-- The `local.properties` file is already in `.gitignore`
-- The API key is securely stored in BuildConfig during build time 
+> **Uwaga:** 
+> - Nigdy nie commituj swojego rzeczywistego klucza API do kontroli wersji
+> - Plik `local.properties` jest już w `.gitignore`
+> - Klucz API jest bezpiecznie przechowywany w BuildConfig podczas budowania 

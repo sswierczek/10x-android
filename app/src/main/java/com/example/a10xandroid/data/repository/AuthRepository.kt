@@ -23,3 +23,4 @@ data class User(
     val photoUrl: String? = null,
     val isEmailVerified: Boolean = false
 )
+ 

@@ -22,5 +22,4 @@ data class User(
     val displayName: String? = null,
     val photoUrl: String? = null,
     val isEmailVerified: Boolean = false
-)
- 
+) 

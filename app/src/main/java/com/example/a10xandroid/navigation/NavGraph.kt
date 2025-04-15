@@ -6,11 +6,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.ui.auth.login.LoginScreen
 import com.example.a10xandroid.ui.auth.register.RegisterScreen
+import com.example.a10xandroid.ui.journal.JournalScreen
+import com.example.a10xandroid.ui.movie.MovieDetailsScreen
 import com.example.a10xandroid.ui.screens.ConnectionTestScreen
 import com.example.a10xandroid.ui.screens.HomeScreen
 
@@ -20,6 +24,7 @@ object NavRoutes {
     const val HOME = "home"
     const val CONNECTION_TEST = "connection_test"
     const val JOURNAL = "journal"
+    const val MOVIE_DETAILS = "movie-details"
 }
 
 @Composable
@@ -66,11 +71,22 @@ fun NavGraph(
         }
         
         composable(NavRoutes.JOURNAL) {
-            HomeScreen(
-                onCheckConnectionClick = {
-                    navController.navigate(NavRoutes.CONNECTION_TEST)
+            JournalScreen(
+                navController = navController
+            )
+        }
+        
+        composable(
+            route = "${NavRoutes.MOVIE_DETAILS}/{movieId}",
+            arguments = listOf(
+                navArgument("movieId") {
+                    type = NavType.StringType
+                    nullable = false
                 }
             )
+        ) { backStackEntry ->
+            val movieId = backStackEntry.arguments?.getString("movieId") ?: ""
+            MovieDetailsScreen(movieId = movieId, navController = navController)
         }
         
         composable(NavRoutes.HOME) {

@@ -4,32 +4,32 @@ package com.example.a10xandroid.ui.addmovie
  * Stany wyszukiwania
  */
 enum class SearchStatus {
-    INITIAL,    // Stan początkowy (przed wyszukiwaniem)
-    SEARCHING,  // Trwa wyszukiwanie
-    RESULTS,    // Wyniki wyszukiwania
-    ERROR       // Błąd wyszukiwania
+    INITIAL,
+    SEARCHING,
+    RESULTS,
+    ERROR
 }
 
 /**
  * Model widoku elementu wyszukiwania
  */
 data class MovieSearchItemViewModel(
-    val tmdbId: String,                  // Id filmu w TMDB
-    val title: String,                   // Tytuł filmu
-    val posterUrl: String?,              // URL plakatu filmu
-    val year: String,                    // Rok produkcji
-    val genre: String,                   // Główny gatunek filmu
-    val overview: String                 // Opis filmu
+    val tmdbId: String,
+    val title: String,
+    val posterUrl: String?,
+    val year: String,
+    val genre: String,
+    val overview: String
 )
 
 /**
  * Stan UI dla ekranu dodawania filmu
  */
 data class AddMovieUiState(
-    val searchQuery: String = "",                     // Aktualne zapytanie wyszukiwania
-    val searchStatus: SearchStatus = SearchStatus.INITIAL, // Stan wyszukiwania
-    val searchResults: List<MovieSearchItemViewModel> = emptyList(), // Wyniki wyszukiwania
-    val errorMessage: String? = null,                 // Komunikat błędu
-    val isAddingMovie: Boolean = false,               // Czy trwa dodawanie filmu
-    val snackbarMessage: String? = null               // Komunikat Snackbar
-) 
+    val searchQuery: String = "",
+    val searchStatus: SearchStatus = SearchStatus.INITIAL,
+    val searchResults: List<MovieSearchItemViewModel> = emptyList(),
+    val errorMessage: String? = null,
+    val isAddingMovie: Boolean = false,
+    val snackbarMessage: String? = null
+)

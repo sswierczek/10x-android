@@ -4,16 +4,16 @@ package com.example.a10xandroid.ui.auth.register
  * Stan UI dla ekranu rejestracji
  */
 data class RegisterUiState(
-    val email: String = "",              // Wprowadzony e-mail
-    val password: String = "",           // Wprowadzone hasło
-    val confirmPassword: String = "",    // Potwierdzenie hasła
-    val acceptedTerms: Boolean = false,  // Akceptacja warunków korzystania
-    val isPasswordVisible: Boolean = false, // Czy hasło jest widoczne
-    val isConfirmPasswordVisible: Boolean = false, // Czy potwierdzenie hasła jest widoczne
-    val emailError: String? = null,      // Błąd walidacji e-maila
-    val passwordError: String? = null,   // Błąd walidacji hasła
-    val confirmPasswordError: String? = null, // Błąd walidacji potwierdzenia hasła
-    val termsError: String? = null,      // Błąd walidacji akceptacji warunków
-    val isLoading: Boolean = false,      // Czy trwa rejestracja
-    val errorMessage: String? = null     // Ogólny komunikat błędu
-) 
+    val email: String = "",
+    val password: String = "",
+    val confirmPassword: String = "",
+    val acceptedTerms: Boolean = false,
+    val isPasswordVisible: Boolean = false,
+    val isConfirmPasswordVisible: Boolean = false,
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val confirmPasswordError: String? = null,
+    val termsError: String? = null,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
+)

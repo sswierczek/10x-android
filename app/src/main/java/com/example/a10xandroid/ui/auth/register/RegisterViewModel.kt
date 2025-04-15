@@ -111,9 +111,13 @@ class RegisterViewModel @Inject constructor(
                 } else {
                     // Obsługa błędu z Result
                     val exception = result.exceptionOrNull()?.let {
-                        if (it is Exception) it else Exception(
-                            it.message ?: "Nieznany błąd podczas rejestracji"
-                        )
+                        if (it is Exception) {
+                            it
+                        } else {
+                            Exception(
+                                it.message ?: "Nieznany błąd podczas rejestracji"
+                            )
+                        }
                     } ?: Exception("Nieznany błąd podczas rejestracji")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,

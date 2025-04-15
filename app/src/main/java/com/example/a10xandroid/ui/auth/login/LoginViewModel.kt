@@ -81,9 +81,13 @@ class LoginViewModel @Inject constructor(
                 } else {
                     // Obsługa błędu z Result
                     val exception = result.exceptionOrNull()?.let {
-                        if (it is Exception) it else Exception(
-                            it.message ?: "Nieznany błąd podczas logowania"
-                        )
+                        if (it is Exception) {
+                            it
+                        } else {
+                            Exception(
+                                it.message ?: "Nieznany błąd podczas logowania"
+                            )
+                        }
                     } ?: Exception("Nieznany błąd podczas logowania")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,

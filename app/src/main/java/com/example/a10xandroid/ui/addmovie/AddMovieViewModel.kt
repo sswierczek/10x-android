@@ -97,8 +97,17 @@ class AddMovieViewModel @Inject constructor(
                             MovieSearchItemViewModel(
                                 tmdbId = movie.id.toString(),
                                 title = movie.title,
-                                posterUrl = tmdbRepository.getPosterUrl(movie.posterPath, "w500"),
-                                year = if (movie.releaseDate.isNotEmpty()) movie.releaseDate.take(4) else "",
+                                posterUrl = tmdbRepository.getPosterUrl(
+                                    movie.posterPath, 
+                                    "w500"
+                                ),
+                                year = if (movie.releaseDate.isNotEmpty()) {
+                                    movie.releaseDate.take(
+                                        4
+                                    )
+                                } else {
+                                    ""
+                                },
                                 genre = genre,
                                 overview = movie.overview
                             )

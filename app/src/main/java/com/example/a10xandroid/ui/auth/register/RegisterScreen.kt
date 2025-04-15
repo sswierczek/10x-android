@@ -61,7 +61,7 @@ fun RegisterScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 80.dp), // Miejsce na komunikat błędu
+                .padding(bottom = 80.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

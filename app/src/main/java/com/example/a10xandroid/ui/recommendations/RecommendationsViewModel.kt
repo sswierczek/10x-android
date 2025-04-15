@@ -26,7 +26,10 @@ class RecommendationsViewModel @Inject constructor(
         loadRecommendations()
     }
 
-    fun loadRecommendations() {
+    /**
+     * Loads recommendations
+     */
+    private fun loadRecommendations() {
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(status = StateStatus.LOADING) }
@@ -59,10 +62,12 @@ class RecommendationsViewModel @Inject constructor(
      * Clears the error message
      */
     fun clearError() {
-        _uiState.update { it.copy(
-            errorMessage = null,
-            status = if (it.recommendations.isEmpty()) StateStatus.LOADING else StateStatus.SUCCESS
-        ) }
+        _uiState.update { 
+            it.copy(
+                errorMessage = null,
+                status = if (it.recommendations.isEmpty()) StateStatus.LOADING else StateStatus.SUCCESS
+            ) 
+        }
     }
 
     /**
@@ -81,9 +86,11 @@ class RecommendationsViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(
-                    errorMessage = "Failed to dismiss recommendation"
-                ) }
+                _uiState.update { 
+                    it.copy(
+                        errorMessage = "Failed to dismiss recommendation"
+                    ) 
+                }
             }
         }
     }
@@ -107,9 +114,11 @@ class RecommendationsViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(
-                    errorMessage = "Failed to save recommendation"
-                ) }
+                _uiState.update { 
+                    it.copy(
+                        errorMessage = "Failed to save recommendation"
+                    ) 
+                }
             }
         }
     }

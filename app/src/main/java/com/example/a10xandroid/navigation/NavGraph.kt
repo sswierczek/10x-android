@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.ui.auth.login.LoginScreen
+import com.example.a10xandroid.ui.auth.register.RegisterScreen
 import com.example.a10xandroid.ui.screens.ConnectionTestScreen
 import com.example.a10xandroid.ui.screens.HomeScreen
 
@@ -59,8 +60,7 @@ fun NavGraph(
         }
         
         composable(NavRoutes.REGISTER) {
-            // TODO: Implementacja ekranu rejestracji
-            LoginScreen(
+            RegisterScreen(
                 navController = navController
             )
         }

@@ -46,6 +46,18 @@ fun JournalScreen(
                     viewModel.toggleSortOrder()
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(NavRoutes.ADD_MOVIE)
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Dodaj film"
+                )
+            }
         }
     ) { paddingValues ->
         LoadingStateHandler(
@@ -61,7 +73,7 @@ fun JournalScreen(
                     message = "Twój dziennik filmowy jest pusty",
                     actionLabel = "Dodaj pierwszy film",
                     onActionClick = {
-                        // TODO: Nawigacja do ekranu dodawania filmu
+                        navController.navigate(NavRoutes.ADD_MOVIE)
                     },
                     modifier = Modifier.fillMaxSize()
                 )

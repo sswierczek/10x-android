@@ -17,6 +17,7 @@ import com.example.a10xandroid.ui.journal.JournalScreen
 import com.example.a10xandroid.ui.movie.MovieDetailsScreen
 import com.example.a10xandroid.ui.screens.ConnectionTestScreen
 import com.example.a10xandroid.ui.screens.HomeScreen
+import com.example.a10xandroid.ui.addmovie.AddMovieScreen
 
 object NavRoutes {
     const val LOGIN = "login"
@@ -25,6 +26,7 @@ object NavRoutes {
     const val CONNECTION_TEST = "connection_test"
     const val JOURNAL = "journal"
     const val MOVIE_DETAILS = "movie-details"
+    const val ADD_MOVIE = "add-movie"
 }
 
 @Composable
@@ -72,6 +74,12 @@ fun NavGraph(
         
         composable(NavRoutes.JOURNAL) {
             JournalScreen(
+                navController = navController
+            )
+        }
+        
+        composable(NavRoutes.ADD_MOVIE) {
+            AddMovieScreen(
                 navController = navController
             )
         }

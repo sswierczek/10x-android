@@ -1,114 +1,132 @@
-# Plan implementacji widoku Dodawania Filmu
+# Plan implementacji widoku Dodawania Filmów
 
 ## 1. Przegląd
-Widok Dodawania Filmu umożliwia użytkownikom wyszukiwanie filmów za pomocą API TMDB i dodawanie ich do swojego dziennika filmowego. Zawiera pole wyszukiwania z funkcją autouzupełniania, listę wyników wyszukiwania oraz możliwość dodania wybranego filmu do dziennika. Jest to jeden z czterech głównych widoków dostępnych z poziomu dolnej nawigacji aplikacji.
+Widok Dodawania Filmów umożliwia użytkownikowi wyszukiwanie filmów w bazie TMDB i dodawanie ich do swojego dziennika filmowego. Widok ten składa się z paska wyszukiwania, listy wyników wyszukiwania oraz możliwości dodania wybranego filmu do dziennika.
 
 ## 2. Routing widoku
 Ścieżka widoku: `/add-movie`
 
-Ten widok jest jednym z głównych widoków aplikacji i będzie dostępny bezpośrednio z dolnej nawigacji.
+Ten widok jest dostępny z poziomu dziennika filmowego, poprzez przycisk "Dodaj pierwszy film" w pustym stanie dziennika oraz przez przycisk FloatingActionButton w wypełnionym dzienniku.
 
 ## 3. Struktura komponentów
 ```
 AddMovieScreen
-├── TopAppBar z tytułem "Dodaj Film"
+├── TopAppBar z przyciskiem powrotu
 ├── SearchBar
-├── LoadingStateHandler
-│   ├── (stan wyszukiwania) SearchResults
-│   │   └── MovieSearchItem (wiele instancji)
-│   ├── (stan ładowania) CircularProgressIndicator
-│   ├── (stan błędu) ErrorView z komunikatem błędu
-│   └── (stan początkowy) InitialView z instrukcją wyszukiwania
-└── Snackbar (potwierdzenie dodania filmu)
+└── Zależnie od stanu wyszukiwania:
+    ├── (stan początkowy) InitialSearchState
+    ├── (stan wyszukiwania) SearchingIndicator
+    ├── (stan wyników) LazyColumn z MovieSearchResultItem
+    │   lub NoSearchResultsMessage
+    └── (stan błędu) SearchErrorMessage
 ```
 
 ## 4. Szczegóły komponentów
 ### AddMovieScreen
-- **Opis komponentu**: Główny ekran dodawania filmu, zawierający wszystkie komponenty potrzebne do wyszukiwania i dodawania filmów.
+- **Opis komponentu**: Główny ekran umożliwiający wyszukiwanie i dodawanie filmów do dziennika.
 - **Główne elementy**: 
-  - Scaffold z TopAppBar
-  - SearchBar do wyszukiwania filmów
-  - LoadingStateHandler do obsługi różnych stanów UI
-  - Snackbar do wyświetlania komunikatów
+  - Scaffold z TopAppBar i przyciskiem powrotu
+  - SearchBar do wprowadzania zapytania wyszukiwania
+  - Widok wyników wyszukiwania zależny od stanu
+  - AddingIndicator - wskaźnik dodawania filmu
 - **Obsługiwane interakcje**:
-  - Wyszukiwanie filmów
-  - Dodawanie filmu do dziennika
-- **Obsługiwana walidacja**: Sprawdzanie, czy użytkownik jest zalogowany
-- **Typy**: AddMovieViewModel, AddMovieUiState
+  - Wprowadzanie i czyszczenie zapytania wyszukiwania
+  - Kliknięcie przycisku dodawania filmu
+  - Powrót do dziennika
+- **Obsługiwana walidacja**: Sprawdzanie, czy zapytanie ma co najmniej 2 znaki
+- **Typy**: AddMovieViewModel, SearchStatus
 - **Propsy**: NavController (do nawigacji)
 
 ### SearchBar
-- **Opis komponentu**: Pole wyszukiwania z funkcją autouzupełniania.
+- **Opis komponentu**: Pasek wyszukiwania z polem tekstowym i przyciskiem czyszczenia.
 - **Główne elementy**:
-  - OutlinedTextField z:
-    - Label "Wyszukaj film"
-    - Ikona search
-    - Przycisk czyszczenia tekstu
-    - Keyboard type (search)
+  - OutlinedTextField do wprowadzania zapytania
+  - Ikona wyszukiwania
+  - Przycisk czyszczenia zapytania
 - **Obsługiwane interakcje**: 
-  - Wprowadzanie i edycja tekstu
-  - Czyszczenie pola wyszukiwania
-  - Zatwierdzanie wyszukiwania
-- **Obsługiwana walidacja**: Weryfikacja czy pole nie jest puste przed wyszukiwaniem
-- **Typy**: Brak specyficznych
-- **Propsy**:
-  - query: String - aktualny tekst wyszukiwania
-  - onQueryChanged: (String) -> Unit - funkcja wywoływana przy zmianie tekstu
-  - onSearch: () -> Unit - funkcja wywoływana przy zatwierdzeniu wyszukiwania
-  - onClear: () -> Unit - funkcja wywoływana przy czyszczeniu pola
-
-### SearchResults
-- **Opis komponentu**: Lista wyników wyszukiwania filmów.
-- **Główne elementy**:
-  - LazyColumn z elementami MovieSearchItem
-- **Obsługiwane interakcje**:
-  - Przewijanie listy
-  - Kliknięcie na film
+  - Wprowadzanie zapytania
+  - Czyszczenie zapytania
+  - Wyszukiwanie po wciśnięciu przycisku "Search" na klawiaturze
 - **Obsługiwana walidacja**: Brak
-- **Typy**: List<MovieSearchItemViewModel>
+- **Typy**: Brak
 - **Propsy**:
-  - searchResults: List<MovieSearchItemViewModel> - lista wyników wyszukiwania
-  - onMovieClick: (MovieSearchItemViewModel) -> Unit - funkcja wywoływana po kliknięciu na film
+  - query: String - aktualne zapytanie wyszukiwania
+  - onQueryChange: (String) -> Unit - funkcja wywoływana przy zmianie zapytania
+  - onSearch: () -> Unit - funkcja wywoływana przy wyszukiwaniu
+  - onClearQuery: () -> Unit - funkcja wywoływana przy czyszczeniu zapytania
+  - isEnabled: Boolean - czy pasek jest aktywny
 
-### MovieSearchItem
-- **Opis komponentu**: Element listy wyników wyszukiwania reprezentujący pojedynczy film.
+### MovieSearchResultItem
+- **Opis komponentu**: Element listy wyników wyszukiwania, przedstawiający podstawowe informacje o filmie.
 - **Główne elementy**:
   - Card z Row zawierającym:
-    - AsyncImage dla plakatu filmu
-    - Column z tekstem (tytuł, rok, gatunek)
-    - IconButton do dodania filmu do dziennika
-- **Obsługiwane interakcje**: 
-  - Kliknięcie na kartę filmu
-  - Kliknięcie przycisku dodawania
+    - PosterImage dla plakatu filmu
+    - Column z tekstem (tytuł, rok, gatunek, opis)
+    - Button "Dodaj" do dodawania filmu do dziennika
+- **Obsługiwane interakcje**: Kliknięcie przycisku "Dodaj"
 - **Obsługiwana walidacja**: Brak
 - **Typy**: MovieSearchItemViewModel
 - **Propsy**:
   - movie: MovieSearchItemViewModel - dane filmu do wyświetlenia
-  - onMovieClick: () -> Unit - funkcja wywoływana po kliknięciu na kartę
-  - onAddClick: () -> Unit - funkcja wywoływana po kliknięciu przycisku dodawania
+  - onAddClick: (MovieSearchItemViewModel) -> Unit - funkcja wywoływana po kliknięciu przycisku dodawania
+  - isAddingEnabled: Boolean - czy przycisk dodawania jest aktywny
 
-### InitialView
+### InitialSearchState
 - **Opis komponentu**: Widok wyświetlany przed rozpoczęciem wyszukiwania.
 - **Główne elementy**:
-  - Column z:
-    - Icon lub ilustracją search
-    - Text z instrukcją "Wyszukaj film, aby dodać go do swojego dziennika"
+  - Icon wyszukiwania
+  - Text z instrukcją dla użytkownika
 - **Obsługiwane interakcje**: Brak
 - **Obsługiwana walidacja**: Brak
-- **Typy**: Brak specyficznych
-- **Propsy**: Brak
+- **Typy**: Brak
+- **Propsy**: modifier: Modifier - modyfikator layoutu
 
-### ErrorView
-- **Opis komponentu**: Widok wyświetlany w przypadku błędu wyszukiwania.
-- **Główne elementy**:
-  - Column z:
-    - Icon lub ilustracją error
-    - Text z komunikatem błędu
+### SearchingIndicator
+- **Opis komponentu**: Wskaźnik ładowania wyników wyszukiwania.
+- **Główne elementy**: CircularProgressIndicator
 - **Obsługiwane interakcje**: Brak
 - **Obsługiwana walidacja**: Brak
-- **Typy**: Brak specyficznych
+- **Typy**: Brak
+- **Propsy**: modifier: Modifier - modyfikator layoutu
+
+### NoSearchResultsMessage
+- **Opis komponentu**: Komunikat wyświetlany, gdy nie znaleziono filmów dla zapytania.
+- **Główne elementy**:
+  - Icon SearchOff
+  - Text z komunikatem o braku wyników
+  - Text z sugestią zmiany zapytania
+- **Obsługiwane interakcje**: Brak
+- **Obsługiwana walidacja**: Brak
+- **Typy**: Brak
 - **Propsy**:
-  - errorMessage: String - komunikat błędu do wyświetlenia
+  - query: String - zapytanie wyszukiwania
+  - modifier: Modifier - modyfikator layoutu
+
+### SearchErrorMessage
+- **Opis komponentu**: Komunikat błędu wyszukiwania.
+- **Główne elementy**:
+  - Icon Error
+  - Text z komunikatem błędu
+  - Button "Spróbuj ponownie"
+- **Obsługiwane interakcje**: Kliknięcie przycisku ponowienia
+- **Obsługiwana walidacja**: Brak
+- **Typy**: Brak
+- **Propsy**:
+  - message: String - komunikat błędu
+  - onRetry: () -> Unit - funkcja wywoływana po kliknięciu przycisku ponowienia
+  - modifier: Modifier - modyfikator layoutu
+
+### AddingIndicator
+- **Opis komponentu**: Wskaźnik dodawania filmu do dziennika.
+- **Główne elementy**:
+  - Surface z przyciemnieniem
+  - CircularProgressIndicator
+  - Text z komunikatem "Dodawanie filmu..."
+- **Obsługiwane interakcje**: Brak
+- **Obsługiwana walidacja**: Brak
+- **Typy**: Brak
+- **Propsy**:
+  - isVisible: Boolean - czy wskaźnik jest widoczny
 
 ## 5. Typy
 ### Enumeracje
@@ -123,37 +141,8 @@ enum class SearchStatus {
 
 ### DTO
 ```kotlin
-// Dane wyszukiwania z TMDB API
-data class TmdbSearchResultDTO(
-    val page: Int = 1,                   // Numer strony wyników
-    val results: List<TmdbMovieDTO> = emptyList(), // Lista znalezionych filmów
-    val totalPages: Int = 0,             // Całkowita liczba stron
-    val totalResults: Int = 0            // Całkowita liczba wyników
-)
-
-// Dane filmu z TMDB API
-data class TmdbMovieDTO(
-    val id: Int = 0,                     // Id filmu w TMDB
-    val title: String = "",              // Tytuł filmu
-    val posterPath: String? = null,      // Ścieżka do plakatu filmu
-    val releaseDate: String = "",        // Data premiery filmu
-    val genreIds: List<Int> = emptyList(), // Identyfikatory gatunków filmu
-    val overview: String = ""            // Opis filmu
-)
-
-// Dane gatunku filmu
-data class GenreDTO(
-    val id: Int = 0,                     // Id gatunku
-    val name: String = ""                // Nazwa gatunku
-)
-
-// Dane filmu do zapisania w Firebase
-data class MovieDTO(
-    val id: String = "",                 // Id filmu w bazie danych
-    val tmdbId: String = "",             // Id filmu w TMDB
-    val addedAt: Long = 0,               // Timestamp dodania filmu
-    val userId: String = ""              // Id użytkownika, który dodał film
-)
+// Model filmu z TMDB API - już zdefiniowany w projekcie
+// TmdbMovieApiResult, TmdbMovieDetailsApiResponse
 ```
 
 ### ViewModels
@@ -180,131 +169,58 @@ data class AddMovieUiState(
 ```
 
 ## 6. Zarządzanie stanem
-Stan widoku Dodawania Filmu będzie zarządzany przez AddMovieViewModel, który będzie odpowiedzialny za:
-- Przechowywanie i walidację zapytania wyszukiwania
+Stan widoku Dodawania Filmów będzie zarządzany przez AddMovieViewModel, który będzie odpowiedzialny za:
 - Wyszukiwanie filmów w TMDB API
+- Zarządzanie stanem wyszukiwania (początkowy, wyszukiwanie, wyniki, błąd)
 - Dodawanie filmów do dziennika użytkownika
-- Zarządzanie stanem UI (wyszukiwanie, wyniki, błąd)
+- Obsługę błędów i komunikatów
 
 ```kotlin
 class AddMovieViewModel(
     private val tmdbRepository: TmdbRepository,
-    private val movieRepository: MovieRepository
+    private val movieRepository: MovieRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     // Stan UI jako StateFlow
     private val _uiState = MutableStateFlow(AddMovieUiState())
     val uiState: StateFlow<AddMovieUiState> = _uiState.asStateFlow()
 
+    // Opóźnione wyszukiwanie z debounce
+    private val searchQuery = MutableStateFlow("")
+    
+    init {
+        // Nasłuchuj zmian w zapytaniu wyszukiwania z debounce
+        viewModelScope.launch {
+            searchQuery
+                .debounce(500) // Opóźnienie 500ms
+                .filter { it.isNotBlank() && it.length >= 2 }
+                .distinctUntilChanged()
+                .collect {
+                    searchMovies(it)
+                }
+        }
+    }
+
     // Aktualizacja zapytania wyszukiwania
-    fun setSearchQuery(query: String) {
-        _uiState.value = _uiState.value.copy(searchQuery = query)
+    fun updateSearchQuery(query: String) {
+        // Implementacja
     }
 
-    // Wyczyszczenie pola wyszukiwania
-    fun clearSearchQuery() {
-        _uiState.value = _uiState.value.copy(
-            searchQuery = "",
-            searchStatus = SearchStatus.INITIAL
-        )
+    // Wyszukiwanie filmów w TMDB
+    private fun searchMovies(query: String) {
+        // Implementacja
     }
 
-    // Wyszukiwanie filmów
-    fun searchMovies() {
-        val query = _uiState.value.searchQuery.trim()
-        
-        // Walidacja zapytania
-        if (query.isEmpty()) {
-            return
-        }
-        
-        // Ustawienie stanu wyszukiwania
-        _uiState.value = _uiState.value.copy(searchStatus = SearchStatus.SEARCHING)
-        
-        viewModelScope.launch {
-            try {
-                // Wyszukiwanie filmów w TMDB API
-                val searchResults = tmdbRepository.searchMovies(query)
-                
-                // Przetwarzanie wyników wyszukiwania
-                val searchItemViewModels = processSearchResults(searchResults)
-                
-                _uiState.value = _uiState.value.copy(
-                    searchStatus = if (searchItemViewModels.isEmpty()) SearchStatus.ERROR else SearchStatus.RESULTS,
-                    searchResults = searchItemViewModels,
-                    errorMessage = if (searchItemViewModels.isEmpty()) "Nie znaleziono filmów" else null
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    searchStatus = SearchStatus.ERROR,
-                    errorMessage = e.message ?: "Błąd wyszukiwania filmów"
-                )
-            }
-        }
-    }
-
-    // Dodawanie filmu do dziennika
+    // Dodawanie filmu do dziennika użytkownika
     fun addMovieToJournal(movie: MovieSearchItemViewModel) {
-        if (_uiState.value.isAddingMovie) {
-            return
-        }
-        
-        _uiState.value = _uiState.value.copy(isAddingMovie = true)
-        
-        viewModelScope.launch {
-            try {
-                // Tworzenie obiektu MovieDTO
-                val movieDto = MovieDTO(
-                    tmdbId = movie.tmdbId,
-                    addedAt = System.currentTimeMillis()
-                    // userId zostanie dodany przez repository
-                )
-                
-                // Dodawanie filmu do dziennika
-                movieRepository.addMovie(movieDto)
-                
-                _uiState.value = _uiState.value.copy(
-                    isAddingMovie = false,
-                    snackbarMessage = "Film '${movie.title}' został dodany do dziennika"
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isAddingMovie = false,
-                    snackbarMessage = "Błąd dodawania filmu: ${e.message}"
-                )
-            }
-        }
+        // Implementacja
     }
 
-    // Wyczyszczenie komunikatu Snackbar
-    fun clearSnackbarMessage() {
-        _uiState.value = _uiState.value.copy(snackbarMessage = null)
-    }
-
-    // Przetwarzanie wyników wyszukiwania
-    private suspend fun processSearchResults(searchResults: TmdbSearchResultDTO): List<MovieSearchItemViewModel> {
-        // Pobranie informacji o gatunkach
-        val genres = tmdbRepository.getGenres()
-        
-        // Mapowanie wyników na model widoku
-        return searchResults.results.map { movieDto ->
-            MovieSearchItemViewModel(
-                tmdbId = movieDto.id.toString(),
-                title = movieDto.title,
-                posterUrl = movieDto.posterPath?.let { path -> "https://image.tmdb.org/t/p/w500$path" },
-                year = movieDto.releaseDate.take(4).takeIf { it.isNotEmpty() } ?: "Nieznany",
-                genre = getGenreNameById(movieDto.genreIds.firstOrNull(), genres),
-                overview = movieDto.overview
-            )
-        }
-    }
-
-    // Pobranie nazwy gatunku po ID
-    private fun getGenreNameById(genreId: Int?, genres: List<GenreDTO>): String {
-        return genreId?.let { id ->
-            genres.find { it.id == id }?.name
-        } ?: "Nieznany"
-    }
+    // Czyszczenie komunikatów
+    fun clearSnackbarMessage() { /* ... */ }
+    fun clearErrorMessage() { /* ... */ }
+    fun clearSearchResults() { /* ... */ }
 }
 ```
 
@@ -314,113 +230,105 @@ Widok będzie korzystać z dwóch głównych źródeł danych:
 ### TMDB API
 - Wyszukiwanie filmów
 - Zapytanie: `tmdbRepository.searchMovies(query)`
-- Parametry:
-  - query: String - tekst wyszukiwania
-- Typ odpowiedzi: `TmdbSearchResultDTO`
-
-- Pobieranie listy gatunków
-- Zapytanie: `tmdbRepository.getGenres()`
-- Typ odpowiedzi: `List<GenreDTO>`
+- Typ odpowiedzi: `Flow<List<TmdbMovieApiResult>>`
+- Pobieranie szczegółów filmów: `tmdbRepository.getMovieDetails(tmdbId)`
+- Typ odpowiedzi: `Flow<TmdbMovieDetailsApiResponse?>`
 
 ### Firebase Realtime Database
-- Dodawanie filmu do dziennika
-- Zapytanie: `movieRepository.addMovie(movieDto)`
-- Parametry:
-  - movieDto: MovieDTO - dane filmu do dodania
-- Typ odpowiedzi: Brak (Success) lub wyjątek (Failure)
+- Dodawanie filmu do dziennika użytkownika
+- Zapytanie: `movieRepository.addMovieEntry(movieEntry)`
+- Typ odpowiedzi: `MovieEntry`
 
 ## 8. Interakcje użytkownika
 ### Wyszukiwanie filmów
 - Użytkownik wprowadza tekst w polu wyszukiwania
-  - Aktualizacja stanu `searchQuery` poprzez `setSearchQuery()`
-- Użytkownik zatwierdza wyszukiwanie (np. klikając przycisk lub naciskając Enter)
-  - Wywołanie metody `searchMovies()` w ViewModel
-  - Wyświetlenie wskaźnika ładowania podczas wyszukiwania
-  - Wyświetlenie listy wyników lub komunikatu o błędzie
+- ViewModel nasłuchuje zmian z opóźnieniem (debounce)
+- Po 500ms bezczynności, jeśli tekst ma co najmniej 2 znaki, automatycznie rozpoczyna się wyszukiwanie
+- Stan wyszukiwania zmienia się z INITIAL na SEARCHING
+- Po otrzymaniu wyników, stan zmienia się na RESULTS i wyświetlana jest lista filmów lub komunikat o braku wyników
+- W przypadku błędu, stan zmienia się na ERROR i wyświetlany jest komunikat błędu
 
 ### Dodawanie filmu do dziennika
-- Użytkownik klika przycisk dodawania przy wybranym filmie
-  - Wywołanie metody `addMovieToJournal()` w ViewModel z odpowiednim modelem filmu
-  - Wyświetlenie komunikatu Snackbar o pomyślnym dodaniu lub błędzie
+- Użytkownik klika przycisk "Dodaj" przy wybranym filmie
+- ViewModel pobiera szczegóły filmu z TMDB API
+- ViewModel tworzy nowy wpis dziennika
+- ViewModel dodaje wpis do repozytorium
+- Po pomyślnym dodaniu, wyświetlany jest komunikat Snackbar "Film został dodany do dziennika"
+- W przypadku błędu, wyświetlany jest komunikat błędu
 
-### Czyszczenie pola wyszukiwania
-- Użytkownik klika przycisk czyszczenia w polu wyszukiwania
-  - Wywołanie metody `clearSearchQuery()` w ViewModel
-  - Wyczyszczenie pola wyszukiwania i powrót do stanu początkowego
+### Czyszczenie wyszukiwania
+- Użytkownik klika przycisk czyszczenia w pasku wyszukiwania
+- ViewModel czyści zapytanie wyszukiwania i wyniki
+- Stan wyszukiwania wraca do INITIAL i wyświetlany jest widok początkowy
+
+### Nawigacja
+- Użytkownik klika przycisk powrotu w górnym pasku aplikacji
+- Następuje powrót do widoku dziennika
 
 ## 9. Warunki i walidacja
+- **Walidacja zapytania wyszukiwania**:
+  - Zapytanie musi mieć co najmniej 2 znaki, aby rozpoczęło się wyszukiwanie
+  - Implementacja w warstwie ViewModel
+
 - **Autentykacja użytkownika**:
   - Widok jest dostępny tylko dla zalogowanych użytkowników
-  - Jeśli użytkownik nie jest zalogowany, zostanie przekierowany do ekranu logowania
-  - Implementacja w nawigacji głównej
-
-- **Walidacja zapytania wyszukiwania**:
-  - Zapytanie nie może być puste
-  - Implementacja w ViewModel przed wywołaniem wyszukiwania
+  - Jeśli użytkownik nie jest zalogowany, nie może dodać filmu (dodatkowe sprawdzenie w ViewModel)
+  - Implementacja w warstwie ViewModel i nawigacji
 
 ## 10. Obsługa błędów
 - **Brak połączenia internetowego**:
-  - Wyświetlenie komunikatu "Brak połączenia z internetem"
-  - Komunikat wyświetlany w widoku ErrorView
+  - Wyświetlenie komunikatu "Brak połączenia z internetem" w SearchErrorMessage
+  - Przycisk "Spróbuj ponownie" pozwala na ponowienie próby wyszukiwania
 
-- **Błąd TMDB API**:
-  - Wyświetlenie komunikatu o błędzie z API
-  - Komunikat wyświetlany w widoku ErrorView
-
-- **Brak wyników wyszukiwania**:
-  - Wyświetlenie komunikatu "Nie znaleziono filmów dla zapytania: [query]"
-  - Komunikat wyświetlany w widoku ErrorView
+- **Błąd API TMDB**:
+  - Wyświetlenie komunikatu z informacją o błędzie w SearchErrorMessage
+  - Przycisk "Spróbuj ponownie" pozwala na ponowienie próby wyszukiwania
 
 - **Błąd dodawania filmu**:
-  - Wyświetlenie komunikatu o błędzie w Snackbar
-  - Możliwość ponowienia dodawania
+  - Wyświetlenie komunikatu o błędzie jako komunikat Snackbar
+  - Możliwość ponownej próby dodania filmu
+
+- **Brak wyników wyszukiwania**:
+  - Wyświetlenie NoSearchResultsMessage z sugestią zmiany zapytania wyszukiwania
 
 ## 11. Kroki implementacji
-1. **Utworzenie szkieletu widoku**:
-   - Utworzenie głównego komponentu AddMovieScreen
-   - Implementacja podstawowego layoutu z Scaffold i TopAppBar
+1. **Utworzenie modeli danych**:
+   - Implementacja MovieSearchItemViewModel
+   - Implementacja AddMovieUiState
+   - Implementacja enumeracji SearchStatus
 
-2. **Implementacja komponentów wyszukiwania**:
-   - Implementacja SearchBar
-   - Implementacja InitialView
-   - Implementacja ErrorView
-
-3. **Implementacja wyników wyszukiwania**:
-   - Implementacja SearchResults
-   - Implementacja MovieSearchItem
-
-4. **Implementacja ViewModel**:
+2. **Implementacja ViewModel**:
    - Utworzenie AddMovieViewModel
-   - Implementacja metod do wyszukiwania filmów
-   - Implementacja metod do dodawania filmów do dziennika
+   - Implementacja wyszukiwania z opóźnieniem (debounce)
+   - Implementacja dodawania filmów do dziennika
 
-5. **Integracja z TMDB API**:
-   - Implementacja metod wyszukiwania w TmdbRepository
-   - Implementacja metody pobierania gatunków
+3. **Implementacja komponentów pomocniczych**:
+   - Implementacja SearchBar
+   - Implementacja InitialSearchState
+   - Implementacja SearchingIndicator
+   - Implementacja NoSearchResultsMessage
+   - Implementacja SearchErrorMessage
+   - Implementacja AddingIndicator
 
-6. **Integracja z Firebase**:
-   - Implementacja metody dodawania filmu do dziennika
+4. **Implementacja komponentu wyświetlania wyników**:
+   - Implementacja MovieSearchResultItem
+   - Implementacja PosterImage
 
-7. **Obsługa stanów UI**:
-   - Implementacja różnych stanów wyszukiwania
-   - Dodanie wskaźnika ładowania
-   - Implementacja Snackbar do komunikatów
+5. **Implementacja głównego ekranu**:
+   - Utworzenie AddMovieScreen
+   - Integracja wszystkich komponentów pomocniczych
+   - Implementacja logiki stanu wyszukiwania
 
-8. **Implementacja interakcji użytkownika**:
-   - Obsługa wprowadzania tekstu
-   - Obsługa kliknięć na filmy
-   - Obsługa dodawania filmów
+6. **Integracja z nawigacją**:
+   - Dodanie trasy ADD_MOVIE do NavRoutes
+   - Dodanie kompozycji do NavGraph
+   - Aktualizacja JournalScreen, aby umożliwić nawigację do ekranu dodawania filmu
 
-9. **Obsługa błędów i stanów brzegowych**:
-   - Implementacja obsługi błędów API
-   - Obsługa przypadku braku wyników
+7. **Testowanie i debugowanie**:
+   - Testowanie wyszukiwania z różnymi zapytaniami
+   - Testowanie obsługi błędów
+   - Testowanie dodawania filmów do dziennika
 
-10. **Testowanie i debugowanie**:
-    - Testowanie wyszukiwania
-    - Testowanie dodawania filmów
-    - Testowanie obsługi błędów
-
-11. **Finalne poprawki i optymalizacje**:
-    - Optymalizacja wydajności
-    - Poprawki UI/UX
-    - Integracja z dolną nawigacją 
+8. **Finalizacja i integracja z resztą aplikacji**:
+   - Sprawdzenie kompatybilności ze stylami aplikacji
+   - Finalne poprawki UI/UX 

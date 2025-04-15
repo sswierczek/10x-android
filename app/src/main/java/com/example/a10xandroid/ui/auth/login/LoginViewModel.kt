@@ -74,13 +74,17 @@ class LoginViewModel @Inject constructor(
                     email = currentState.email,
                     password = currentState.password
                 )
-                
+
                 if (result.isSuccess) {
                     // Logowanie udane - nie aktualizujemy stanu,
                     // ponieważ nastąpi nawigacja do głównego ekranu
                 } else {
                     // Obsługa błędu z Result
-                    val exception = result.exceptionOrNull() ?: Exception("Nieznany błąd podczas logowania")
+                    val exception = result.exceptionOrNull()?.let {
+                        if (it is Exception) it else Exception(
+                            it.message ?: "Nieznany błąd podczas logowania"
+                        )
+                    } ?: Exception("Nieznany błąd podczas logowania")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = getReadableErrorMessage(exception)
@@ -95,24 +99,30 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
-    
+
     // Funkcja mapująca błędy na przyjazne komunikaty dla użytkownika
     private fun getReadableErrorMessage(exception: Exception): String {
         return when {
             // Błędy specyficzne dla Firebase Auth
-            exception.message?.contains("user-not-found") == true -> 
+            exception.message?.contains("user-not-found") == true ->
                 "Użytkownik o podanym adresie e-mail nie istnieje"
-            exception.message?.contains("wrong-password") == true -> 
+
+            exception.message?.contains("wrong-password") == true ->
                 "Niepoprawne hasło"
-            exception.message?.contains("user-disabled") == true -> 
+
+            exception.message?.contains("user-disabled") == true ->
                 "To konto zostało wyłączone"
-            exception.message?.contains("invalid-email") == true -> 
+
+            exception.message?.contains("invalid-email") == true ->
                 "Niepoprawny format adresu e-mail"
-            exception.message?.contains("too-many-requests") == true -> 
+
+            exception.message?.contains("too-many-requests") == true ->
                 "Zbyt wiele nieudanych prób logowania. Spróbuj ponownie później"
-            exception.message?.contains("network") == true -> 
+
+            exception.message?.contains("network") == true ->
                 "Problem z połączeniem internetowym. Sprawdź swoje połączenie i spróbuj ponownie"
-            exception.message?.contains("unknown") == true -> 
+
+            exception.message?.contains("unknown") == true ->
                 "Nieznany błąd podczas logowania. Spróbuj ponownie"
             // Ogólny błąd
             else -> exception.message ?: "Wystąpił błąd podczas logowania"
@@ -145,4 +155,4 @@ class LoginViewModel @Inject constructor(
             errorMessage = null
         )
     }
-} 
+}

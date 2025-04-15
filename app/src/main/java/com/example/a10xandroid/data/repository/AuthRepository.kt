@@ -2,6 +2,7 @@ package com.example.a10xandroid.data.repository
 
 import com.example.a10xandroid.data.model.User
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 
 /**
  * Interface for authentication operations.
@@ -22,4 +23,12 @@ data class User(
     val displayName: String? = null,
     val photoUrl: String? = null,
     val isEmailVerified: Boolean = false
-) 
+)
+
+/**
+ * Gets the current user ID
+ * @return User ID or null if not logged in
+ */
+suspend fun AuthRepository.getCurrentUserId(): String? {
+    return currentUser.firstOrNull()?.uid
+} 

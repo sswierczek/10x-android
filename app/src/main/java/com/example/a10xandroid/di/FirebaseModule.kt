@@ -1,9 +1,5 @@
 package com.example.a10xandroid.di
 
-import com.example.a10xandroid.data.repository.AuthRepository
-import com.example.a10xandroid.data.repository.FirebaseAuthRepository
-import com.example.a10xandroid.data.repository.FirebaseMovieRepository
-import com.example.a10xandroid.data.repository.MovieRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
@@ -11,7 +7,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-
 
 private const val URL = "https://moviemind-548bd-default-rtdb.europe-west1.firebasedatabase.app"
 
@@ -26,14 +21,4 @@ object FirebaseModule {
     @Provides
     @Singleton
     fun provideFirebaseDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance()
-
-    @Provides
-    @Singleton
-    fun provideAuthRepository(firebaseAuthRepository: FirebaseAuthRepository): AuthRepository =
-        firebaseAuthRepository
-
-    @Provides
-    @Singleton
-    fun provideMovieRepository(firebaseMovieRepository: FirebaseMovieRepository): MovieRepository =
-        firebaseMovieRepository
 }

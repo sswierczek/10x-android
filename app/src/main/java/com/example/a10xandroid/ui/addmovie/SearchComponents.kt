@@ -1,12 +1,34 @@
 package com.example.a10xandroid.ui.addmovie
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
@@ -40,7 +62,7 @@ fun SearchBar(
         placeholder = { Text("Wyszukaj film...") },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Search,
+                imageVector = Icons.Filled.Search,
                 contentDescription = "Ikona wyszukiwania",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -52,7 +74,7 @@ fun SearchBar(
                     enabled = isEnabled
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Clear,
+                        imageVector = Icons.Filled.Clear,
                         contentDescription = "Wyczyść wyszukiwanie"
                     )
                 }
@@ -70,8 +92,9 @@ fun SearchBar(
                 focusManager.clearFocus()
             }
         ),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            containerColor = MaterialTheme.colorScheme.surface
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedContainerColor = MaterialTheme.colorScheme.surface
         )
     )
 }
@@ -111,14 +134,14 @@ fun InitialSearchState(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Search,
+            imageVector = Icons.Filled.Search,
             contentDescription = null,
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = "Wyszukaj film, który chcesz dodać do dziennika",
             style = MaterialTheme.typography.bodyLarge,
@@ -145,23 +168,23 @@ fun SearchErrorMessage(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Error,
+            imageVector = Icons.Filled.Warning,
             contentDescription = "Błąd",
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.error
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.error
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Button(
             onClick = onRetry,
             colors = ButtonDefaults.buttonColors(
@@ -202,9 +225,9 @@ fun AddingIndicator(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         CircularProgressIndicator()
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
-                        
+
                         Text(
                             text = "Dodawanie filmu...",
                             style = MaterialTheme.typography.bodyMedium
@@ -214,4 +237,4 @@ fun AddingIndicator(
             }
         }
     }
-} 
+}

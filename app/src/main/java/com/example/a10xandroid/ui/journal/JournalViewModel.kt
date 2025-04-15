@@ -3,13 +3,15 @@ package com.example.a10xandroid.ui.journal
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.a10xandroid.data.repository.FirebaseMovieListRepository
+import com.example.a10xandroid.data.repository.MovieRepository
 import com.example.a10xandroid.data.repository.TmdbRepository
+import com.example.a10xandroid.ui.common.StateStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -19,15 +21,15 @@ import javax.inject.Inject
 private const val TAG = "JournalViewModel"
 
 /**
- * ViewModel dla ekranu dziennika filmowego
+ * ViewModel for the movie journal screen
  */
 @HiltViewModel
 class JournalViewModel @Inject constructor(
-    private val movieListRepository: FirebaseMovieListRepository,
+    private val movieRepository: MovieRepository,
     private val tmdbRepository: TmdbRepository
 ) : ViewModel() {
 
-    // Stan UI jako StateFlow
+    // UI state as StateFlow
     private val _uiState = MutableStateFlow(JournalUiState())
     val uiState: StateFlow<JournalUiState> = _uiState.asStateFlow()
 
@@ -36,97 +38,111 @@ class JournalViewModel @Inject constructor(
     }
 
     /**
-     * Ładowanie filmów z repozytorium
+     * Load movies from the repository
      */
     fun loadMovies() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(status = StateStatus.LOADING)
-                
-                // Obserwuj zmiany w liście filmów użytkownika
-                movieListRepository.getUserMoviesList().collectLatest { movieList ->
-                    if (movieList.isEmpty()) {
-                        // Pusta lista filmów
-                        _uiState.value = _uiState.value.copy(
-                            status = StateStatus.SUCCESS,
-                            movies = emptyList(),
-                            isRefreshing = false
-                        )
-                        return@collectLatest
+                _uiState.update { it.copy(status = StateStatus.LOADING) }
+
+                movieRepository.getMovieEntriesFlow("")
+                    .catch { error ->
+                        Log.e(TAG, "Error loading user movie list", error)
+                        _uiState.update {
+                            it.copy(
+                                status = StateStatus.ERROR,
+                                errorMessage = "Failed to load movies",
+                                isRefreshing = false
+                            )
+                        }
                     }
-                    
-                    try {
-                        // Pobierz szczegóły filmów z TMDB
-                        val moviesViewModels = mutableListOf<MovieViewModel>()
-                        
-                        for (movie in movieList) {
-                            try {
-                                val tmdbMovie = tmdbRepository.getMovieDetails(movie.tmdbId)
-                                
-                                // Formatowanie daty dodania
-                                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-                                val formattedDate = dateFormat.format(Date(movie.addedAt))
-                                
-                                // Utworzenie viewmodelu filmu
-                                val movieViewModel = MovieViewModel(
-                                    id = movie.id,
-                                    tmdbId = movie.tmdbId,
-                                    title = tmdbMovie.title,
-                                    posterUrl = if (tmdbMovie.posterPath != null) {
-                                        "https://image.tmdb.org/t/p/w500${tmdbMovie.posterPath}"
-                                    } else null,
-                                    year = tmdbMovie.releaseDate.take(4),
-                                    genre = if (tmdbMovie.genres.isNotEmpty()) tmdbMovie.genres.first().name else "",
-                                    addedAt = movie.addedAt,
-                                    addedAtFormatted = formattedDate
+                    .collect { movieList ->
+                        if (movieList.isEmpty()) {
+                            _uiState.update {
+                                it.copy(
+                                    status = StateStatus.SUCCESS,
+                                    movies = emptyList(),
+                                    isRefreshing = false
                                 )
-                                
-                                moviesViewModels.add(movieViewModel)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Error fetching movie details for ID: ${movie.tmdbId}", e)
-                                // Kontynuuj pętlę, pomijając film z błędem
+                            }
+                            return@collect
+                        }
+
+                        try {
+                            val moviesViewModels = movieList.mapNotNull { movie ->
+                                try {
+                                    val tmdbMovie = tmdbRepository.getMovieDetails(movie.id.toInt())
+
+                                    val dateFormat =
+                                        SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                                    val formattedDate = dateFormat.format(Date(movie.createdAt))
+
+                                    JournalMovieViewModel(
+                                        id = movie.id,
+                                        tmdbId = movie.id,
+                                        title = movie.title,
+                                        posterUrl = movie.posterPath?.let { path ->
+                                            "https://image.tmdb.org/t/p/w500$path"
+                                        },
+                                        year = movie.releaseDate?.take(4) ?: "",
+                                        genre = "",
+                                        addedAt = movie.createdAt,
+                                        addedAtFormatted = formattedDate
+                                    )
+                                } catch (e: Exception) {
+                                    Log.e(
+                                        TAG,
+                                        "Error fetching movie details for ID: ${movie.id}",
+                                        e
+                                    )
+                                    null
+                                }
+                            }
+
+                            val sortedMovies =
+                                sortMovies(moviesViewModels, _uiState.value.sortOrder)
+
+                            _uiState.update {
+                                it.copy(
+                                    status = StateStatus.SUCCESS,
+                                    movies = sortedMovies,
+                                    isRefreshing = false
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error processing movie list", e)
+                            _uiState.update {
+                                it.copy(
+                                    status = StateStatus.ERROR,
+                                    errorMessage = "Failed to fetch movie details",
+                                    isRefreshing = false
+                                )
                             }
                         }
-                        
-                        // Sortowanie filmów
-                        val sortedMovies = sortMovies(moviesViewModels, _uiState.value.sortOrder)
-                        
-                        // Aktualizacja stanu UI
-                        _uiState.value = _uiState.value.copy(
-                            status = StateStatus.SUCCESS,
-                            movies = sortedMovies,
-                            isRefreshing = false
-                        )
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error processing movie list", e)
-                        _uiState.value = _uiState.value.copy(
-                            status = StateStatus.ERROR,
-                            errorMessage = "Wystąpił błąd podczas pobierania danych filmów",
-                            isRefreshing = false
-                        )
                     }
-                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading user movie list", e)
-                _uiState.value = _uiState.value.copy(
-                    status = StateStatus.ERROR, 
-                    errorMessage = "Nie udało się pobrać listy filmów",
-                    isRefreshing = false
-                )
+                _uiState.update {
+                    it.copy(
+                        status = StateStatus.ERROR,
+                        errorMessage = "Failed to load movies",
+                        isRefreshing = false
+                    )
+                }
             }
         }
     }
 
     /**
-     * Odświeżanie listy filmów
+     * Refresh the movie list
      */
     fun refreshMovies() {
-        _uiState.value = _uiState.value.copy(isRefreshing = true)
+        _uiState.update { it.copy(isRefreshing = true) }
         loadMovies()
     }
 
     /**
-     * Przełączanie trybu sortowania
+     * Toggle the sort order
      */
     fun toggleSortOrder() {
         val currentSortOrder = _uiState.value.sortOrder
@@ -135,22 +151,44 @@ class JournalViewModel @Inject constructor(
         } else {
             SortOrder.DATE_ADDED_DESC
         }
-        
+
         val sortedMovies = sortMovies(_uiState.value.movies, newSortOrder)
-        
-        _uiState.value = _uiState.value.copy(
-            sortOrder = newSortOrder,
-            movies = sortedMovies
-        )
+
+        _uiState.update {
+            it.copy(
+                sortOrder = newSortOrder,
+                movies = sortedMovies
+            )
+        }
     }
 
     /**
-     * Sortowanie listy filmów według określonego kryterium
+     * Sort the movie list according to specified criteria
      */
-    private fun sortMovies(movies: List<MovieViewModel>, sortOrder: SortOrder): List<MovieViewModel> {
+    private fun sortMovies(
+        movies: List<JournalMovieViewModel>,
+        sortOrder: SortOrder
+    ): List<JournalMovieViewModel> {
         return when (sortOrder) {
             SortOrder.DATE_ADDED_ASC -> movies.sortedBy { it.addedAt }
             SortOrder.DATE_ADDED_DESC -> movies.sortedByDescending { it.addedAt }
         }
     }
-} 
+
+    fun deleteMovie(movieId: String) {
+        viewModelScope.launch {
+            try {
+                movieRepository.deleteMovieEntry(movieId)
+                loadMovies()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting movie", e)
+                _uiState.update {
+                    it.copy(
+                        status = StateStatus.ERROR,
+                        errorMessage = "Failed to delete movie"
+                    )
+                }
+            }
+        }
+    }
+}

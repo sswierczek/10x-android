@@ -1,5 +1,7 @@
 package com.example.a10xandroid.ui.journal
 
+import com.example.a10xandroid.ui.common.StateStatus
+
 /**
  * Opcje sortowania listy filmów
  */
@@ -9,18 +11,9 @@ enum class SortOrder {
 }
 
 /**
- * Stany ładowania danych
- */
-enum class StateStatus {
-    LOADING,   // Trwa ładowanie danych
-    ERROR,     // Wystąpił błąd
-    SUCCESS    // Dane załadowane pomyślnie
-}
-
-/**
  * Model widoku filmu dla listy w dzienniku filmowym
  */
-data class MovieViewModel(
+data class JournalMovieViewModel(
     val id: String,                      // Id filmu w bazie danych
     val tmdbId: String,                  // Id filmu w TMDB
     val title: String,                   // Tytuł filmu
@@ -37,7 +30,7 @@ data class MovieViewModel(
 data class JournalUiState(
     val status: StateStatus = StateStatus.LOADING,  // Stan UI
     val errorMessage: String? = null,               // Komunikat błędu
-    val movies: List<MovieViewModel> = emptyList(), // Lista filmów
+    val movies: List<JournalMovieViewModel> = emptyList(), // Lista filmów
     val sortOrder: SortOrder = SortOrder.DATE_ADDED_DESC, // Porządek sortowania
     val isRefreshing: Boolean = false               // Czy trwa odświeżanie
 ) 

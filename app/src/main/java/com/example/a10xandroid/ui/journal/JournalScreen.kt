@@ -1,31 +1,55 @@
 package com.example.a10xandroid.ui.journal
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.a10xandroid.navigation.NavRoutes
+import com.example.a10xandroid.ui.common.StateStatus
 
 /**
  * Główny ekran dziennika filmowego
@@ -37,7 +61,7 @@ fun JournalScreen(
     viewModel: JournalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     Scaffold(
         topBar = {
             JournalTopAppBar(
@@ -54,41 +78,31 @@ fun JournalScreen(
                 }
             ) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    imageVector = Icons.Filled.Add,
                     contentDescription = "Dodaj film"
                 )
             }
         }
     ) { paddingValues ->
         LoadingStateHandler(
-            stateStatus = uiState.status,
-            errorMessage = uiState.errorMessage,
-            onRetry = { viewModel.loadMovies() },
+            state = uiState,
+            content = {
+                if (uiState.movies.isEmpty()) {
+                    EmptyStateView()
+                } else {
+                    MoviesList(
+                        movies = uiState.movies,
+                        onRemove = { movieId ->
+                            viewModel.deleteMovie(movieId)
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-        ) {
-            if (uiState.movies.isEmpty()) {
-                EmptyStateView(
-                    message = "Twój dziennik filmowy jest pusty",
-                    actionLabel = "Dodaj pierwszy film",
-                    onActionClick = {
-                        navController.navigate(NavRoutes.ADD_MOVIE)
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                MoviesList(
-                    movies = uiState.movies,
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { viewModel.refreshMovies() },
-                    onMovieClick = { movieId ->
-                        navController.navigate("${NavRoutes.MOVIE_DETAILS}/$movieId")
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
+        )
     }
 }
 
@@ -122,15 +136,15 @@ fun SortingControl(
 ) {
     // Ikona sortowania zależna od aktualnego trybu
     val sortIcon = when (currentSortOrder) {
-        SortOrder.DATE_ADDED_ASC -> Icons.Default.ArrowUpward
-        SortOrder.DATE_ADDED_DESC -> Icons.Default.ArrowDownward
+        SortOrder.DATE_ADDED_ASC -> Icons.Filled.KeyboardArrowUp
+        SortOrder.DATE_ADDED_DESC -> Icons.Filled.KeyboardArrowDown
     }
-    
+
     val sortDescription = when (currentSortOrder) {
         SortOrder.DATE_ADDED_ASC -> "Sortowanie od najstarszych"
         SortOrder.DATE_ADDED_DESC -> "Sortowanie od najnowszych"
     }
-    
+
     IconButton(onClick = onSortOrderChanged) {
         Icon(
             imageVector = sortIcon,
@@ -144,53 +158,57 @@ fun SortingControl(
  */
 @Composable
 fun LoadingStateHandler(
-    stateStatus: StateStatus,
-    errorMessage: String?,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    state: JournalUiState,
+    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
-        when (stateStatus) {
-            StateStatus.LOADING -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-            StateStatus.ERROR -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Error,
-                        contentDescription = "Błąd",
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = errorMessage ?: "Wystąpił nieznany błąd",
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Button(onClick = onRetry) {
-                        Text("Spróbuj ponownie")
-                    }
+        when (state.status) {
+            StateStatus.LOADING -> LoadingIndicator()
+            StateStatus.ERROR -> ErrorView(message = state.errorMessage ?: "Unknown error")
+            StateStatus.SUCCESS -> {
+                if (state.movies.isEmpty()) {
+                    EmptyStateView()
+                } else {
+                    content()
                 }
             }
-            StateStatus.SUCCESS -> {
-                content()
-            }
         }
+    }
+}
+
+@Composable
+fun LoadingIndicator() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun ErrorView(message: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Warning,
+            contentDescription = "Error",
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.error
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.error
+        )
     }
 }
 
@@ -198,87 +216,57 @@ fun LoadingStateHandler(
  * Widok wyświetlany, gdy dziennik filmowy jest pusty
  */
 @Composable
-fun EmptyStateView(
-    message: String,
-    actionLabel: String? = null,
-    onActionClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
-) {
+fun EmptyStateView() {
     Column(
-        modifier = modifier.padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Movie,
-            contentDescription = null,
-            modifier = Modifier.size(72.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+            imageVector = Icons.Filled.Favorite,
+            contentDescription = "Empty state",
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.primary
         )
-        
         Spacer(modifier = Modifier.height(16.dp))
-        
         Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
+            text = "Your watchlist is empty",
+            style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center
         )
-        
-        if (actionLabel != null && onActionClick != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Button(onClick = onActionClick) {
-                Text(actionLabel)
-            }
-        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Save movies from recommendations to see them here",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
 /**
  * Lista filmów z obsługą pull-to-refresh
  */
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoviesList(
-    movies: List<MovieViewModel>,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
-    onMovieClick: (String) -> Unit,
+    movies: List<JournalMovieViewModel>,
+    onRemove: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val pullRefreshState = rememberPullRefreshState(
-        refreshing = isRefreshing,
-        onRefresh = onRefresh
-    )
-    
-    Box(
-        modifier = modifier
-            .pullRefresh(pullRefreshState)
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                horizontal = 16.dp,
-                vertical = 8.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(
-                items = movies,
-                key = { it.id }
-            ) { movie ->
-                MovieCard(
-                    movie = movie,
-                    onClick = { onMovieClick(movie.id) }
-                )
-            }
+        items(movies) { movie ->
+            MovieCard(
+                movie = movie,
+                onRemove = { onRemove(movie.id) }
+            )
         }
-        
-        PullRefreshIndicator(
-            refreshing = isRefreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
     }
 }
 
@@ -288,75 +276,71 @@ fun MoviesList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieCard(
-    movie: MovieViewModel,
-    onClick: () -> Unit
+    movie: JournalMovieViewModel,
+    onRemove: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-        ) {
-            // Plakat filmu
-            PosterImage(
-                posterUrl = movie.posterUrl,
-                title = movie.title,
+        Column {
+            Box(
                 modifier = Modifier
-                    .width(80.dp)
-                    .fillMaxHeight()
-            )
-            
-            // Informacje o filmie
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.Center
+                    .fillMaxWidth()
+                    .height(200.dp)
             ) {
-                // Tytuł filmu
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(movie.posterUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Movie poster",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
                 Text(
                     text = movie.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    style = MaterialTheme.typography.titleLarge
                 )
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                // Rok i gatunek
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "${movie.year} • ${movie.genre}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
                 Spacer(modifier = Modifier.height(8.dp))
-                
-                // Data dodania
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = null,
+                        imageVector = Icons.Filled.DateRange,
+                        contentDescription = "Added date",
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
-                    Spacer(modifier = Modifier.width(4.dp))
-                    
                     Text(
-                        text = "Dodano: ${movie.addedAtFormatted}",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "Added ${movie.addedAtFormatted}",
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedButton(
+                    onClick = onRemove,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        contentDescription = "Remove"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Remove from watchlist")
                 }
             }
         }
@@ -389,10 +373,10 @@ fun PosterImage(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Movie,
+                imageVector = Icons.Filled.Favorite,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
-} 
+}

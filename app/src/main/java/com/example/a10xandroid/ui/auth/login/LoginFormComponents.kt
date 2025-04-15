@@ -1,11 +1,28 @@
 package com.example.a10xandroid.ui.auth.login
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +52,7 @@ fun LoginForm(
     onForgotPasswordClick: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -48,9 +65,9 @@ fun LoginForm(
             isEnabled = !isLoading,
             onNext = { focusManager.moveFocus(FocusDirection.Down) }
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Pole hasła
         PasswordField(
             value = password,
@@ -61,16 +78,16 @@ fun LoginForm(
             onTogglePasswordVisibility = onTogglePasswordVisibility,
             onDone = { onLoginClick() }
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         // Link do resetowania hasła
         ForgotPasswordLink(
             onClick = onForgotPasswordClick
         )
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // Przycisk logowania
         LoginButton(
             onClick = onLoginClick,
@@ -98,14 +115,14 @@ fun EmailField(
         placeholder = { Text("Wprowadź adres e-mail") },
         singleLine = true,
         isError = error != null,
-        supportingText = { 
+        supportingText = {
             if (error != null) {
                 Text(text = error, color = MaterialTheme.colorScheme.error)
             }
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Email,
+                imageVector = Icons.Filled.Person,
                 contentDescription = "Ikona e-mail"
             )
         },
@@ -137,27 +154,42 @@ fun PasswordField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("Hasło") },
-        placeholder = { Text("Wprowadź hasło") },
+        label = { Text("Password") },
+        placeholder = { Text("Enter your password") },
         singleLine = true,
         isError = error != null,
-        supportingText = { 
+        supportingText = {
             if (error != null) {
-                Text(text = error, color = MaterialTheme.colorScheme.error)
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         },
-        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        visualTransformation = if (isPasswordVisible) {
+            VisualTransformation.None
+        } else {
+            PasswordVisualTransformation()
+        },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = "Ikona hasła"
+                imageVector = Icons.Filled.Lock,
+                contentDescription = "Password icon"
             )
         },
         trailingIcon = {
             IconButton(onClick = onTogglePasswordVisibility) {
                 Icon(
-                    imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                    contentDescription = if (isPasswordVisible) "Ukryj hasło" else "Pokaż hasło"
+                    imageVector = if (isPasswordVisible) {
+                        Icons.Filled.Check
+                    } else {
+                        Icons.Filled.Close
+                    },
+                    contentDescription = if (isPasswordVisible) {
+                        "Hide password"
+                    } else {
+                        "Show password"
+                    }
                 )
             }
         },
@@ -196,7 +228,7 @@ fun LoginButton(
                 strokeWidth = 2.dp
             )
         } else {
-            Text("Zaloguj się")
+            Text("Sign in")
         }
     }
 }
@@ -217,7 +249,7 @@ fun ForgotPasswordLink(
             contentPadding = PaddingValues(4.dp)
         ) {
             Text(
-                text = "Zapomniałeś hasła?",
+                text = "Forgot password?",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -238,19 +270,18 @@ fun RegistrationLink(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Nie masz konta?",
+            text = "Don't have an account?",
             style = MaterialTheme.typography.bodyMedium
         )
-        
         TextButton(
             onClick = onClick,
             contentPadding = PaddingValues(4.dp)
         ) {
             Text(
-                text = "Zarejestruj się",
+                text = "Sign up",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )
         }
     }
-} 
+}

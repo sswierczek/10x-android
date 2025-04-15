@@ -91,7 +91,7 @@ class FirebaseMovieRepository @Inject constructor(
             emptyList()
         }
     }
-    
+
     override suspend fun addMovieToWatchlist(
         title: String,
         overview: String,
@@ -101,9 +101,10 @@ class FirebaseMovieRepository @Inject constructor(
     ): Boolean {
         return try {
             // Create a watchlist entry using necessary fields from the movie
-            val entryId = watchlistRef.push().key ?: throw IllegalStateException("Failed to generate key")
+            val entryId =
+                watchlistRef.push().key ?: throw IllegalStateException("Failed to generate key")
             val userId = authRepository.getCurrentUserId() ?: return false
-            
+
             val currentTime = System.currentTimeMillis()
             val watchlistEntry = MovieEntry(
                 id = entryId,
@@ -116,7 +117,7 @@ class FirebaseMovieRepository @Inject constructor(
                 createdAt = currentTime,
                 updatedAt = currentTime
             )
-            
+
             // Save to watchlist collection
             watchlistRef.child(userId).child(entryId).setValue(watchlistEntry).await()
             true

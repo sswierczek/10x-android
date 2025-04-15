@@ -1,10 +1,26 @@
 package com.example.a10xandroid.ui.auth.login
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -25,7 +41,7 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
-    
+
     // Efekt dla automatycznego ukrywania komunikatu błędu po pewnym czasie
     LaunchedEffect(key1 = uiState.errorMessage) {
         if (uiState.errorMessage != null) {
@@ -33,7 +49,7 @@ fun LoginScreen(
             viewModel.clearErrorMessage()
         }
     }
-    
+
     LaunchedEffect(key1 = uiState.isLoading) {
         // Jeśli logowanie zostało zakończone i nie ma błędu, to nawigujemy do ekranu głównego
         if (!uiState.isLoading && uiState.errorMessage == null) {
@@ -41,7 +57,7 @@ fun LoginScreen(
             // To będzie zaimplementowane w nawigacji na podstawie przepływu autentykacji
         }
     }
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -54,9 +70,9 @@ fun LoginScreen(
         ) {
             // Logo aplikacji
             TopLogo()
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Formularz logowania
             LoginForm(
                 email = uiState.email,
@@ -65,14 +81,14 @@ fun LoginScreen(
                 emailError = uiState.emailError,
                 passwordError = uiState.passwordError,
                 isLoading = uiState.isLoading,
-                onEmailChange = { 
-                    viewModel.updateEmail(it)
+                onEmailChange = { email ->
+                    viewModel.updateEmail(email)
                     if (uiState.errorMessage != null) {
                         viewModel.clearErrorMessage()
                     }
                 },
-                onPasswordChange = { 
-                    viewModel.updatePassword(it)
+                onPasswordChange = { password ->
+                    viewModel.updatePassword(password)
                     if (uiState.errorMessage != null) {
                         viewModel.clearErrorMessage()
                     }
@@ -88,9 +104,9 @@ fun LoginScreen(
                     // W przyszłej implementacji
                 }
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Link do rejestracji
             RegistrationLink(
                 onClick = {
@@ -99,7 +115,7 @@ fun LoginScreen(
                 }
             )
         }
-        
+
         // Wyświetlanie błędu logowania
         if (uiState.errorMessage != null) {
             ErrorMessage(
@@ -110,7 +126,7 @@ fun LoginScreen(
                     .padding(bottom = 16.dp)
             )
         }
-        
+
         // Wskaźnik ładowania
         if (uiState.isLoading) {
             Box(
@@ -142,12 +158,12 @@ fun TopLogo() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Default.Movie,
+            imageVector = Icons.Filled.Favorite,
             contentDescription = "Logo aplikacji",
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.primary
         )
-        
+
         Text(
             text = "MovieMind",
             style = MaterialTheme.typography.headlineMedium,
@@ -195,4 +211,4 @@ fun ErrorMessage(
             )
         }
     }
-} 
+}

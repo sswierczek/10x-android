@@ -1,11 +1,27 @@
 package com.example.a10xandroid.ui.addmovie
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +62,7 @@ fun MovieSearchResultItem(
                     .width(94.dp)
                     .fillMaxHeight()
             )
-            
+
             // Informacje o filmie
             Column(
                 modifier = Modifier
@@ -64,9 +80,9 @@ fun MovieSearchResultItem(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
-                    
+
                     Spacer(modifier = Modifier.height(4.dp))
-                    
+
                     // Rok i gatunek
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -77,7 +93,7 @@ fun MovieSearchResultItem(
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            
+
                             if (movie.genre.isNotEmpty()) {
                                 Text(
                                     text = " • ${movie.genre}",
@@ -93,9 +109,9 @@ fun MovieSearchResultItem(
                             )
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     // Opis filmu
                     Text(
                         text = movie.overview,
@@ -105,7 +121,7 @@ fun MovieSearchResultItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                
+
                 // Przycisk dodawania
                 Button(
                     onClick = { onAddClick(movie) },
@@ -113,7 +129,7 @@ fun MovieSearchResultItem(
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Filled.Add,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -151,7 +167,7 @@ fun PosterImage(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Movie,
+                imageVector = Icons.Filled.Favorite,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -175,23 +191,23 @@ fun NoSearchResultsMessage(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.SearchOff,
+            imageVector = Icons.Filled.Search,
             contentDescription = null,
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = "Nie znaleziono filmów dla zapytania \"$query\"",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = "Spróbuj zmienić zapytanie wyszukiwania",
             style = MaterialTheme.typography.bodyMedium,
@@ -199,4 +215,4 @@ fun NoSearchResultsMessage(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-} 
+}

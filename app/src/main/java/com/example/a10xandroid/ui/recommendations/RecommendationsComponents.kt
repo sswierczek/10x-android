@@ -1,77 +1,67 @@
 package com.example.a10xandroid.ui.recommendations
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.a10xandroid.ui.common.StateStatus
+import com.example.a10xandroid.ui.recommendations.model.RecommendationsUiState
 
 /**
- * Komponent zarządzający różnymi stanami UI
+ * Component managing different UI states
  */
 @Composable
 fun LoadingStateHandler(
-    stateStatus: StateStatus,
-    errorMessage: String?,
+    state: RecommendationsUiState,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    Box(modifier = modifier) {
-        when (stateStatus) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (state.status) {
             StateStatus.LOADING -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
+
             StateStatus.ERROR -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Error,
-                        contentDescription = "Błąd",
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = errorMessage ?: "Wystąpił nieznany błąd",
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Button(onClick = onRetry) {
-                        Text("Spróbuj ponownie")
-                    }
-                }
+                ErrorView(
+                    errorMessage = state.errorMessage ?: "Unknown error occurred",
+                    onRetry = onRetry
+                )
             }
+
             StateStatus.SUCCESS -> {
                 content()
             }
@@ -79,194 +69,150 @@ fun LoadingStateHandler(
     }
 }
 
-/**
- * Widok wyświetlany, gdy nie ma żadnych rekomendacji
- */
 @Composable
-fun EmptyStateView(
-    message: String,
-    actionLabel: String? = null,
-    onActionClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+fun ErrorView(
+    errorMessage: String,
+    onRetry: () -> Unit
 ) {
     Column(
-        modifier = modifier.padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Recommend,
-            contentDescription = null,
-            modifier = Modifier.size(72.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+            imageVector = Icons.Default.Warning,
+            contentDescription = "Error",
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.error
         )
-        
         Spacer(modifier = Modifier.height(16.dp))
-        
         Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
+            text = errorMessage,
+            color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center
         )
-        
-        if (actionLabel != null && onActionClick != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Button(onClick = onActionClick) {
-                Text(actionLabel)
-            }
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedButton(onClick = onRetry) {
+            Text("Retry")
         }
     }
 }
 
-/**
- * Lista rekomendowanych filmów z obsługą pull-to-refresh
- */
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun RecommendationsList(
-    recommendations: List<MovieViewModel>,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
-    onMovieClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val pullRefreshState = rememberPullRefreshState(
-        refreshing = isRefreshing,
-        onRefresh = onRefresh
-    )
-    
-    Box(
-        modifier = modifier
-            .pullRefresh(pullRefreshState)
+fun EmptyStateView() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                horizontal = 16.dp,
-                vertical = 8.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(
-                items = recommendations,
-                key = { it.id }
-            ) { movie ->
-                MovieCard(
-                    movie = movie,
-                    onClick = { onMovieClick(movie.id) }
-                )
-            }
-        }
-        
-        PullRefreshIndicator(
-            refreshing = isRefreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
+        Text(
+            text = "No recommendations available",
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Check back later for new movie recommendations",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
 /**
- * Karta filmu rekomendowanego
+ * List of recommended movies
+ */
+@Composable
+fun RecommendationsList(
+    recommendations: List<RecommendationMovieViewModel>,
+    onDismiss: (String) -> Unit,
+    onSave: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(recommendations) { recommendation ->
+            MovieCard(
+                movie = recommendation,
+                onDismiss = { onDismiss(recommendation.id) },
+                onSave = { onSave(recommendation.id) }
+            )
+        }
+    }
+}
+
+/**
+ * Card displaying a recommended movie
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieCard(
-    movie: MovieViewModel,
-    onClick: () -> Unit
+    movie: RecommendationMovieViewModel,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .height(200.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(140.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Plakat filmu
             PosterImage(
                 posterUrl = movie.posterUrl,
-                title = movie.title,
-                modifier = Modifier
-                    .width(94.dp)
-                    .fillMaxHeight()
+                modifier = Modifier.width(133.dp)
             )
-            
-            // Informacje o filmie
             Column(
                 modifier = Modifier
-                    .fillMaxHeight()
                     .weight(1f)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+                    .padding(16.dp)
             ) {
-                Column {
-                    // Tytuł filmu
-                    Text(
-                        text = movie.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    
-                    Spacer(modifier = Modifier.height(4.dp))
-                    
-                    // Rok i gatunek
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                Text(
+                    text = movie.title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = movie.year,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = movie.genre,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Rating: ${movie.rating}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f)
                     ) {
-                        if (movie.year.isNotEmpty()) {
-                            Text(
-                                text = movie.year,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            
-                            if (movie.genre.isNotEmpty()) {
-                                Text(
-                                    text = " • ${movie.genre}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        } else if (movie.genre.isNotEmpty()) {
-                            Text(
-                                text = movie.genre,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text("Dismiss")
                     }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // Powód rekomendacji
-                    if (movie.reason != null) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Recommend,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            
-                            Spacer(modifier = Modifier.width(4.dp))
-                            
-                            Text(
-                                text = movie.reason,
-                                style = MaterialTheme.typography.bodySmall,
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 2,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                    Button(
+                        onClick = onSave,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Save")
                     }
                 }
             }
@@ -275,35 +221,34 @@ fun MovieCard(
 }
 
 /**
- * Komponent wyświetlający plakat filmu
+ * Component displaying a movie poster
  */
 @Composable
 fun PosterImage(
     posterUrl: String?,
-    title: String,
     modifier: Modifier = Modifier
 ) {
-    if (posterUrl != null) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(posterUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = "Plakat filmu $title",
-            contentScale = ContentScale.Crop,
-            modifier = modifier
-        )
-    } else {
-        Box(
-            modifier = modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
-        ) {
+    Box(
+        modifier = modifier.fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (posterUrl != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(posterUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Movie poster",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
             Icon(
-                imageVector = Icons.Default.Movie,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                imageVector = Icons.Default.Warning,
+                contentDescription = "Failed to load poster",
+                tint = MaterialTheme.colorScheme.error
             )
         }
     }
-} 
+}
+

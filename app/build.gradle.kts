@@ -94,6 +94,9 @@ dependencies {
 
     // Kotlin Serialization
     implementation(libs.kotlin.serialization.json)
+    
+    // Coil for image loading
+    implementation(libs.coil.compose)
 
     // Testing
     testImplementation(libs.junit)

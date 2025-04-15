@@ -20,7 +20,7 @@ interface MovieRepository {
     fun getMovieEntriesFlow(userId: String): Flow<List<MovieEntry>>
 
     suspend fun searchMovieEntries(userId: String, query: String): List<MovieEntry>
-    
+
     /**
      * Adds a movie to the user's watchlist
      * @param title Movie title

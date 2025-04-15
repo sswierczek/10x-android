@@ -2,14 +2,20 @@ package com.example.a10xandroid.ui.addmovie
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.a10xandroid.data.api.model.TmdbGenreApiResponse
 import com.example.a10xandroid.data.model.MovieEntry
 import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.data.repository.MovieRepository
 import com.example.a10xandroid.data.repository.TmdbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,7 +36,7 @@ class AddMovieViewModel @Inject constructor(
     // Opóźnione wyszukiwanie
     @OptIn(FlowPreview::class)
     private val searchQuery = MutableStateFlow("")
-    
+
     init {
         // Nasłuchuj zmian w zapytaniu wyszukiwania z debounce
         viewModelScope.launch {
@@ -52,7 +58,7 @@ class AddMovieViewModel @Inject constructor(
             searchQuery = query
         )
         searchQuery.value = query
-        
+
         // Resetuj wyniki jeśli zapytanie jest puste
         if (query.isBlank()) {
             _uiState.value = _uiState.value.copy(
@@ -72,7 +78,7 @@ class AddMovieViewModel @Inject constructor(
                     searchStatus = SearchStatus.SEARCHING,
                     errorMessage = null
                 )
-                
+
                 tmdbRepository.searchMovies(query)
                     .catch { e ->
                         _uiState.value = _uiState.value.copy(
@@ -87,7 +93,7 @@ class AddMovieViewModel @Inject constructor(
                             if (movie.genreIds.isNotEmpty()) {
                                 genre = getGenreName(movie.genreIds.first())
                             }
-                            
+
                             MovieSearchItemViewModel(
                                 tmdbId = movie.id.toString(),
                                 title = movie.title,
@@ -97,7 +103,7 @@ class AddMovieViewModel @Inject constructor(
                                 overview = movie.overview
                             )
                         }
-                        
+
                         _uiState.value = _uiState.value.copy(
                             searchStatus = SearchStatus.RESULTS,
                             searchResults = movieViewModels
@@ -122,7 +128,7 @@ class AddMovieViewModel @Inject constructor(
                     isAddingMovie = true,
                     errorMessage = null
                 )
-                
+
                 // Pobierz bieżącego użytkownika
                 val currentUser = authRepository.currentUser.first()
                 if (currentUser == null) {
@@ -132,7 +138,7 @@ class AddMovieViewModel @Inject constructor(
                     )
                     return@launch
                 }
-                
+
                 // Pobierz szczegóły filmu z TMDB
                 tmdbRepository.getMovieDetails(movie.tmdbId.toInt()).collect { details ->
                     if (details == null) {
@@ -142,7 +148,7 @@ class AddMovieViewModel @Inject constructor(
                         )
                         return@collect
                     }
-                    
+
                     // Utwórz wpis dziennika
                     val movieEntry = MovieEntry(
                         userId = currentUser.uid,
@@ -156,10 +162,10 @@ class AddMovieViewModel @Inject constructor(
                         createdAt = System.currentTimeMillis(),
                         updatedAt = System.currentTimeMillis()
                     )
-                    
+
                     // Dodaj film do repozytorium
                     val addedEntry = movieRepository.addMovieEntry(movieEntry)
-                    
+
                     // Aktualizuj stan UI
                     _uiState.value = _uiState.value.copy(
                         isAddingMovie = false,
@@ -221,7 +227,7 @@ class AddMovieViewModel @Inject constructor(
             errorMessage = null
         )
     }
-    
+
     /**
      * Czyszczenie wyników wyszukiwania
      */
@@ -233,4 +239,4 @@ class AddMovieViewModel @Inject constructor(
         )
         searchQuery.value = ""
     }
-} 
+}

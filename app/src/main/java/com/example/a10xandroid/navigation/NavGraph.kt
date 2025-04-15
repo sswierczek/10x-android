@@ -11,13 +11,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.ui.addmovie.AddMovieScreen
 import com.example.a10xandroid.ui.auth.login.LoginScreen
 import com.example.a10xandroid.ui.auth.register.RegisterScreen
 import com.example.a10xandroid.ui.journal.JournalScreen
 import com.example.a10xandroid.ui.movie.MovieDetailsScreen
 import com.example.a10xandroid.ui.screens.ConnectionTestScreen
 import com.example.a10xandroid.ui.screens.HomeScreen
-import com.example.a10xandroid.ui.addmovie.AddMovieScreen
 
 object NavRoutes {
     const val LOGIN = "login"
@@ -39,15 +39,17 @@ fun NavGraph(
 
     LaunchedEffect(key1 = currentUser) {
         if (currentUser == null) {
-            if (navController.currentDestination?.route != NavRoutes.LOGIN && 
-                navController.currentDestination?.route != NavRoutes.REGISTER) {
+            if (navController.currentDestination?.route != NavRoutes.LOGIN &&
+                navController.currentDestination?.route != NavRoutes.REGISTER
+            ) {
                 navController.navigate(NavRoutes.LOGIN) {
                     popUpTo(0) { inclusive = true }
                 }
             }
         } else {
-            if (navController.currentDestination?.route == NavRoutes.LOGIN || 
-                navController.currentDestination?.route == NavRoutes.REGISTER) {
+            if (navController.currentDestination?.route == NavRoutes.LOGIN ||
+                navController.currentDestination?.route == NavRoutes.REGISTER
+            ) {
                 navController.navigate(NavRoutes.JOURNAL) {
                     popUpTo(0) { inclusive = true }
                 }
@@ -65,25 +67,25 @@ fun NavGraph(
                 navController = navController
             )
         }
-        
+
         composable(NavRoutes.REGISTER) {
             RegisterScreen(
                 navController = navController
             )
         }
-        
+
         composable(NavRoutes.JOURNAL) {
             JournalScreen(
                 navController = navController
             )
         }
-        
+
         composable(NavRoutes.ADD_MOVIE) {
             AddMovieScreen(
                 navController = navController
             )
         }
-        
+
         composable(
             route = "${NavRoutes.MOVIE_DETAILS}/{movieId}",
             arguments = listOf(
@@ -96,7 +98,7 @@ fun NavGraph(
             val movieId = backStackEntry.arguments?.getString("movieId") ?: ""
             MovieDetailsScreen(movieId = movieId, navController = navController)
         }
-        
+
         composable(NavRoutes.HOME) {
             HomeScreen(
                 onCheckConnectionClick = {
@@ -104,9 +106,9 @@ fun NavGraph(
                 }
             )
         }
-        
+
         composable(NavRoutes.CONNECTION_TEST) {
             ConnectionTestScreen()
         }
     }
-} 
+}

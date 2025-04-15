@@ -1,18 +1,11 @@
 package com.example.a10xandroid.ui.recommendations
 
-/**
- * Reprezentuje różne stany UI
- */
-enum class StateStatus {
-    LOADING,
-    SUCCESS,
-    ERROR
-}
+import com.example.a10xandroid.ui.common.StateStatus
 
 /**
- * Model widoku filmu dla listy rekomendacji
+ * View model for a movie in the recommendations list
  */
-data class MovieViewModel(
+data class RecommendationMovieViewModel(
     val id: String,
     val title: String,
     val posterUrl: String? = null,
@@ -21,22 +14,20 @@ data class MovieViewModel(
     val year: String = "",
     val genre: String = "",
     val rating: Float = 0f,
-    val reason: String? = null
+    val reason: String? = null,
+    val saved: Boolean = false
 )
 
 /**
- * Reprezentuje stan UI dla ekranu rekomendacji
+ * Represents the UI state for the recommendations screen
  */
 data class RecommendationsUiState(
     val status: StateStatus = StateStatus.LOADING,
-    val recommendations: List<MovieViewModel> = emptyList(),
+    val recommendations: List<RecommendationMovieViewModel> = emptyList(),
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
-    val isLoggedIn: Boolean = false
+    val isEmpty: Boolean = false
 ) {
     val hasRecommendations: Boolean
         get() = recommendations.isNotEmpty()
-        
-    val isEmpty: Boolean
-        get() = status == StateStatus.SUCCESS && !hasRecommendations
-} 
+}

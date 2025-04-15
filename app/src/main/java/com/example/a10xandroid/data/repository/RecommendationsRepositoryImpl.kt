@@ -15,22 +15,22 @@ class RecommendationsRepositoryImpl @Inject constructor(
 
     override suspend fun getRecommendations(): List<MovieRecommendation> {
         val userId = auth.currentUser?.uid ?: return emptyList()
-        
+
         return try {
             val recommendationsRef = database.reference
                 .child("recommendations")
                 .child(userId)
                 .get()
                 .await()
-                
+
             val recommendations = mutableListOf<MovieRecommendation>()
-            
+
             for (snapshot in recommendationsRef.children) {
                 snapshot.getValue(MovieRecommendation::class.java)?.let {
                     recommendations.add(it)
                 }
             }
-            
+
             recommendations
         } catch (e: Exception) {
             emptyList()
@@ -39,7 +39,7 @@ class RecommendationsRepositoryImpl @Inject constructor(
 
     override suspend fun dismissRecommendation(recommendationId: String): Boolean {
         val userId = auth.currentUser?.uid ?: return false
-        
+
         return try {
             database.reference
                 .child("recommendations")
@@ -48,14 +48,14 @@ class RecommendationsRepositoryImpl @Inject constructor(
                 .child("dismissed")
                 .setValue(true)
                 .await()
-                
+
             database.reference
                 .child("dismissed_recommendations")
                 .child(userId)
                 .child(recommendationId)
                 .setValue(true)
                 .await()
-                
+
             true
         } catch (e: Exception) {
             false
@@ -64,7 +64,7 @@ class RecommendationsRepositoryImpl @Inject constructor(
 
     override suspend fun saveToWatchlist(recommendationId: String): Boolean {
         val userId = auth.currentUser?.uid ?: return false
-        
+
         return try {
             // Pobierz dane rekomendacji
             val recommendationSnapshot = database.reference
@@ -73,9 +73,10 @@ class RecommendationsRepositoryImpl @Inject constructor(
                 .child(recommendationId)
                 .get()
                 .await()
-                
-            val recommendation = recommendationSnapshot.getValue(MovieRecommendation::class.java) ?: return false
-            
+
+            val recommendation =
+                recommendationSnapshot.getValue(MovieRecommendation::class.java) ?: return false
+
             // Zapisz do watchlisty
             database.reference
                 .child("watchlist")
@@ -83,7 +84,7 @@ class RecommendationsRepositoryImpl @Inject constructor(
                 .child(recommendationId)
                 .setValue(recommendation)
                 .await()
-                
+
             // Zaznacz jako zapisane w rekomendacjach
             database.reference
                 .child("recommendations")
@@ -92,10 +93,10 @@ class RecommendationsRepositoryImpl @Inject constructor(
                 .child("savedToWatchlist")
                 .setValue(true)
                 .await()
-                
+
             true
         } catch (e: Exception) {
             false
         }
     }
-} 
+}

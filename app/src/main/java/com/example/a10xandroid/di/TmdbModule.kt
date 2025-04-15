@@ -1,8 +1,6 @@
 package com.example.a10xandroid.di
 
 import com.example.a10xandroid.data.api.TmdbApiService
-import com.example.a10xandroid.data.repository.TmdbRepository
-import com.example.a10xandroid.data.repository.TmdbRepositoryImpl
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -54,13 +52,5 @@ object TmdbModule {
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
             .create(TmdbApiService::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideTmdbRepository(
-        apiService: TmdbApiService
-    ): TmdbRepository {
-        return TmdbRepositoryImpl(apiService)
     }
 }

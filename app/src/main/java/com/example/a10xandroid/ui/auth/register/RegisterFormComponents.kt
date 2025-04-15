@@ -1,11 +1,27 @@
 package com.example.a10xandroid.ui.auth.register
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,7 +31,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 /**
@@ -43,7 +58,7 @@ fun RegisterForm(
     onRegisterClick: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -53,7 +68,7 @@ fun RegisterForm(
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(bottom = 24.dp)
         )
-        
+
         // Pole e-mail
         EmailField(
             value = email,
@@ -62,9 +77,9 @@ fun RegisterForm(
             isEnabled = !isLoading,
             onNext = { focusManager.moveFocus(FocusDirection.Down) }
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Pole hasła
         PasswordField(
             value = password,
@@ -75,9 +90,9 @@ fun RegisterForm(
             onTogglePasswordVisibility = onTogglePasswordVisibility,
             onNext = { focusManager.moveFocus(FocusDirection.Down) }
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Pole potwierdzenia hasła
         ConfirmPasswordField(
             value = confirmPassword,
@@ -88,9 +103,9 @@ fun RegisterForm(
             onTogglePasswordVisibility = onToggleConfirmPasswordVisibility,
             onDone = { focusManager.clearFocus() }
         )
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // Akceptacja warunków
         TermsCheckbox(
             checked = acceptedTerms,
@@ -98,15 +113,15 @@ fun RegisterForm(
             error = termsError,
             isEnabled = !isLoading
         )
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         // Przycisk rejestracji
         RegisterButton(
             onClick = onRegisterClick,
-            isEnabled = !isLoading && email.isNotBlank() && password.isNotBlank() && 
-                       confirmPassword.isNotBlank() && acceptedTerms &&
-                       emailError == null && passwordError == null && confirmPasswordError == null,
+            isEnabled = !isLoading && email.isNotBlank() && password.isNotBlank() &&
+                confirmPassword.isNotBlank() && acceptedTerms &&
+                emailError == null && passwordError == null && confirmPasswordError == null,
             isLoading = isLoading
         )
     }
@@ -130,14 +145,14 @@ fun EmailField(
         placeholder = { Text("Wprowadź adres e-mail") },
         singleLine = true,
         isError = error != null,
-        supportingText = { 
+        supportingText = {
             if (error != null) {
                 Text(text = error, color = MaterialTheme.colorScheme.error)
             }
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Email,
+                imageVector = Icons.Filled.Person,
                 contentDescription = "Ikona e-mail"
             )
         },
@@ -173,7 +188,7 @@ fun PasswordField(
         placeholder = { Text("Wprowadź hasło") },
         singleLine = true,
         isError = error != null,
-        supportingText = { 
+        supportingText = {
             if (error != null) {
                 Text(text = error, color = MaterialTheme.colorScheme.error)
             }
@@ -181,14 +196,14 @@ fun PasswordField(
         visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Lock,
+                imageVector = Icons.Filled.Lock,
                 contentDescription = "Ikona hasła"
             )
         },
         trailingIcon = {
             IconButton(onClick = onTogglePasswordVisibility) {
                 Icon(
-                    imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                    imageVector = if (isPasswordVisible) Icons.Filled.Check else Icons.Filled.Close,
                     contentDescription = if (isPasswordVisible) "Ukryj hasło" else "Pokaż hasło"
                 )
             }
@@ -225,7 +240,7 @@ fun ConfirmPasswordField(
         placeholder = { Text("Wprowadź hasło ponownie") },
         singleLine = true,
         isError = error != null,
-        supportingText = { 
+        supportingText = {
             if (error != null) {
                 Text(text = error, color = MaterialTheme.colorScheme.error)
             }
@@ -233,14 +248,14 @@ fun ConfirmPasswordField(
         visualTransformation = if (isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.LockReset,
+                imageVector = Icons.Filled.Lock,
                 contentDescription = "Ikona potwierdzenia hasła"
             )
         },
         trailingIcon = {
             IconButton(onClick = onTogglePasswordVisibility) {
                 Icon(
-                    imageVector = if (isConfirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                    imageVector = if (isConfirmPasswordVisible) Icons.Filled.Check else Icons.Filled.Close,
                     contentDescription = if (isConfirmPasswordVisible) "Ukryj hasło" else "Pokaż hasło"
                 )
             }
@@ -280,14 +295,14 @@ fun TermsCheckbox(
                 enabled = isEnabled,
                 modifier = Modifier.padding(end = 8.dp)
             )
-            
+
             Text(
                 text = "Akceptuję warunki korzystania z aplikacji oraz politykę prywatności",
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
-        
+
         if (error != null) {
             Text(
                 text = error,
@@ -325,4 +340,4 @@ fun RegisterButton(
             Text("Zarejestruj się")
         }
     }
-} 
+}

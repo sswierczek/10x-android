@@ -76,8 +76,10 @@ class RegisterViewModel @Inject constructor(
         val currentState = _uiState.value
         val emailError = validateEmail(currentState.email)
         val passwordError = validatePassword(currentState.password)
-        val confirmPasswordError = validateConfirmPassword(currentState.password, currentState.confirmPassword)
-        val termsError = if (currentState.acceptedTerms) null else "Musisz zaakceptować warunki korzystania"
+        val confirmPasswordError =
+            validateConfirmPassword(currentState.password, currentState.confirmPassword)
+        val termsError =
+            if (currentState.acceptedTerms) null else "Musisz zaakceptować warunki korzystania"
 
         if (emailError != null || passwordError != null || confirmPasswordError != null || termsError != null) {
             _uiState.value = currentState.copy(
@@ -102,13 +104,17 @@ class RegisterViewModel @Inject constructor(
                     email = currentState.email,
                     password = currentState.password
                 )
-                
+
                 if (result.isSuccess) {
                     // Rejestracja udana - nie aktualizujemy stanu,
                     // ponieważ nastąpi nawigacja do głównego ekranu
                 } else {
                     // Obsługa błędu z Result
-                    val exception = result.exceptionOrNull() ?: Exception("Nieznany błąd podczas rejestracji")
+                    val exception = result.exceptionOrNull()?.let {
+                        if (it is Exception) it else Exception(
+                            it.message ?: "Nieznany błąd podczas rejestracji"
+                        )
+                    } ?: Exception("Nieznany błąd podczas rejestracji")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = getReadableErrorMessage(exception)
@@ -123,20 +129,24 @@ class RegisterViewModel @Inject constructor(
             }
         }
     }
-    
+
     // Funkcja mapująca błędy na przyjazne komunikaty dla użytkownika
     private fun getReadableErrorMessage(exception: Exception): String {
         return when {
             // Błędy specyficzne dla Firebase Auth
-            exception.message?.contains("email-already-in-use") == true -> 
+            exception.message?.contains("email-already-in-use") == true ->
                 "Ten adres e-mail jest już używany przez inne konto"
-            exception.message?.contains("weak-password") == true -> 
+
+            exception.message?.contains("weak-password") == true ->
                 "Hasło jest zbyt słabe. Użyj co najmniej 6 znaków"
-            exception.message?.contains("invalid-email") == true -> 
+
+            exception.message?.contains("invalid-email") == true ->
                 "Niepoprawny format adresu e-mail"
-            exception.message?.contains("network") == true -> 
+
+            exception.message?.contains("network") == true ->
                 "Problem z połączeniem internetowym. Sprawdź swoje połączenie i spróbuj ponownie"
-            exception.message?.contains("unknown") == true -> 
+
+            exception.message?.contains("unknown") == true ->
                 "Nieznany błąd podczas rejestracji. Spróbuj ponownie"
             // Ogólny błąd
             else -> exception.message ?: "Wystąpił błąd podczas rejestracji"
@@ -178,4 +188,4 @@ class RegisterViewModel @Inject constructor(
             errorMessage = null
         )
     }
-} 
+}

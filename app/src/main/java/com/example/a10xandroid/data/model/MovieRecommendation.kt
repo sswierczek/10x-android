@@ -35,7 +35,9 @@ data class MovieRecommendation(
                 releaseDate = map["releaseDate"] as? String,
                 rating = map["rating"] as? Float,
                 reason = map["reason"] as? String ?: "",
-                status = RecommendationStatus.valueOf(map["status"] as? String ?: RecommendationStatus.PENDING.toString()),
+                status = RecommendationStatus.valueOf(
+                    map["status"] as? String ?: RecommendationStatus.PENDING.toString()
+                ),
                 createdAt = Date(map["createdAt"] as? Long ?: System.currentTimeMillis())
             )
         }
@@ -69,4 +71,4 @@ fun MovieRecommendation.toMap(): Map<String, Any?> {
         "status" to status.toString(),
         "createdAt" to createdAt.time
     )
-} 
+}

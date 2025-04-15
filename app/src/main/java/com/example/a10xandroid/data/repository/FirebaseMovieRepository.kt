@@ -14,10 +14,12 @@ import javax.inject.Singleton
 
 @Singleton
 class FirebaseMovieRepository @Inject constructor(
-    private val database: FirebaseDatabase
+    private val database: FirebaseDatabase,
+    private val authRepository: AuthRepository
 ) : MovieRepository {
 
     private val moviesRef = database.getReference("movies")
+    private val watchlistRef = database.getReference("watchlist")
 
     override suspend fun addMovieEntry(movieEntry: MovieEntry): MovieEntry {
         val entryWithId = movieEntry.copy(
@@ -87,6 +89,39 @@ class FirebaseMovieRepository @Inject constructor(
                 .sortedByDescending { it.watchDate }
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+    
+    override suspend fun addMovieToWatchlist(
+        title: String,
+        overview: String,
+        posterPath: String?,
+        backdropPath: String?,
+        releaseDate: String?
+    ): Boolean {
+        return try {
+            // Create a watchlist entry using necessary fields from the movie
+            val entryId = watchlistRef.push().key ?: throw IllegalStateException("Failed to generate key")
+            val userId = authRepository.getCurrentUserId() ?: return false
+            
+            val currentTime = System.currentTimeMillis()
+            val watchlistEntry = MovieEntry(
+                id = entryId,
+                userId = userId,
+                title = title,
+                overview = overview,
+                posterPath = posterPath,
+                backdropPath = backdropPath,
+                releaseDate = releaseDate,
+                createdAt = currentTime,
+                updatedAt = currentTime
+            )
+            
+            // Save to watchlist collection
+            watchlistRef.child(userId).child(entryId).setValue(watchlistEntry).await()
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 }

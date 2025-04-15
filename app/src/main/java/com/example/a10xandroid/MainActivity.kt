@@ -4,45 +4,38 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.a10xandroid.ui.auth.AuthScreen
-import com.example.a10xandroid.ui.auth.AuthViewModel
-import com.example.a10xandroid.ui.profile.ProfileScreen
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.navigation.NavGraph
 import com.example.a10xandroid.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var authRepository: AuthRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             AppTheme {
-                val authViewModel: AuthViewModel = hiltViewModel()
-                val currentUser by authViewModel.currentUser.collectAsState(initial = null)
-
-                // Log auth state changes
-                LaunchedEffect(currentUser) {
-                    Log.d("MainActivity", "Firebase Auth state changed - User: ${currentUser?.uid}")
-                }
-
-                // Show profile screen if Firebase Auth has a current user, otherwise show auth screen
-                if (currentUser != null) {
-                    Log.d("MainActivity", "Firebase Auth user exists, showing profile screen")
-                    ProfileScreen(
-                        onSignOut = {
-                            Log.d("MainActivity", "Sign out triggered")
-                            authViewModel.signOut()
-                        }
-                    )
-                } else {
-                    Log.d("MainActivity", "No Firebase Auth user, showing auth screen")
-                    AuthScreen(
-                        onAuthSuccess = {
-                            Log.d("MainActivity", "Auth success callback triggered")
-                        }
+                // Nadrzędny kontener z motywem aplikacji
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // Controller nawigacji
+                    val navController = rememberNavController()
+                    
+                    // Graf nawigacji z przekazanym repozytorium auth
+                    NavGraph(
+                        navController = navController,
+                        authRepository = authRepository
                     )
                 }
             }

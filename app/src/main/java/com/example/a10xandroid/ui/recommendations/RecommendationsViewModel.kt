@@ -4,11 +4,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a10xandroid.data.repository.RecommendationsRepository
+import com.example.a10xandroid.ui.common.StateStatus
 import com.example.a10xandroid.ui.recommendations.model.RecommendationMovie
 import com.example.a10xandroid.ui.recommendations.model.RecommendationsUiState
-import com.example.a10xandroid.ui.common.StateStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -43,7 +46,7 @@ class RecommendationsViewModel @Inject constructor(
                 Log.d(TAG, "Fetching recommendations from repository")
                 val recommendations = recommendationsRepository.getRecommendations()
                 Log.d(TAG, "Received ${recommendations.size} recommendations")
-                
+
                 val movies = recommendations.map { movie ->
                     RecommendationMovie.fromMovieRecommendation(movie)
                 }
@@ -75,11 +78,11 @@ class RecommendationsViewModel @Inject constructor(
      */
     fun clearError() {
         Log.d(TAG, "clearError called")
-        _uiState.update { 
+        _uiState.update {
             it.copy(
                 errorMessage = null,
                 status = if (it.recommendations.isEmpty()) StateStatus.LOADING else StateStatus.SUCCESS
-            ) 
+            )
         }
     }
 
@@ -93,7 +96,8 @@ class RecommendationsViewModel @Inject constructor(
                 Log.d(TAG, "Calling repository to dismiss recommendation")
                 recommendationsRepository.dismissRecommendation(movieId)
                 _uiState.update { state ->
-                    val updatedRecommendations = state.recommendations.filterNot { it.id == movieId }
+                    val updatedRecommendations =
+                        state.recommendations.filterNot { it.id == movieId }
                     Log.d(TAG, "Updated recommendations list size: ${updatedRecommendations.size}")
                     state.copy(
                         recommendations = updatedRecommendations,
@@ -103,10 +107,10 @@ class RecommendationsViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error dismissing recommendation", e)
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         errorMessage = "Failed to dismiss recommendation"
-                    ) 
+                    )
                 }
             }
         }
@@ -120,7 +124,7 @@ class RecommendationsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 Log.d(TAG, "Calling repository to save recommendation")
-                recommendationsRepository.saveToWatchlist(movieId)
+                recommendationsRepository.addToJournal(movieId)
                 _uiState.update { state ->
                     val updatedRecommendations = state.recommendations.map { movie ->
                         if (movie.id == movieId) {
@@ -136,10 +140,10 @@ class RecommendationsViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error saving recommendation", e)
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         errorMessage = "Failed to save recommendation"
-                    ) 
+                    )
                 }
             }
         }

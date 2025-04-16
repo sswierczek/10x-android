@@ -92,9 +92,9 @@ data class TmdbProductionCompanyApiResponse(
     @SerialName("logo_path")
     val logoPath: String?,
     @SerialName("origin_country")
-    val originCountry: String,
+    val originCountry: String = "",
     @SerialName("parent_company")
-    val parentCompany: String?
+    val parentCompany: String? = null
 )
 
 /**

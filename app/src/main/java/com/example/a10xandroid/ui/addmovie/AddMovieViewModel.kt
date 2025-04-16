@@ -1,5 +1,6 @@
 package com.example.a10xandroid.ui.addmovie
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a10xandroid.data.model.MovieEntry
@@ -18,6 +19,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val TAG = "AddMovieViewModel"
 
 /**
  * ViewModel dla ekranu dodawania filmu
@@ -81,9 +84,10 @@ class AddMovieViewModel @Inject constructor(
 
                 tmdbRepository.searchMovies(query)
                     .catch { e ->
+                        Log.e(TAG, "Error searching movies", e)
                         _uiState.value = _uiState.value.copy(
                             searchStatus = SearchStatus.ERROR,
-                            errorMessage = "Błąd podczas wyszukiwania: ${e.message}"
+                            errorMessage = "Error searching: ${e.message}"
                         )
                     }
                     .collect { results ->
@@ -120,9 +124,10 @@ class AddMovieViewModel @Inject constructor(
                         )
                     }
             } catch (e: Exception) {
+                Log.e(TAG, "Error searching movies", e)
                 _uiState.value = _uiState.value.copy(
                     searchStatus = SearchStatus.ERROR,
-                    errorMessage = "Błąd podczas wyszukiwania: ${e.message}"
+                    errorMessage = "Error searching: ${e.message}"
                 )
             }
         }
@@ -134,6 +139,7 @@ class AddMovieViewModel @Inject constructor(
     fun addMovieToJournal(movie: MovieSearchItemViewModel) {
         viewModelScope.launch {
             try {
+                Log.d(TAG, "Starting to add movie to journal: ${movie.title} (TMDB ID: ${movie.tmdbId})")
                 _uiState.value = _uiState.value.copy(
                     isAddingMovie = true,
                     errorMessage = null
@@ -142,25 +148,30 @@ class AddMovieViewModel @Inject constructor(
                 // Pobierz bieżącego użytkownika
                 val currentUser = authRepository.currentUser.first()
                 if (currentUser == null) {
+                    Log.e(TAG, "No user logged in")
                     _uiState.value = _uiState.value.copy(
                         isAddingMovie = false,
-                        errorMessage = "Nie jesteś zalogowany"
+                        errorMessage = "You are not logged in"
                     )
                     return@launch
                 }
+                Log.d(TAG, "Current user: ${currentUser.uid}")
 
                 // Pobierz szczegóły filmu z TMDB
                 tmdbRepository.getMovieDetails(movie.tmdbId.toInt()).collect { details ->
                     if (details == null) {
+                        Log.e(TAG, "Could not fetch movie details for TMDB ID: ${movie.tmdbId}")
                         _uiState.value = _uiState.value.copy(
                             isAddingMovie = false,
-                            errorMessage = "Nie można pobrać szczegółów filmu"
+                            errorMessage = "Could not fetch movie details"
                         )
                         return@collect
                     }
+                    Log.d(TAG, "Got movie details from TMDB: ${details.title} (ID: ${details.id})")
 
                     // Utwórz wpis dziennika
                     val movieEntry = MovieEntry(
+                        tmdbId = movie.tmdbId,
                         userId = currentUser.uid,
                         title = details.title,
                         overview = details.overview,
@@ -172,20 +183,23 @@ class AddMovieViewModel @Inject constructor(
                         createdAt = System.currentTimeMillis(),
                         updatedAt = System.currentTimeMillis()
                     )
+                    Log.d(TAG, "Created movie entry with TMDB ID: ${movieEntry.tmdbId}")
 
                     // Dodaj film do repozytorium
                     val addedEntry = movieRepository.addMovieEntry(movieEntry)
+                    Log.d(TAG, "Added movie to repository with Firebase ID: ${addedEntry.id} and TMDB ID: ${addedEntry.tmdbId}")
 
                     // Aktualizuj stan UI
                     _uiState.value = _uiState.value.copy(
                         isAddingMovie = false,
-                        snackbarMessage = "Film został dodany do dziennika"
+                        snackbarMessage = "Movie added to journal"
                     )
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error adding movie to journal", e)
                 _uiState.value = _uiState.value.copy(
                     isAddingMovie = false,
-                    errorMessage = "Błąd podczas dodawania filmu: ${e.message}"
+                    errorMessage = "Error adding movie: ${e.message}"
                 )
             }
         }
@@ -197,26 +211,26 @@ class AddMovieViewModel @Inject constructor(
     private fun getGenreName(genreId: Int): String {
         // Mapowanie ID gatunków na nazwy (można przenieść do zasobów)
         return when (genreId) {
-            28 -> "Akcja"
-            12 -> "Przygodowy"
-            16 -> "Animacja"
-            35 -> "Komedia"
-            80 -> "Kryminał"
-            99 -> "Dokument"
-            18 -> "Dramat"
-            10751 -> "Familijny"
+            28 -> "Action"
+            12 -> "Adventure"
+            16 -> "Animation"
+            35 -> "Comedy"
+            80 -> "Crime"
+            99 -> "Documentary"
+            18 -> "Drama"
+            10751 -> "Family"
             14 -> "Fantasy"
-            36 -> "Historyczny"
+            36 -> "History"
             27 -> "Horror"
-            10402 -> "Muzyczny"
-            9648 -> "Tajemnica"
-            10749 -> "Romans"
-            878 -> "Sci-Fi"
-            10770 -> "TV Film"
+            10402 -> "Music"
+            9648 -> "Mystery"
+            10749 -> "Romance"
+            878 -> "Science Fiction"
+            10770 -> "TV Movie"
             53 -> "Thriller"
-            10752 -> "Wojenny"
+            10752 -> "War"
             37 -> "Western"
-            else -> "Inny"
+            else -> "Unknown"
         }
     }
 

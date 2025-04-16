@@ -24,13 +24,13 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -38,13 +38,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -52,12 +57,6 @@ import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.navigation.NavRoutes
 import com.example.a10xandroid.ui.common.StateStatus
 import com.example.a10xandroid.ui.components.AppToolbar
-import androidx.compose.material3.Button
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 private const val TAG = "JournalScreen"
 
@@ -74,7 +73,7 @@ fun JournalScreen(
     Log.d(TAG, "JournalScreen composable called")
     val uiState by viewModel.uiState.collectAsState()
     val currentUser by authRepository.currentUser.collectAsStateWithLifecycle(initialValue = null)
-    
+
     // Log when the screen becomes active
     val lifecycleOwner = LocalLifecycleOwner.current
     remember(lifecycleOwner) {
@@ -118,7 +117,7 @@ fun JournalScreen(
                 currentOrder = uiState.sortOrder,
                 onOrderSelected = { viewModel.toggleSortOrder() }
             )
-            
+
             // Main content
             LoadingStateHandler(
                 state = uiState,
@@ -159,11 +158,7 @@ fun SortOrderSelector(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "Sort by: Date Added",
-            style = MaterialTheme.typography.bodyMedium
-        )
-        
+
         OutlinedButton(
             onClick = onOrderSelected
         ) {
@@ -172,9 +167,9 @@ fun SortOrderSelector(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
-                imageVector = if (currentOrder == SortOrder.DATE_ADDED_DESC) 
+                imageVector = if (currentOrder == SortOrder.DATE_ADDED_DESC)
                     Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
-                contentDescription = if (currentOrder == SortOrder.DATE_ADDED_DESC) 
+                contentDescription = if (currentOrder == SortOrder.DATE_ADDED_DESC)
                     "Sort descending" else "Sort ascending"
             )
         }
@@ -264,30 +259,30 @@ fun EmptyStateView(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Your watchlist is empty",
+            text = "Your journal is empty",
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Save movies from recommendations to see them here",
+            text = "Add movies you've watched to see them here",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Log.d(TAG, "Showing Get Recommendations button")
+        Log.d(TAG, "Showing Add Movie button")
         Button(
-            onClick = { 
+            onClick = {
                 try {
-                    Log.d(TAG, "Get Recommendations button clicked, navigating to RECOMMENDATIONS")
-                    navController.navigate(NavRoutes.RECOMMENDATIONS)
+                    Log.d(TAG, "Add Movie button clicked, navigating to ADD_MOVIE")
+                    navController.navigate(NavRoutes.ADD_MOVIE)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error navigating to RECOMMENDATIONS", e)
+                    Log.e(TAG, "Error navigating to ADD_MOVIE", e)
                 }
             }
         ) {
-            Text("Get Recommendations")
+            Text("Add Movie")
         }
     }
 }
@@ -386,7 +381,7 @@ fun MovieCard(
                         contentDescription = "Remove"
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Remove from watchlist")
+                    Text("Remove from journal")
                 }
             }
         }

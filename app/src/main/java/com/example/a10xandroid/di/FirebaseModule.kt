@@ -20,5 +20,9 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance()
+    fun provideFirebaseDatabase(): FirebaseDatabase {
+        val database = FirebaseDatabase.getInstance(URL)
+        database.setPersistenceEnabled(true)
+        return database
+    }
 }

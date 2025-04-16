@@ -20,6 +20,20 @@
         ".write": "auth != null && root.child('lists').child(data.child('listId').val()).child('userId').val() === auth.uid",
         ".validate": "newData.hasChildren(['listId', 'movieId'])"
       }
+    },
+    "movies": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$movieId": {
+        ".validate": "newData.hasChildren(['userId', 'tmdbId', 'title']) && newData.child('userId').val() === auth.uid"
+      }
+    },
+    "recommendations": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$recommendationId": {
+        ".validate": "newData.hasChildren(['userId', 'movieId']) && newData.child('userId').val() === auth.uid"
+      }
     }
   }
 } 

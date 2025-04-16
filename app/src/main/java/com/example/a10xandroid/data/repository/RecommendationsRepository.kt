@@ -28,9 +28,9 @@ interface RecommendationsRepository {
     suspend fun dismissRecommendation(recommendationId: String): Boolean
 
     /**
-     * Saves a recommendation to the user's watchlist and marks it as saved
-     * @param recommendationId ID of the recommendation to save
+     * Adds a recommendation to the user's journal and marks it as saved
+     * @param recommendationId ID of the recommendation to add
      * @return Whether the operation was successful
      */
-    suspend fun saveToWatchlist(recommendationId: String): Boolean
+    suspend fun addToJournal(recommendationId: String): Boolean
 }

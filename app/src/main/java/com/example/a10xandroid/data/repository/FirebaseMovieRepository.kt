@@ -1,6 +1,9 @@
 package com.example.a10xandroid.data.repository
 
+import android.util.Log
 import com.example.a10xandroid.data.model.MovieEntry
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -9,25 +12,77 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
-import com.example.a10xandroid.data.repository.getCurrentUserId
+
+private const val TAG = "FirebaseMovieRepository"
 
 @Singleton
 class FirebaseMovieRepository @Inject constructor(
-    private val database: FirebaseDatabase,
-    private val authRepository: AuthRepository
+    private val database: FirebaseDatabase
 ) : MovieRepository {
 
     private val moviesRef = database.getReference("movies")
-    private val watchlistRef = database.getReference("watchlist")
 
     override suspend fun addMovieEntry(movieEntry: MovieEntry): MovieEntry {
-        val entryWithId = movieEntry.copy(
-            id = moviesRef.push().key ?: throw IllegalStateException("Failed to generate key")
+        Log.d(
+            TAG,
+            "Starting to add movie entry: ${movieEntry.title} with TMDB ID: ${movieEntry.tmdbId}"
         )
-        moviesRef.child(entryWithId.id).setValue(entryWithId).await()
-        return entryWithId
+        return try {
+            Log.d(TAG, "Generating Firebase key for new movie entry")
+            val newMovieRef = moviesRef.push()
+            val firebaseId =
+                newMovieRef.key ?: throw IllegalStateException("Failed to generate Firebase key")
+            Log.d(TAG, "Generated Firebase ID: $firebaseId for TMDB ID: ${movieEntry.tmdbId}")
+
+            Log.d(TAG, "Attempting to write to Firebase at path: movies/$firebaseId")
+            val movieWithId = movieEntry.copy(id = firebaseId)
+
+            try {
+                newMovieRef.setValue(movieWithId).await()
+                Log.d(TAG, "Successfully wrote to Firebase at path: movies/$firebaseId")
+            } catch (e: Exception) {
+                Log.e(TAG, "Firebase write failed", e)
+                when (e) {
+                    is IOException -> Log.e(
+                        TAG,
+                        "Network error while writing to Firebase: ${e.message}"
+                    )
+
+                    is FirebaseNetworkException -> Log.e(
+                        TAG,
+                        "Firebase network error: ${e.message}"
+                    )
+
+                    is FirebaseAuthException -> Log.e(TAG, "Firebase auth error: ${e.message}")
+                    else -> Log.e(TAG, "Unknown Firebase error: ${e.message}")
+                }
+                throw e
+            }
+
+            Log.d(TAG, "Verifying write by reading back the entry")
+            val verificationRef = moviesRef.child(firebaseId)
+            val snapshot = verificationRef.get().await()
+
+            if (!snapshot.exists()) {
+                Log.e(
+                    TAG,
+                    "Write verification failed - entry not found at path: movies/$firebaseId"
+                )
+                throw IllegalStateException("Failed to verify movie entry creation")
+            }
+
+            Log.d(TAG, "Write verified successfully")
+            movieWithId
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding movie entry", e)
+            Log.e(TAG, "Error type: ${e.javaClass.simpleName}")
+            Log.e(TAG, "Error message: ${e.message}")
+            Log.e(TAG, "Stack trace: ${e.stackTraceToString()}")
+            throw e
+        }
     }
 
     override suspend fun updateMovieEntry(movieEntry: MovieEntry): MovieEntry {
@@ -90,39 +145,6 @@ class FirebaseMovieRepository @Inject constructor(
                 .sortedByDescending { it.watchDate }
         } catch (e: Exception) {
             emptyList()
-        }
-    }
-    
-    override suspend fun addMovieToWatchlist(
-        title: String,
-        overview: String,
-        posterPath: String?,
-        backdropPath: String?,
-        releaseDate: String?
-    ): Boolean {
-        return try {
-            // Create a watchlist entry using necessary fields from the movie
-            val entryId = watchlistRef.push().key ?: throw IllegalStateException("Failed to generate key")
-            val userId = authRepository.getCurrentUserId() ?: return false
-            
-            val currentTime = System.currentTimeMillis()
-            val watchlistEntry = MovieEntry(
-                id = entryId,
-                userId = userId,
-                title = title,
-                overview = overview,
-                posterPath = posterPath,
-                backdropPath = backdropPath,
-                releaseDate = releaseDate,
-                createdAt = currentTime,
-                updatedAt = currentTime
-            )
-            
-            // Save to watchlist collection
-            watchlistRef.child(userId).child(entryId).setValue(watchlistEntry).await()
-            true
-        } catch (e: Exception) {
-            false
         }
     }
 }

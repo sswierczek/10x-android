@@ -102,7 +102,7 @@ class AddMovieViewModel @Inject constructor(
                                 tmdbId = movie.id.toString(),
                                 title = movie.title,
                                 posterUrl = tmdbRepository.getPosterUrl(
-                                    movie.posterPath, 
+                                    movie.posterPath,
                                     "w500"
                                 ),
                                 year = if (movie.releaseDate.isNotEmpty()) {
@@ -139,7 +139,10 @@ class AddMovieViewModel @Inject constructor(
     fun addMovieToJournal(movie: MovieSearchItemViewModel) {
         viewModelScope.launch {
             try {
-                Log.d(TAG, "Starting to add movie to journal: ${movie.title} (TMDB ID: ${movie.tmdbId})")
+                Log.d(
+                    TAG,
+                    "Starting to add movie to journal: ${movie.title} (TMDB ID: ${movie.tmdbId})"
+                )
                 _uiState.value = _uiState.value.copy(
                     isAddingMovie = true,
                     errorMessage = null
@@ -187,7 +190,10 @@ class AddMovieViewModel @Inject constructor(
 
                     // Dodaj film do repozytorium
                     val addedEntry = movieRepository.addMovieEntry(movieEntry)
-                    Log.d(TAG, "Added movie to repository with Firebase ID: ${addedEntry.id} and TMDB ID: ${addedEntry.tmdbId}")
+                    Log.d(
+                        TAG,
+                        "Added movie to repository with Firebase ID: ${addedEntry.id} and TMDB ID: ${addedEntry.tmdbId}"
+                    )
 
                     // Aktualizuj stan UI
                     _uiState.value = _uiState.value.copy(

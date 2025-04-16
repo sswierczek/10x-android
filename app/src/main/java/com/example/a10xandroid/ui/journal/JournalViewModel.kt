@@ -87,7 +87,8 @@ class JournalViewModel @Inject constructor(
                         try {
                             val moviesViewModels = movieList.mapNotNull { movie ->
                                 try {
-                                    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                                    val dateFormat =
+                                        SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
                                     val formattedDate = dateFormat.format(Date(movie.createdAt))
 
                                     JournalMovieViewModel(
@@ -112,7 +113,8 @@ class JournalViewModel @Inject constructor(
                                 }
                             }
 
-                            val sortedMovies = sortMovies(moviesViewModels, _uiState.value.sortOrder)
+                            val sortedMovies =
+                                sortMovies(moviesViewModels, _uiState.value.sortOrder)
 
                             _uiState.update {
                                 it.copy(

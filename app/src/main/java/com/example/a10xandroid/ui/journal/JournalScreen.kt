@@ -158,7 +158,6 @@ fun SortOrderSelector(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         OutlinedButton(
             onClick = onOrderSelected
         ) {
@@ -167,10 +166,16 @@ fun SortOrderSelector(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
-                imageVector = if (currentOrder == SortOrder.DATE_ADDED_DESC)
-                    Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
-                contentDescription = if (currentOrder == SortOrder.DATE_ADDED_DESC)
-                    "Sort descending" else "Sort ascending"
+                imageVector = if (currentOrder == SortOrder.DATE_ADDED_DESC) {
+                    Icons.Default.KeyboardArrowDown
+                } else {
+                    Icons.Default.KeyboardArrowUp
+                },
+                contentDescription = if (currentOrder == SortOrder.DATE_ADDED_DESC) {
+                    "Sort descending"
+                } else {
+                    "Sort ascending"
+                }
             )
         }
     }

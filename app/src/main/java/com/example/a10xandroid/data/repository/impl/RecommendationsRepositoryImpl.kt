@@ -42,9 +42,14 @@ class RecommendationsRepositoryImpl @Inject constructor(
                         val recommendationWithId = MovieRecommendation.fromMap(data).copy(
                             id = snapshot.key ?: return@mapNotNull null
                         )
-                        Log.d(TAG, "Retrieved recommendation - Firebase ID: ${recommendationWithId.id}, TMDB ID: ${recommendationWithId.movieId}")
+                        Log.d(
+                            TAG,
+                            "Retrieved recommendation - Firebase ID: ${recommendationWithId.id}, TMDB ID: ${recommendationWithId.movieId}"
+                        )
                         recommendationWithId
-                    } else null
+                    } else {
+                        null
+                    }
                 }
                 .filter { it.status == RecommendationStatus.PENDING }
         } catch (e: Exception) {
@@ -69,7 +74,7 @@ class RecommendationsRepositoryImpl @Inject constructor(
 
             // Update recommendation status
             val updatedRecommendation = MovieRecommendation.fromMap(recommendationData).copy(
-                id = recommendationId,  // Ensure Firebase ID is preserved
+                id = recommendationId,
                 status = RecommendationStatus.DISMISSED
             )
 
@@ -98,10 +103,13 @@ class RecommendationsRepositoryImpl @Inject constructor(
             }
 
             val recommendation = MovieRecommendation.fromMap(recommendationData).copy(
-                id = recommendationId  // Ensure Firebase ID is preserved
+                id = recommendationId
             )
 
-            Log.d(TAG, "Adding recommendation to journal - Firebase ID: ${recommendation.id}, TMDB ID: ${recommendation.movieId}")
+            Log.d(
+                TAG,
+                "Adding recommendation to journal - Firebase ID: ${recommendation.id}, TMDB ID: ${recommendation.movieId}"
+            )
 
             // Create movie entry
             val movieEntry = MovieEntry(

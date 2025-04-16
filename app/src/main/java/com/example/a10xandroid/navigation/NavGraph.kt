@@ -162,7 +162,8 @@ fun NavGraph(
         ) { backStackEntry ->
             Log.d(
                 TAG,
-                "Composing MovieDetailsScreen with movieId: ${backStackEntry.arguments?.getString("movieId")}"
+                "Composing MovieDetailsScreen with movieId: " +
+                    "${backStackEntry.arguments?.getString("movieId")}"
             )
             MovieDetailsScreen(
                 navController = navController,

@@ -34,9 +34,9 @@ fun RecommendationsScreen(
     viewModel: RecommendationsViewModel = hiltViewModel()
 ) {
     Log.d(TAG, "RecommendationsScreen composable called")
-    
+
     val uiState by viewModel.uiState.collectAsState()
-    
+
     LaunchedEffect(Unit) {
         Log.d(TAG, "RecommendationsScreen LaunchedEffect triggered")
         Log.d(TAG, "Initial UI state: status=${uiState.status}, isEmpty=${uiState.isEmpty}")
@@ -48,9 +48,9 @@ fun RecommendationsScreen(
                 title = { Text("Recommendations") },
                 navigationIcon = {
                     IconButton(
-                        onClick = { 
+                        onClick = {
                             Log.d(TAG, "Back button clicked")
-                            navController.popBackStack() 
+                            navController.popBackStack()
                         }
                     ) {
                         Icon(
@@ -77,9 +77,9 @@ fun RecommendationsScreen(
             )
             LoadingStateHandler(
                 state = uiState,
-                onRetry = { 
+                onRetry = {
                     Log.d(TAG, "Retry button clicked")
-                    viewModel.loadRecommendations() 
+                    viewModel.loadRecommendations()
                 },
                 content = {
                     if (uiState.isEmpty) {
@@ -106,4 +106,4 @@ fun RecommendationsScreen(
             )
         }
     }
-} 
+}

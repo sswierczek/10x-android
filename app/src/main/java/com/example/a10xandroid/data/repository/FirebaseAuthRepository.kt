@@ -23,15 +23,22 @@ class FirebaseAuthRepository @Inject constructor(
 
     init {
         Log.d(TAG, "FirebaseAuthRepository initialized")
-        Log.d(TAG, "Initial auth state: ${auth.currentUser?.uid}, isNull: ${auth.currentUser == null}")
+        Log.d(
+            TAG,
+            "Initial auth state: ${auth.currentUser?.uid}, isNull: ${auth.currentUser == null}"
+        )
     }
 
     override val currentUser: Flow<User?> = callbackFlow {
         Log.d(TAG, "Setting up currentUser Flow")
-        
+
         val listener = FirebaseAuth.AuthStateListener { auth ->
             val firebaseUser = auth.currentUser
-            Log.d(TAG, "Firebase Auth state changed: ${firebaseUser?.uid}, isNull: ${firebaseUser == null}")
+            Log.d(
+                TAG,
+                "Firebase Auth state changed: ${firebaseUser?.uid}, isNull: ${firebaseUser == null}"
+            )
+
 
             if (firebaseUser != null) {
                 // Create user object directly from Firebase Auth user

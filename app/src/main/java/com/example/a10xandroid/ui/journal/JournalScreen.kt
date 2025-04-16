@@ -35,7 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,9 +48,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.navigation.NavRoutes
 import com.example.a10xandroid.ui.common.StateStatus
+import com.example.a10xandroid.ui.components.AppToolbar
 import androidx.compose.material3.Button
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 private const val TAG = "JournalScreen"
 
@@ -62,16 +68,31 @@ private const val TAG = "JournalScreen"
 @Composable
 fun JournalScreen(
     navController: NavController,
-    viewModel: JournalViewModel = hiltViewModel()
+    viewModel: JournalViewModel = hiltViewModel(),
+    authRepository: AuthRepository
 ) {
     Log.d(TAG, "JournalScreen composable called")
     val uiState by viewModel.uiState.collectAsState()
+    val currentUser by authRepository.currentUser.collectAsStateWithLifecycle(initialValue = null)
+    
+    // Log when the screen becomes active
+    val lifecycleOwner = LocalLifecycleOwner.current
+    remember(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                Log.d(TAG, "JournalScreen resumed")
+            }
+        })
+    }
 
     Scaffold(
         topBar = {
-            JournalTopAppBar(
-                currentSortOrder = uiState.sortOrder,
-                onSortOrderChanged = {
+            AppToolbar(
+                title = "Journal",
+                navController = navController,
+                currentUser = currentUser,
+                showMenuButton = true,
+                onMenuClick = {
                     viewModel.toggleSortOrder()
                 }
             )
@@ -85,7 +106,7 @@ fun JournalScreen(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Dodaj film"
+                    contentDescription = "Add movie"
                 )
             }
         }
@@ -111,53 +132,6 @@ fun JournalScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-        )
-    }
-}
-
-/**
- * TopAppBar dla ekranu dziennika
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun JournalTopAppBar(
-    currentSortOrder: SortOrder,
-    onSortOrderChanged: () -> Unit
-) {
-    TopAppBar(
-        title = { Text("Dziennik") },
-        actions = {
-            SortingControl(
-                currentSortOrder = currentSortOrder,
-                onSortOrderChanged = onSortOrderChanged
-            )
-        }
-    )
-}
-
-/**
- * Komponent kontrolujący sortowanie filmów
- */
-@Composable
-fun SortingControl(
-    currentSortOrder: SortOrder,
-    onSortOrderChanged: () -> Unit
-) {
-    // Ikona sortowania zależna od aktualnego trybu
-    val sortIcon = when (currentSortOrder) {
-        SortOrder.DATE_ADDED_ASC -> Icons.Filled.KeyboardArrowUp
-        SortOrder.DATE_ADDED_DESC -> Icons.Filled.KeyboardArrowDown
-    }
-
-    val sortDescription = when (currentSortOrder) {
-        SortOrder.DATE_ADDED_ASC -> "Sortowanie od najstarszych"
-        SortOrder.DATE_ADDED_DESC -> "Sortowanie od najnowszych"
-    }
-
-    IconButton(onClick = onSortOrderChanged) {
-        Icon(
-            imageVector = sortIcon,
-            contentDescription = sortDescription
         )
     }
 }
@@ -389,7 +363,7 @@ fun PosterImage(
                 .data(posterUrl)
                 .crossfade(true)
                 .build(),
-            contentDescription = "Plakat filmu $title",
+            contentDescription = "Movie poster for $title",
             contentScale = ContentScale.Crop,
             modifier = modifier
         )

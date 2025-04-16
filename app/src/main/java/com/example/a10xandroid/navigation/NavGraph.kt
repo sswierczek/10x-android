@@ -20,6 +20,7 @@ import com.example.a10xandroid.ui.auth.login.LoginScreen
 import com.example.a10xandroid.ui.auth.register.RegisterScreen
 import com.example.a10xandroid.ui.journal.JournalScreen
 import com.example.a10xandroid.ui.movie.MovieDetailsScreen
+import com.example.a10xandroid.ui.profile.ProfileScreen
 import com.example.a10xandroid.ui.recommendations.RecommendationsScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -33,6 +34,7 @@ object NavRoutes {
     const val MOVIE_DETAILS = "movie-details"
     const val ADD_MOVIE = "add-movie"
     const val RECOMMENDATIONS = "recommendations"
+    const val PROFILE = "profile"
 }
 
 @Composable
@@ -50,7 +52,7 @@ fun NavGraph(
         delay(1000) // Give Firebase Auth time to initialize
         val initialUser = authRepository.currentUser.first()
         Log.d(TAG, "Initial auth state: ${initialUser?.uid}, isNull: ${initialUser == null}")
-        
+
         startDestination = if (initialUser != null) {
             Log.d(TAG, "Setting start destination to JOURNAL")
             NavRoutes.JOURNAL
@@ -62,9 +64,12 @@ fun NavGraph(
     }
 
     LaunchedEffect(key1 = currentUser) {
-        Log.d(TAG, "LaunchedEffect triggered with currentUser: ${currentUser?.uid}, isNull: ${currentUser == null}")
+        Log.d(
+            TAG,
+            "LaunchedEffect triggered with currentUser: ${currentUser?.uid}, isNull: ${currentUser == null}"
+        )
         Log.d(TAG, "Current destination: ${navController.currentDestination?.route}")
-        
+
         if (currentUser == null) {
             Log.d(TAG, "User is null, checking if we need to navigate to login")
             if (navController.currentDestination?.route != NavRoutes.LOGIN &&
@@ -115,27 +120,38 @@ fun NavGraph(
             Log.d(TAG, "Composing LOGIN screen")
             LoginScreen(navController = navController)
         }
-        
+
         composable(NavRoutes.REGISTER) {
             Log.d(TAG, "Composing REGISTER screen")
             RegisterScreen(navController = navController)
         }
-        
+
         composable(NavRoutes.JOURNAL) {
             Log.d(TAG, "Composing JOURNAL screen")
-            JournalScreen(navController = navController)
+            JournalScreen(authRepository = authRepository, navController = navController)
         }
-        
+
         composable(NavRoutes.ADD_MOVIE) {
             Log.d(TAG, "Composing ADD_MOVIE screen")
             AddMovieScreen(navController = navController)
         }
-        
+
         composable(NavRoutes.RECOMMENDATIONS) {
             Log.d(TAG, "Composing RECOMMENDATIONS screen")
             RecommendationsScreen(navController = navController)
         }
-        
+
+        composable(NavRoutes.PROFILE) {
+            Log.d(TAG, "Composing PROFILE screen")
+            ProfileScreen(
+                onSignOut = {
+                    navController.navigate(NavRoutes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(
             route = "${NavRoutes.MOVIE_DETAILS}/{movieId}",
             arguments = listOf(
@@ -144,7 +160,10 @@ fun NavGraph(
                 }
             )
         ) { backStackEntry ->
-            Log.d(TAG, "Composing MovieDetailsScreen with movieId: ${backStackEntry.arguments?.getString("movieId")}")
+            Log.d(
+                TAG,
+                "Composing MovieDetailsScreen with movieId: ${backStackEntry.arguments?.getString("movieId")}"
+            )
             MovieDetailsScreen(
                 navController = navController,
                 movieId = backStackEntry.arguments?.getString("movieId") ?: ""

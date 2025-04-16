@@ -9,9 +9,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,16 +47,22 @@ fun RecommendationsScreen(
             TopAppBar(
                 title = { Text("Recommendations") },
                 navigationIcon = {
-                    IconButton(onClick = { 
-                        Log.d(TAG, "Back button clicked")
-                        navController.popBackStack() 
-                    }) {
+                    IconButton(
+                        onClick = { 
+                            Log.d(TAG, "Back button clicked")
+                            navController.popBackStack() 
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             )
         }
     ) { paddingValues ->
@@ -63,7 +71,10 @@ fun RecommendationsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Log.d(TAG, "Rendering content with state: status=${uiState.status}, isEmpty=${uiState.isEmpty}")
+            Log.d(
+                TAG,
+                "Rendering content with state: status=${uiState.status}, isEmpty=${uiState.isEmpty}"
+            )
             LoadingStateHandler(
                 state = uiState,
                 onRetry = { 
@@ -75,7 +86,10 @@ fun RecommendationsScreen(
                         Log.d(TAG, "Rendering EmptyStateView")
                         EmptyStateView()
                     } else {
-                        Log.d(TAG, "Rendering RecommendationsList with ${uiState.recommendations.size} items")
+                        Log.d(
+                            TAG,
+                            "Rendering RecommendationsList with ${uiState.recommendations.size} items"
+                        )
                         RecommendationsList(
                             recommendations = uiState.recommendations,
                             onDismiss = { movieId ->

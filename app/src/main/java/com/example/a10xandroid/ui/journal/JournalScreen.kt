@@ -1,5 +1,6 @@
 package com.example.a10xandroid.ui.journal
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,6 +51,9 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.a10xandroid.navigation.NavRoutes
 import com.example.a10xandroid.ui.common.StateStatus
+import androidx.compose.material3.Button
+
+private const val TAG = "JournalScreen"
 
 /**
  * Główny ekran dziennika filmowego
@@ -60,6 +64,7 @@ fun JournalScreen(
     navController: NavController,
     viewModel: JournalViewModel = hiltViewModel()
 ) {
+    Log.d(TAG, "JournalScreen composable called")
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -74,6 +79,7 @@ fun JournalScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
+                    Log.d(TAG, "FAB clicked, navigating to ADD_MOVIE")
                     navController.navigate(NavRoutes.ADD_MOVIE)
                 }
             ) {
@@ -86,10 +92,13 @@ fun JournalScreen(
     ) { paddingValues ->
         LoadingStateHandler(
             state = uiState,
+            navController = navController,
             content = {
                 if (uiState.movies.isEmpty()) {
-                    EmptyStateView()
+                    Log.d(TAG, "Movies list is empty, showing EmptyStateView")
+                    EmptyStateView(navController)
                 } else {
+                    Log.d(TAG, "Showing MoviesList with ${uiState.movies.size} movies")
                     MoviesList(
                         movies = uiState.movies,
                         onRemove = { movieId ->
@@ -159,16 +168,19 @@ fun SortingControl(
 @Composable
 fun LoadingStateHandler(
     state: JournalUiState,
+    navController: NavController,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    Log.d(TAG, "LoadingStateHandler called with state: ${state.status}")
     Box(modifier = modifier) {
         when (state.status) {
             StateStatus.LOADING -> LoadingIndicator()
             StateStatus.ERROR -> ErrorView(message = state.errorMessage ?: "Unknown error")
             StateStatus.SUCCESS -> {
                 if (state.movies.isEmpty()) {
-                    EmptyStateView()
+                    Log.d(TAG, "SUCCESS state with empty movies, showing EmptyStateView")
+                    EmptyStateView(navController)
                 } else {
                     content()
                 }
@@ -216,7 +228,8 @@ fun ErrorView(message: String) {
  * Widok wyświetlany, gdy dziennik filmowy jest pusty
  */
 @Composable
-fun EmptyStateView() {
+fun EmptyStateView(navController: NavController) {
+    Log.d(TAG, "EmptyStateView called")
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -243,6 +256,20 @@ fun EmptyStateView() {
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Spacer(modifier = Modifier.height(16.dp))
+        Log.d(TAG, "Showing Get Recommendations button")
+        Button(
+            onClick = { 
+                try {
+                    Log.d(TAG, "Get Recommendations button clicked, navigating to RECOMMENDATIONS")
+                    navController.navigate(NavRoutes.RECOMMENDATIONS)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error navigating to RECOMMENDATIONS", e)
+                }
+            }
+        ) {
+            Text("Get Recommendations")
+        }
     }
 }
 

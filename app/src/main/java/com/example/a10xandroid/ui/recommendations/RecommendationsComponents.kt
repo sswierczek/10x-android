@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.a10xandroid.ui.common.StateStatus
+import com.example.a10xandroid.ui.recommendations.model.RecommendationMovie
 import com.example.a10xandroid.ui.recommendations.model.RecommendationsUiState
 
 /**
@@ -129,7 +130,7 @@ fun EmptyStateView() {
  */
 @Composable
 fun RecommendationsList(
-    recommendations: List<RecommendationMovieViewModel>,
+    recommendations: List<RecommendationMovie>,
     onDismiss: (String) -> Unit,
     onSave: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -155,7 +156,7 @@ fun RecommendationsList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieCard(
-    movie: RecommendationMovieViewModel,
+    movie: RecommendationMovie,
     onDismiss: () -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier

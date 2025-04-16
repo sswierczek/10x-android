@@ -11,6 +11,8 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private const val TAG = "FirebaseAuthRepository"
+
 @Singleton
 class FirebaseAuthRepository @Inject constructor(
     private val auth: FirebaseAuth,
@@ -19,10 +21,17 @@ class FirebaseAuthRepository @Inject constructor(
 
     private val usersRef = database.getReference("users")
 
+    init {
+        Log.d(TAG, "FirebaseAuthRepository initialized")
+        Log.d(TAG, "Initial auth state: ${auth.currentUser?.uid}, isNull: ${auth.currentUser == null}")
+    }
+
     override val currentUser: Flow<User?> = callbackFlow {
+        Log.d(TAG, "Setting up currentUser Flow")
+        
         val listener = FirebaseAuth.AuthStateListener { auth ->
             val firebaseUser = auth.currentUser
-            Log.d("FirebaseAuthRepository", "Firebase Auth state changed: ${firebaseUser?.uid}")
+            Log.d(TAG, "Firebase Auth state changed: ${firebaseUser?.uid}, isNull: ${firebaseUser == null}")
 
             if (firebaseUser != null) {
                 // Create user object directly from Firebase Auth user
@@ -33,8 +42,10 @@ class FirebaseAuthRepository @Inject constructor(
                     photoUrl = firebaseUser.photoUrl?.toString(),
                     isEmailVerified = firebaseUser.isEmailVerified
                 )
+                Log.d(TAG, "Sending user: ${user.uid}")
                 trySend(user)
             } else {
+                Log.d(TAG, "Sending null user")
                 trySend(null)
             }
         }
@@ -49,14 +60,18 @@ class FirebaseAuthRepository @Inject constructor(
                 photoUrl = currentUser.photoUrl?.toString(),
                 isEmailVerified = currentUser.isEmailVerified
             )
+            Log.d(TAG, "Sending initial user: ${user.uid}")
             trySend(user)
         } else {
+            Log.d(TAG, "Sending initial null user")
             trySend(null)
         }
 
         auth.addAuthStateListener(listener)
+        Log.d(TAG, "Auth state listener added")
 
         awaitClose {
+            Log.d(TAG, "Closing currentUser Flow")
             auth.removeAuthStateListener(listener)
         }
     }

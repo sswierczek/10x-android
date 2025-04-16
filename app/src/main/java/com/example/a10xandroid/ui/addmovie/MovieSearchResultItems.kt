@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import java.util.Locale
 
 /**
  * Element listy wyników wyszukiwania filmów.
@@ -76,7 +77,7 @@ fun MovieSearchResultItem(
                         text = movie.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
 
@@ -86,6 +87,19 @@ fun MovieSearchResultItem(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (movie.rating > 0.1) {
+                            Text(
+                                text = "⭐ ${
+                                    String.format(
+                                        locale = Locale.UK,
+                                        "%.1f",
+                                        movie.rating,
+                                    )
+                                } • ",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                         if (movie.year.isNotEmpty()) {
                             Text(
                                 text = movie.year,
@@ -107,7 +121,6 @@ fun MovieSearchResultItem(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))

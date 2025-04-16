@@ -109,7 +109,8 @@ class AddMovieViewModel @Inject constructor(
                                     ""
                                 },
                                 genre = genre,
-                                overview = movie.overview
+                                overview = movie.overview,
+                                rating = movie.voteAverage
                             )
                         }
 

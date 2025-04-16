@@ -19,7 +19,8 @@ data class MovieSearchItemViewModel(
     val posterUrl: String?,
     val year: String,
     val genre: String,
-    val overview: String
+    val overview: String,
+    val rating: Double
 )
 
 /**

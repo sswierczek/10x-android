@@ -71,16 +71,6 @@ fun AppToolbar(
                             navController.navigate(NavRoutes.PROFILE)
                         }
                     )
-                    DropdownMenuItem(
-                        text = { Text("Sign Out") },
-                        onClick = {
-                            showProfileMenu = false
-                            // Navigate to login screen, which will trigger sign out
-                            navController.navigate(NavRoutes.LOGIN) {
-                                popUpTo(0) { inclusive = true }
-                            }
-                        }
-                    )
                 }
             }
         },

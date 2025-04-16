@@ -181,7 +181,20 @@ fun LoadingIndicator(
     modifier: Modifier = Modifier
 ) {
     if (isVisible) {
-        CircularProgressIndicator(modifier = modifier)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                strokeWidth = 2.dp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Signing in...",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
 

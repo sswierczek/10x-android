@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -108,6 +107,7 @@ fun MovieSearchResultItem(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -116,7 +116,7 @@ fun MovieSearchResultItem(
                     Text(
                         text = movie.overview,
                         style = MaterialTheme.typography.bodySmall,
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -131,10 +131,8 @@ fun MovieSearchResultItem(
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Dodaj")
                 }
             }
         }
@@ -166,11 +164,7 @@ fun PosterImage(
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Filled.Favorite,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(text = "No poster")
         }
     }
 }

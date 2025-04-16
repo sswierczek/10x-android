@@ -25,7 +25,7 @@ interface TmdbApiService {
     suspend fun searchMovies(
         @Query("api_key") apiKey: String = BuildConfig.TMDB_API_KEY,
         @Query("query") query: String,
-        @Query("page") page: Int = 1
+        @Query("page") page: Int = 1,
     ): TmdbMovieSearchApiResponse
 
     /**

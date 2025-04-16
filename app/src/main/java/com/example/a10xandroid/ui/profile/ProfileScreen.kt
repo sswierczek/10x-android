@@ -55,23 +55,11 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Spacing.medium)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Profile",
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            IconButton(onClick = { viewModel.refreshUserData() }) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Refresh profile data"
-                )
-            }
-        }
+        Text(
+            text = "Profile",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         when {
             uiState is AuthUiState.Loading -> {
@@ -91,7 +79,7 @@ fun ProfileScreen(
 
             else -> {
                 Text(
-                    text = "No user data available. Please try refreshing.",
+                    text = "No user data available.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -160,25 +148,5 @@ private fun UserInfoCard(user: User) {
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun ProfileInfoRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge
-        )
     }
 }

@@ -91,10 +91,7 @@ fun JournalScreen(
                 title = "Journal",
                 navController = navController,
                 currentUser = currentUser,
-                showMenuButton = true,
-                onMenuClick = {
-                    viewModel.toggleSortOrder()
-                }
+                showMenuButton = false
             )
         },
         floatingActionButton = {
@@ -111,28 +108,76 @@ fun JournalScreen(
             }
         }
     ) { paddingValues ->
-        LoadingStateHandler(
-            state = uiState,
-            navController = navController,
-            content = {
-                if (uiState.movies.isEmpty()) {
-                    Log.d(TAG, "Movies list is empty, showing EmptyStateView")
-                    EmptyStateView(navController)
-                } else {
-                    Log.d(TAG, "Showing MoviesList with ${uiState.movies.size} movies")
-                    MoviesList(
-                        movies = uiState.movies,
-                        onRemove = { movieId ->
-                            viewModel.deleteMovie(movieId)
-                        },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            },
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+        ) {
+            // Sort order selector
+            SortOrderSelector(
+                currentOrder = uiState.sortOrder,
+                onOrderSelected = { viewModel.toggleSortOrder() }
+            )
+            
+            // Main content
+            LoadingStateHandler(
+                state = uiState,
+                navController = navController,
+                content = {
+                    if (uiState.movies.isEmpty()) {
+                        Log.d(TAG, "Movies list is empty, showing EmptyStateView")
+                        EmptyStateView(navController)
+                    } else {
+                        Log.d(TAG, "Showing MoviesList with ${uiState.movies.size} movies")
+                        MoviesList(
+                            movies = uiState.movies,
+                            onRemove = { movieId ->
+                                viewModel.deleteMovie(movieId)
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+/**
+ * Komponent wyboru sortowania
+ */
+@Composable
+fun SortOrderSelector(
+    currentOrder: SortOrder,
+    onOrderSelected: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Sort by: Date Added",
+            style = MaterialTheme.typography.bodyMedium
         )
+        
+        OutlinedButton(
+            onClick = onOrderSelected
+        ) {
+            Text(
+                text = if (currentOrder == SortOrder.DATE_ADDED_DESC) "Newest First" else "Oldest First"
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = if (currentOrder == SortOrder.DATE_ADDED_DESC) 
+                    Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
+                contentDescription = if (currentOrder == SortOrder.DATE_ADDED_DESC) 
+                    "Sort descending" else "Sort ascending"
+            )
+        }
     }
 }
 

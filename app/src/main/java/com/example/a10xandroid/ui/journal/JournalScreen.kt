@@ -25,7 +25,9 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -367,12 +369,28 @@ fun MovieCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "⭐ ${String.format("%.1f",movie.rating)} • ${movie.year} • ${movie.genre} ",
+                    text = movie.year,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-
+                Row {
+                    repeat(5) { index ->
+                        val starValue = index + 1
+                        Icon(
+                            imageVector = if (movie.rating >= starValue) Icons.Filled.Star else Icons.Outlined.Star,
+                            contentDescription = "Rate $starValue stars",
+                            tint = if (movie.rating >= starValue) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSecondary
+                            },
+                            modifier = Modifier
+                                .size(16.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)

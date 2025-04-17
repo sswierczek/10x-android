@@ -91,7 +91,7 @@ class JournalViewModel @Inject constructor(
                                         SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
                                     val formattedDate = dateFormat.format(Date(movie.createdAt))
 
-                                    JournalMovieViewModel(
+                                    JournalModelForView(
                                         id = movie.id,
                                         tmdbId = movie.tmdbId,
                                         title = movie.title,
@@ -100,6 +100,7 @@ class JournalViewModel @Inject constructor(
                                         },
                                         year = movie.releaseDate?.take(4) ?: "",
                                         genre = "",
+                                        rating = movie.rating,
                                         addedAt = movie.createdAt,
                                         addedAtFormatted = formattedDate
                                     )
@@ -180,9 +181,9 @@ class JournalViewModel @Inject constructor(
      * Sort the movie list according to specified criteria
      */
     private fun sortMovies(
-        movies: List<JournalMovieViewModel>,
+        movies: List<JournalModelForView>,
         sortOrder: SortOrder
-    ): List<JournalMovieViewModel> {
+    ): List<JournalModelForView> {
         return when (sortOrder) {
             SortOrder.DATE_ADDED_ASC -> movies.sortedBy { it.addedAt }
             SortOrder.DATE_ADDED_DESC -> movies.sortedByDescending { it.addedAt }

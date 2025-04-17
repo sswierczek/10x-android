@@ -2,6 +2,7 @@ package com.example.a10xandroid.ui.journal
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
@@ -133,6 +135,7 @@ fun JournalScreen(
                             onRemove = { movieId ->
                                 viewModel.deleteMovie(movieId)
                             },
+                            navController = navController,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -298,19 +301,24 @@ fun EmptyStateView(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoviesList(
-    movies: List<JournalMovieViewModel>,
+    movies: List<JournalModelForView>,
     onRemove: (String) -> Unit,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    val lazyListState = rememberLazyListState()
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        state = lazyListState
     ) {
         items(movies) { movie ->
             MovieCard(
                 movie = movie,
-                onRemove = { onRemove(movie.id) }
+                onRemove = { onRemove(movie.id) },
+                navController = navController
             )
         }
     }
@@ -319,14 +327,18 @@ fun MoviesList(
 /**
  * Karta filmu w dzienniku
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieCard(
-    movie: JournalMovieViewModel,
-    onRemove: () -> Unit
+    movie: JournalModelForView,
+    onRemove: () -> Unit,
+    navController: NavController
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("${NavRoutes.MOVIE_DETAILS}/${movie.id}")
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -355,11 +367,12 @@ fun MovieCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "${movie.year} • ${movie.genre}",
+                    text = "⭐ ${movie.rating} • ${movie.year} • ${movie.genre} ",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -375,6 +388,13 @@ fun MovieCard(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedButton(

@@ -13,13 +13,14 @@ enum class SortOrder {
 /**
  * Model widoku filmu dla listy w dzienniku filmowym
  */
-data class JournalMovieViewModel(
+data class JournalModelForView(
     val id: String,
     val tmdbId: String,
     val title: String,
     val posterUrl: String?,
     val year: String,
     val genre: String,
+    val rating: Float,
     val addedAt: Long,
     val addedAtFormatted: String
 )
@@ -30,7 +31,7 @@ data class JournalMovieViewModel(
 data class JournalUiState(
     val status: StateStatus = StateStatus.LOADING,
     val errorMessage: String? = null,
-    val movies: List<JournalMovieViewModel> = emptyList(),
+    val movies: List<JournalModelForView> = emptyList(),
     val sortOrder: SortOrder = SortOrder.DATE_ADDED_DESC,
     val isRefreshing: Boolean = false
 )

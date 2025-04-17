@@ -172,12 +172,14 @@ class AddMovieViewModel @Inject constructor(
                 }
                 Log.d(TAG, "Current user: ${currentUser.uid}")
 
-                tmdbRepository.getMovieDetails(movie.tmdbId.toInt()).collect { movieDetails->
+                tmdbRepository.getMovieDetails(
+                    movie.tmdbId.toInt()
+                ).collect { movieDetails ->
 
                     Log.d(TAG, "Fetched movie details for TMDB ID: ${movie.tmdbId}")
 
                     val movieEntry = MovieEntry(
-                        id = "", // Firebase will generate this
+                        id = "",
                         tmdbId = movie.tmdbId,
                         userId = currentUser.uid,
                         title = movieDetails?.title ?: "",
@@ -265,11 +267,13 @@ class AddMovieViewModel @Inject constructor(
         Log.d(TAG, "Clearing search results and query")
         viewModelScope.launch {
             searchQuery.emit("")
-            _uiState.emit(_uiState.value.copy(
-                searchQuery = "",
-                searchStatus = SearchStatus.INITIAL,
-                searchResults = emptyList()
-            ))
+            _uiState.emit(
+                _uiState.value.copy(
+                    searchQuery = "",
+                    searchStatus = SearchStatus.INITIAL,
+                    searchResults = emptyList()
+                )
+            )
         }
     }
 }

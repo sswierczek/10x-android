@@ -36,7 +36,10 @@ class TmdbRepositoryImpl @Inject constructor(
                     query = query,
                     page = page
                 )
-                Log.d(TAG, "TMDB API search successful. Found ${response.results.size} results for query: '$query'")
+                Log.d(
+                    TAG,
+                    "TMDB API search successful. Found ${response.results.size} results for query: '$query'"
+                )
                 emit(response.results)
             } catch (e: Exception) {
                 Log.e(TAG, "Error searching TMDB API for query: '$query', page: $page", e)

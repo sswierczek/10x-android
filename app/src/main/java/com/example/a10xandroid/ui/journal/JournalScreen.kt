@@ -412,7 +412,6 @@ fun MovieCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedButton(

@@ -56,7 +56,7 @@ fun MovieSearchResultItem(
         ) {
             // Plakat filmu
             PosterImage(
-                posterUrl = movie.posterUrl,
+                posterUrl = movie.posterPath,
                 title = movie.title,
                 modifier = Modifier
                     .width(94.dp)

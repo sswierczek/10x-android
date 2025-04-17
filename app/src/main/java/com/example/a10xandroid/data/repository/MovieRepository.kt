@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
  * Interface for movie entry operations.
  */
 interface MovieRepository {
-    suspend fun addMovieEntry(movieEntry: MovieEntry): MovieEntry
+    suspend fun addMovieEntry(movieEntry: MovieEntry): Boolean
 
     suspend fun updateMovieEntry(movieEntry: MovieEntry): MovieEntry
 

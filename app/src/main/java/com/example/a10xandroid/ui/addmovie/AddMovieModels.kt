@@ -16,11 +16,12 @@ enum class SearchStatus {
 data class MovieSearchItemViewModel(
     val tmdbId: String,
     val title: String,
-    val posterUrl: String?,
-    val year: String,
-    val genre: String,
     val overview: String,
-    val rating: Double
+    val posterPath: String?,
+    val releaseDate: String,
+    val year: String = "",
+    val genre: String = "",
+    val rating: Float = 0f
 )
 
 /**

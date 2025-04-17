@@ -2,8 +2,6 @@ package com.example.a10xandroid.data.repository
 
 import android.util.Log
 import com.example.a10xandroid.data.model.MovieEntry
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -12,7 +10,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,63 +22,44 @@ class FirebaseMovieRepository @Inject constructor(
 
     private val moviesRef = database.getReference("movies")
 
-    override suspend fun addMovieEntry(movieEntry: MovieEntry): MovieEntry {
-        Log.d(
-            TAG,
-            "Starting to add movie entry: ${movieEntry.title} with TMDB ID: ${movieEntry.tmdbId}"
-        )
+    override suspend fun addMovieEntry(movieEntry: MovieEntry): Boolean {
         return try {
-            Log.d(TAG, "Generating Firebase key for new movie entry")
-            val newMovieRef = moviesRef.push()
-            val firebaseId =
-                newMovieRef.key ?: throw IllegalStateException("Failed to generate Firebase key")
-            Log.d(TAG, "Generated Firebase ID: $firebaseId for TMDB ID: ${movieEntry.tmdbId}")
+            Log.d(
+                TAG,
+                "Starting to add movie entry: ${movieEntry.title} (TMDB ID: ${movieEntry.tmdbId})"
+            )
 
-            Log.d(TAG, "Attempting to write to Firebase at path: movies/$firebaseId")
-            val movieWithId = movieEntry.copy(id = firebaseId)
+            val key = moviesRef.push().key ?: throw Exception("Failed to generate Firebase key")
+            Log.d(TAG, "Generated Firebase key: $key")
 
-            try {
-                newMovieRef.setValue(movieWithId).await()
-                Log.d(TAG, "Successfully wrote to Firebase at path: movies/$firebaseId")
-            } catch (e: Exception) {
-                Log.e(TAG, "Firebase write failed", e)
-                when (e) {
-                    is IOException -> Log.e(
-                        TAG,
-                        "Network error while writing to Firebase: ${e.message}"
-                    )
+            val movieMap = mapOf(
+                "id" to key,
+                "tmdbId" to movieEntry.tmdbId,
+                "userId" to movieEntry.userId,
+                "title" to movieEntry.title,
+                "overview" to movieEntry.overview,
+                "posterPath" to movieEntry.posterPath,
+                "backdropPath" to movieEntry.backdropPath,
+                "releaseDate" to movieEntry.releaseDate,
+                "rating" to movieEntry.rating,
+                "watchDate" to movieEntry.watchDate,
+                "notes" to movieEntry.notes,
+                "createdAt" to movieEntry.createdAt,
+                "updatedAt" to movieEntry.updatedAt
+            )
 
-                    is FirebaseNetworkException -> Log.e(
-                        TAG,
-                        "Firebase network error: ${e.message}"
-                    )
+            Log.d(TAG, "Attempting to write to Firebase at path: ${moviesRef.child(key).path}")
+            moviesRef.child(key).setValue(movieMap).await()
 
-                    is FirebaseAuthException -> Log.e(TAG, "Firebase auth error: ${e.message}")
-                    else -> Log.e(TAG, "Unknown Firebase error: ${e.message}")
-                }
-                throw e
-            }
+            // Verify the write by reading back the entry
+            val snapshot = moviesRef.child(key).get().await()
+            val success = snapshot.exists()
+            Log.d(TAG, "Write verification: ${if (success) "Success" else "Failed"}")
 
-            Log.d(TAG, "Verifying write by reading back the entry")
-            val verificationRef = moviesRef.child(firebaseId)
-            val snapshot = verificationRef.get().await()
-
-            if (!snapshot.exists()) {
-                Log.e(
-                    TAG,
-                    "Write verification failed - entry not found at path: movies/$firebaseId"
-                )
-                throw IllegalStateException("Failed to verify movie entry creation")
-            }
-
-            Log.d(TAG, "Write verified successfully")
-            movieWithId
+            success
         } catch (e: Exception) {
             Log.e(TAG, "Error adding movie entry", e)
-            Log.e(TAG, "Error type: ${e.javaClass.simpleName}")
-            Log.e(TAG, "Error message: ${e.message}")
-            Log.e(TAG, "Stack trace: ${e.stackTraceToString()}")
-            throw e
+            false
         }
     }
 

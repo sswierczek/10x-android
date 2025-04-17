@@ -23,7 +23,7 @@ import javax.inject.Inject
 private const val TAG = "AddMovieViewModel"
 
 /**
- * ViewModel dla ekranu dodawania filmu
+ * ViewModel for the add movie screen
  */
 @HiltViewModel
 class AddMovieViewModel @Inject constructor(
@@ -32,67 +32,79 @@ class AddMovieViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    // Stan UI jako MutableStateFlow
+    // UI state as MutableStateFlow
     private val _uiState = MutableStateFlow(AddMovieUiState())
     val uiState: StateFlow<AddMovieUiState> = _uiState.asStateFlow()
 
-    // Opóźnione wyszukiwanie
+    // Delayed search
     @OptIn(FlowPreview::class)
     private val searchQuery = MutableStateFlow("")
 
     init {
-        // Nasłuchuj zmian w zapytaniu wyszukiwania z debounce
+        // Listen for search query changes with debounce
         viewModelScope.launch {
+            Log.d(TAG, "Initializing search query listener")
             searchQuery
-                .debounce(500) // Opóźnienie 500ms
-                .filter { it.isNotBlank() && it.length >= 2 }
+                .debounce(500) // 500ms delay
+                .filter { query ->
+                    val shouldSearch = query.isNotBlank() && query.length >= 2
+                    Log.d(TAG, "Query '$query' filtered: $shouldSearch (length: ${query.length})")
+                    shouldSearch
+                }
                 .distinctUntilChanged()
-                .collect {
-                    searchMovies(it)
+                .collect { query ->
+                    Log.d(TAG, "Collecting search query: '$query'")
+                    searchMovies(query)
                 }
         }
-    }
 
-    /**
-     * Aktualizacja zapytania wyszukiwania
-     */
-    fun updateSearchQuery(query: String) {
-        _uiState.value = _uiState.value.copy(
-            searchQuery = query
-        )
-        searchQuery.value = query
-
-        // Resetuj wyniki jeśli zapytanie jest puste
-        if (query.isBlank()) {
-            _uiState.value = _uiState.value.copy(
-                searchStatus = SearchStatus.INITIAL,
-                searchResults = emptyList()
-            )
+        // Sync search query with UI state
+        viewModelScope.launch {
+            searchQuery.collect { query ->
+                _uiState.value = _uiState.value.copy(
+                    searchQuery = query,
+                    searchStatus = if (query.isBlank()) SearchStatus.INITIAL else _uiState.value.searchStatus
+                )
+            }
         }
     }
 
     /**
-     * Wyszukiwanie filmów w TMDB
+     * Update search query
+     */
+    fun updateSearchQuery(query: String) {
+        Log.d(TAG, "Updating search query to: '$query'")
+        viewModelScope.launch {
+            _uiState.emit(_uiState.value.copy(searchQuery = query))
+            searchQuery.emit(query)
+        }
+    }
+
+    /**
+     * Search for movies in TMDB
      */
     private fun searchMovies(query: String) {
+        Log.d(TAG, "Starting movie search for query: '$query'")
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(
                     searchStatus = SearchStatus.SEARCHING,
                     errorMessage = null
                 )
+                Log.d(TAG, "Set search status to SEARCHING")
 
                 tmdbRepository.searchMovies(query)
                     .catch { e ->
-                        Log.e(TAG, "Error searching movies", e)
+                        Log.e(TAG, "Error searching movies for query '$query'", e)
                         _uiState.value = _uiState.value.copy(
                             searchStatus = SearchStatus.ERROR,
                             errorMessage = "Error searching: ${e.message}"
                         )
                     }
                     .collect { results ->
+                        Log.d(TAG, "Received ${results.size} search results for query '$query'")
                         val movieViewModels = results.map { movie ->
-                            // Pobierz szczegóły gatunku dla pierwszego ID gatunku (jeśli istnieje)
+                            // Get genre details for first genre ID (if exists)
                             var genre = ""
                             if (movie.genreIds.isNotEmpty()) {
                                 genre = getGenreName(movie.genreIds.first())
@@ -101,7 +113,7 @@ class AddMovieViewModel @Inject constructor(
                             MovieSearchItemViewModel(
                                 tmdbId = movie.id.toString(),
                                 title = movie.title,
-                                posterUrl = tmdbRepository.getPosterUrl(
+                                posterPath = tmdbRepository.getPosterUrl(
                                     movie.posterPath,
                                     "w500"
                                 ),
@@ -114,7 +126,8 @@ class AddMovieViewModel @Inject constructor(
                                 },
                                 genre = genre,
                                 overview = movie.overview,
-                                rating = movie.voteAverage
+                                rating = movie.voteAverage.toFloat(),
+                                releaseDate = movie.releaseDate
                             )
                         }
 
@@ -139,68 +152,55 @@ class AddMovieViewModel @Inject constructor(
     fun addMovieToJournal(movie: MovieSearchItemViewModel) {
         viewModelScope.launch {
             try {
-                Log.d(
-                    TAG,
-                    "Starting to add movie to journal: ${movie.title} (TMDB ID: ${movie.tmdbId})"
-                )
                 _uiState.value = _uiState.value.copy(
                     isAddingMovie = true,
                     errorMessage = null
                 )
+                Log.d(
+                    TAG,
+                    "Starting to add movie to journal: ${movie.title} (TMDB ID: ${movie.tmdbId})"
+                )
 
-                // Pobierz bieżącego użytkownika
                 val currentUser = authRepository.currentUser.first()
                 if (currentUser == null) {
                     Log.e(TAG, "No user logged in")
                     _uiState.value = _uiState.value.copy(
                         isAddingMovie = false,
-                        errorMessage = "You are not logged in"
+                        errorMessage = "You must be logged in to add movies"
                     )
                     return@launch
                 }
                 Log.d(TAG, "Current user: ${currentUser.uid}")
 
-                // Pobierz szczegóły filmu z TMDB
-                tmdbRepository.getMovieDetails(movie.tmdbId.toInt()).collect { details ->
-                    if (details == null) {
-                        Log.e(TAG, "Could not fetch movie details for TMDB ID: ${movie.tmdbId}")
-                        _uiState.value = _uiState.value.copy(
-                            isAddingMovie = false,
-                            errorMessage = "Could not fetch movie details"
-                        )
-                        return@collect
-                    }
-                    Log.d(TAG, "Got movie details from TMDB: ${details.title} (ID: ${details.id})")
+                tmdbRepository.getMovieDetails(movie.tmdbId.toInt()).collect { movieDetails->
 
-                    // Utwórz wpis dziennika
+                    Log.d(TAG, "Fetched movie details for TMDB ID: ${movie.tmdbId}")
+
                     val movieEntry = MovieEntry(
+                        id = "", // Firebase will generate this
                         tmdbId = movie.tmdbId,
                         userId = currentUser.uid,
-                        title = details.title,
-                        overview = details.overview,
-                        posterPath = details.posterPath,
-                        backdropPath = details.backdropPath,
-                        releaseDate = details.releaseDate,
+                        title = movieDetails?.title ?: "",
+                        overview = movieDetails?.overview ?: "",
+                        posterPath = movieDetails?.posterPath ?: "",
+                        backdropPath = movieDetails?.backdropPath ?: "",
+                        releaseDate = movieDetails?.releaseDate ?: "",
+                        rating = movie.rating,
                         watchDate = System.currentTimeMillis(),
                         notes = "",
                         createdAt = System.currentTimeMillis(),
                         updatedAt = System.currentTimeMillis()
                     )
-                    Log.d(TAG, "Created movie entry with TMDB ID: ${movieEntry.tmdbId}")
 
-                    // Dodaj film do repozytorium
-                    val addedEntry = movieRepository.addMovieEntry(movieEntry)
-                    Log.d(
-                        TAG,
-                        "Added movie to repository with Firebase ID: ${addedEntry.id} and TMDB ID: ${addedEntry.tmdbId}"
-                    )
-
-                    // Aktualizuj stan UI
-                    _uiState.value = _uiState.value.copy(
-                        isAddingMovie = false,
-                        snackbarMessage = "Movie added to journal"
-                    )
+                    val firebaseId = movieRepository.addMovieEntry(movieEntry)
+                    Log.d(TAG, "Added movie to repository with Firebase ID: $firebaseId")
                 }
+
+
+                _uiState.value = _uiState.value.copy(
+                    isAddingMovie = false,
+                    snackbarMessage = "Movie added to journal"
+                )
             } catch (e: Exception) {
                 Log.e(TAG, "Error adding movie to journal", e)
                 _uiState.value = _uiState.value.copy(
@@ -259,14 +259,17 @@ class AddMovieViewModel @Inject constructor(
     }
 
     /**
-     * Czyszczenie wyników wyszukiwania
+     * Clear search results and query
      */
     fun clearSearchResults() {
-        _uiState.value = _uiState.value.copy(
-            searchQuery = "",
-            searchStatus = SearchStatus.INITIAL,
-            searchResults = emptyList()
-        )
-        searchQuery.value = ""
+        Log.d(TAG, "Clearing search results and query")
+        viewModelScope.launch {
+            searchQuery.emit("")
+            _uiState.emit(_uiState.value.copy(
+                searchQuery = "",
+                searchStatus = SearchStatus.INITIAL,
+                searchResults = emptyList()
+            ))
+        }
     }
 }

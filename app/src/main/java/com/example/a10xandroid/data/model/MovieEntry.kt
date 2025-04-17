@@ -1,5 +1,8 @@
 package com.example.a10xandroid.data.model
 
+/**
+ * Represents a movie entry in the user's journal
+ */
 data class MovieEntry(
     val id: String = "",
     val tmdbId: String = "",
@@ -15,23 +18,20 @@ data class MovieEntry(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 ) {
-    companion object {
-        fun fromMap(map: Map<String, Any?>): MovieEntry {
-            return MovieEntry(
-                id = map["id"] as? String ?: "",
-                tmdbId = map["tmdbId"] as? String ?: "",
-                userId = map["userId"] as? String ?: "",
-                title = map["title"] as? String ?: "",
-                overview = map["overview"] as? String ?: "",
-                posterPath = map["posterPath"] as? String,
-                backdropPath = map["backdropPath"] as? String,
-                releaseDate = map["releaseDate"] as? String,
-                rating = (map["rating"] as? Number)?.toFloat() ?: 0f,
-                watchDate = (map["watchDate"] as? Number)?.toLong() ?: System.currentTimeMillis(),
-                notes = map["notes"] as? String,
-                createdAt = (map["createdAt"] as? Number)?.toLong() ?: System.currentTimeMillis(),
-                updatedAt = (map["updatedAt"] as? Number)?.toLong() ?: System.currentTimeMillis()
-            )
-        }
-    }
+    // No-argument constructor required by Firebase
+    constructor() : this(
+        id = "",
+        tmdbId = "",
+        userId = "",
+        title = "",
+        overview = "",
+        posterPath = null,
+        backdropPath = null,
+        releaseDate = null,
+        rating = 0f,
+        watchDate = System.currentTimeMillis(),
+        notes = null,
+        createdAt = System.currentTimeMillis(),
+        updatedAt = System.currentTimeMillis()
+    )
 }

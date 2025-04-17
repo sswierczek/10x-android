@@ -30,13 +30,16 @@ class TmdbRepositoryImpl @Inject constructor(
     override suspend fun searchMovies(query: String, page: Int): Flow<List<TmdbMovieApiResult>> =
         flow {
             try {
+                Log.d(TAG, "Starting TMDB API search for query: '$query', page: $page")
                 val response = apiService.searchMovies(
                     apiKey = apiKey,
                     query = query,
                     page = page
                 )
+                Log.d(TAG, "TMDB API search successful. Found ${response.results.size} results for query: '$query'")
                 emit(response.results)
             } catch (e: Exception) {
+                Log.e(TAG, "Error searching TMDB API for query: '$query', page: $page", e)
                 emit(emptyList())
             }
         }

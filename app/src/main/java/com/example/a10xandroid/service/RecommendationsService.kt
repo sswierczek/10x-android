@@ -2,6 +2,7 @@ package com.example.a10xandroid.service
 
 import android.content.Context
 import android.util.Log
+import com.example.a10xandroid.BuildConfig
 import com.example.a10xandroid.data.api.OpenRouterApiService
 import com.example.a10xandroid.data.api.OpenRouterMessage
 import com.example.a10xandroid.data.api.OpenRouterRequest
@@ -14,10 +15,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
@@ -57,42 +56,43 @@ class RecommendationsService @Inject constructor(
      * @param userMovies Lista filmów z dziennika użytkownika
      * @return Flow<Result<List<RecommendedMovieDTO>>> Lista rekomendowanych filmów lub błąd
      */
-    suspend fun getRecommendations(userMovies: List<MovieEntry>): Flow<Result<List<RecommendedMovieDTO>>> = flow {
-        try {
-            if (userMovies.isEmpty()) {
-                emit(Result.Success(emptyList()))
-                return@flow
+    suspend fun getRecommendations(userMovies: List<MovieEntry>): Flow<Result<List<RecommendedMovieDTO>>> =
+        flow {
+            try {
+                if (userMovies.isEmpty()) {
+                    emit(Result.Success(emptyList()))
+                    return@flow
+                }
+
+                // Generowanie klucza cache na podstawie ID filmów
+                val cacheKey = generateCacheKey(userMovies)
+
+                // Sprawdzenie cache
+                val cachedRecommendations = recommendationsCache[cacheKey]
+                if (cachedRecommendations != null && !isCacheExpired(cachedRecommendations.timestamp)) {
+                    Log.d(TAG, "Using cached recommendations for key: $cacheKey")
+                    emit(Result.Success(cachedRecommendations.recommendations))
+                    return@flow
+                }
+
+                // Przygotowanie kontekstu dla modelu AI
+                val context = prepareMovieContext(userMovies)
+
+                // Generowanie rekomendacji przez OpenRouter API
+                val recommendations = generateRecommendations(context)
+
+                // Zapisanie do cache
+                recommendationsCache[cacheKey] = CachedRecommendations(
+                    recommendations = recommendations,
+                    timestamp = System.currentTimeMillis()
+                )
+
+                emit(Result.Success(recommendations))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting recommendations", e)
+                emit(Result.Error(e))
             }
-
-            // Generowanie klucza cache na podstawie ID filmów
-            val cacheKey = generateCacheKey(userMovies)
-
-            // Sprawdzenie cache
-            val cachedRecommendations = recommendationsCache[cacheKey]
-            if (cachedRecommendations != null && !isCacheExpired(cachedRecommendations.timestamp)) {
-                Log.d(TAG, "Using cached recommendations for key: $cacheKey")
-                emit(Result.Success(cachedRecommendations.recommendations))
-                return@flow
-            }
-
-            // Przygotowanie kontekstu dla modelu AI
-            val context = prepareMovieContext(userMovies)
-
-            // Generowanie rekomendacji przez OpenRouter API
-            val recommendations = generateRecommendations(context)
-
-            // Zapisanie do cache
-            recommendationsCache[cacheKey] = CachedRecommendations(
-                recommendations = recommendations,
-                timestamp = System.currentTimeMillis()
-            )
-
-            emit(Result.Success(recommendations))
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting recommendations", e)
-            emit(Result.Error(e))
         }
-    }
 
     /**
      * Odświeża listę rekomendacji dla użytkownika.
@@ -100,20 +100,21 @@ class RecommendationsService @Inject constructor(
      * @param userId Identyfikator użytkownika
      * @return Flow<Result<List<RecommendedMovieDTO>>> Zaktualizowana lista rekomendacji lub błąd
      */
-    suspend fun refreshRecommendations(userId: String): Flow<Result<List<RecommendedMovieDTO>>> = flow {
-        try {
-            // Pobranie aktualnej listy filmów użytkownika
-            val userMovies = movieRepository.getMovieEntries(userId)
+    suspend fun refreshRecommendations(userId: String): Flow<Result<List<RecommendedMovieDTO>>> =
+        flow {
+            try {
+                // Pobranie aktualnej listy filmów użytkownika
+                val userMovies = movieRepository.getMovieEntries(userId)
 
-            // Generowanie nowych rekomendacji
-            val recommendations = getRecommendations(userMovies)
+                // Generowanie nowych rekomendacji
+                val recommendations = getRecommendations(userMovies)
 
-            emitAll(recommendations)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error refreshing recommendations", e)
-            emit(Result.Error(e))
+                emitAll(recommendations)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error refreshing recommendations", e)
+                emit(Result.Error(e))
+            }
         }
-    }
 
     /**
      * Generuje klucz cache na podstawie ID filmów użytkownika.
@@ -209,7 +210,16 @@ class RecommendationsService @Inject constructor(
                                         put("description", "Powód rekomendacji")
                                     })
                                 })
-                                put("required", JsonArray(listOf("id", "title", "overview", "reason").map { JsonPrimitive(it) }))
+                                put(
+                                    "required",
+                                    JsonArray(
+                                        listOf(
+                                            "id",
+                                            "title",
+                                            "overview",
+                                            "reason"
+                                        ).map { JsonPrimitive(it) })
+                                )
                             })
                         })
                     })
@@ -229,8 +239,13 @@ class RecommendationsService @Inject constructor(
                     maxTokens = 1000,
                     responseFormat = responseSchema
                 )
-                
-                val response = openRouterApiService.generateResponse(request)
+
+                val response = openRouterApiService.generateResponse(
+                    authorization = "Bearer ${BuildConfig.OPEN_ROUTER_KEY}",
+                    httpReferer = "https://github.com/10xdevs/10x-android",
+                    xTitle = "10x Android App",
+                    request = request
+                )
 
                 // Parsowanie odpowiedzi
                 return parseRecommendationsResponse(response)
@@ -254,7 +269,8 @@ class RecommendationsService @Inject constructor(
             }
         }
 
-        throw lastException ?: IOException("Failed to generate recommendations after $MAX_RETRIES attempts")
+        throw lastException
+            ?: IOException("Failed to generate recommendations after $MAX_RETRIES attempts")
     }
 
     /**
@@ -266,16 +282,19 @@ class RecommendationsService @Inject constructor(
     private fun parseRecommendationsResponse(response: String): List<RecommendedMovieDTO> {
         try {
             val jsonResponse = json.parseToJsonElement(response).jsonObject
-            val recommendations = jsonResponse["recommendations"]?.jsonObject?.get("items")?.jsonObject
-                ?: return emptyList()
+            val recommendations =
+                jsonResponse["recommendations"]?.jsonObject?.get("items")?.jsonObject
+                    ?: return emptyList()
 
             return recommendations.entries.mapNotNull { (_, value) ->
                 try {
                     val movieObj = value.jsonObject
                     val id = movieObj["id"]?.jsonPrimitive?.content ?: return@mapNotNull null
                     val title = movieObj["title"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                    val overview = movieObj["overview"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                    val reason = movieObj["reason"]?.jsonPrimitive?.content ?: return@mapNotNull null
+                    val overview =
+                        movieObj["overview"]?.jsonPrimitive?.content ?: return@mapNotNull null
+                    val reason =
+                        movieObj["reason"]?.jsonPrimitive?.content ?: return@mapNotNull null
 
                     RecommendedMovieDTO(
                         id = id,

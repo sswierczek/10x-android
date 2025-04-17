@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -98,16 +99,34 @@ fun JournalScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    Log.d(TAG, "FAB clicked, navigating to ADD_MOVIE")
-                    navController.navigate(NavRoutes.ADD_MOVIE)
-                }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add movie"
-                )
+                // FAB for adding a movie
+                FloatingActionButton(
+                    onClick = {
+                        Log.d(TAG, "Add movie FAB clicked, navigating to ADD_MOVIE")
+                        navController.navigate(NavRoutes.ADD_MOVIE)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add movie"
+                    )
+                }
+
+                // FAB for accessing recommendations
+                FloatingActionButton(
+                    onClick = {
+                        Log.d(TAG, "Recommendations FAB clicked, navigating to RECOMMENDATIONS")
+                        navController.navigate(NavRoutes.RECOMMENDATIONS)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Face,
+                        contentDescription = "Get recommendations"
+                    )
+                }
             }
         }
     ) { paddingValues ->

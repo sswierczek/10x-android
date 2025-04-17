@@ -118,9 +118,7 @@ class AddMovieViewModel @Inject constructor(
                                     "w500"
                                 ),
                                 year = if (movie.releaseDate.isNotEmpty()) {
-                                    movie.releaseDate.take(
-                                        4
-                                    )
+                                    movie.releaseDate.take(4)
                                 } else {
                                     ""
                                 },
@@ -172,10 +170,7 @@ class AddMovieViewModel @Inject constructor(
                 }
                 Log.d(TAG, "Current user: ${currentUser.uid}")
 
-                tmdbRepository.getMovieDetails(
-                    movie.tmdbId.toInt()
-                ).collect { movieDetails ->
-
+                tmdbRepository.getMovieDetails(movie.tmdbId).collect { movieDetails ->
                     Log.d(TAG, "Fetched movie details for TMDB ID: ${movie.tmdbId}")
 
                     val movieEntry = MovieEntry(

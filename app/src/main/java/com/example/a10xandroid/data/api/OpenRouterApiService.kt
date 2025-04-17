@@ -2,6 +2,7 @@ package com.example.a10xandroid.data.api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -14,6 +15,11 @@ interface OpenRouterApiService {
         @Header("X-Title") xTitle: String,
         @Body request: OpenRouterRequest
     ): OpenRouterResponse
+
+    @POST("v1/chat/completions")
+    suspend fun generateResponse(
+        @Body request: OpenRouterRequest
+    ): String
 }
 
 @Serializable
@@ -22,7 +28,8 @@ data class OpenRouterRequest(
     val messages: List<OpenRouterMessage>,
     val temperature: Double = 0.7,
     @SerialName("max_tokens")
-    val maxTokens: Int = 1000
+    val maxTokens: Int = 1000,
+    val responseFormat: JsonElement? = null
 )
 
 @Serializable

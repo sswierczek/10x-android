@@ -23,7 +23,7 @@ interface TmdbRepository {
      * @param movieId The TMDB movie ID
      * @return Flow of Result containing movie details
      */
-    suspend fun getMovieDetails(movieId: Int): Flow<TmdbMovieDetailsApiResponse?>
+    suspend fun getMovieDetails(movieId: String): Flow<TmdbMovieDetailsApiResponse?>
 
     /**
      * Get popular movies.
@@ -66,4 +66,4 @@ interface TmdbRepository {
      * @return The full URL for the backdrop, or null if backdropPath is null
      */
     fun getBackdropUrl(backdropPath: String?, size: String): String?
-} 
+}

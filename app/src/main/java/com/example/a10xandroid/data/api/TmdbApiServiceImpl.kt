@@ -16,7 +16,7 @@ interface TmdbApiServiceImpl : TmdbApiService {
 
     @GET("movie/{movie_id}")
     override suspend fun getMovieDetails(
-        @Path("movie_id") movieId: Int,
+        @Path("movie_id") movieId: String,
         @Query("api_key") apiKey: String
     ): TmdbMovieDetailsApiResponse
 

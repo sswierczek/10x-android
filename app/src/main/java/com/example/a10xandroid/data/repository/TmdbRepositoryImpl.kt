@@ -47,23 +47,24 @@ class TmdbRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getMovieDetails(movieId: Int): Flow<TmdbMovieDetailsApiResponse?> = flow {
-        try {
-            Log.d(TAG, "Getting movie details for ID: $movieId")
-            val response = apiService.getMovieDetails(
-                movieId = movieId,
-                apiKey = apiKey
-            )
-            Log.d(TAG, "Movie details received: ${response?.title}")
-            emit(response)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting movie details for ID: $movieId", e)
+    override suspend fun getMovieDetails(movieId: String): Flow<TmdbMovieDetailsApiResponse?> =
+        flow {
+            try {
+                Log.d(TAG, "Getting movie details for ID: $movieId")
+                val response = apiService.getMovieDetails(
+                    movieId = movieId,
+                    apiKey = apiKey
+                )
+                Log.d(TAG, "Movie details received: ${response?.title}")
+                emit(response)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting movie details for ID: $movieId", e)
+                emit(null)
+            }
+        }.catch { e ->
+            Log.e(TAG, "Flow error in getMovieDetails for ID: $movieId", e)
             emit(null)
         }
-    }.catch { e ->
-        Log.e(TAG, "Flow error in getMovieDetails for ID: $movieId", e)
-        emit(null)
-    }
 
     override suspend fun getPopularMovies(page: Int): Flow<List<TmdbMovieApiResult>> = flow {
         try {

@@ -57,7 +57,7 @@ fun LoadingStateHandler(
             }
 
             StateStatus.ERROR -> {
-                ErrorView(
+                ErrorViewComposable(
                     errorMessage = state.errorMessage ?: "Unknown error occurred",
                     onRetry = onRetry
                 )
@@ -71,7 +71,7 @@ fun LoadingStateHandler(
 }
 
 @Composable
-fun ErrorView(
+fun ErrorViewComposable(
     errorMessage: String,
     onRetry: () -> Unit
 ) {

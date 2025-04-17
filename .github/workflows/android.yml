@@ -22,8 +22,13 @@ jobs:
 
     - name: Create local.properties with TMDB API key
       run: |
-        echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" > local.properties
+        echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}/n" > local.properties
         echo "Created local.properties file with TMDB API key"
+
+    - name: Create local.properties with OPEN_ROUTER_KEY
+      run: |
+        echo "OPEN_ROUTER_KEY=${{ secrets.OPEN_ROUTER_KEY }}" >> local.properties
+        echo "Created local.properties file with OPEN_ROUTER_KEY"
 
     - name: Create google-services.json
       run: |

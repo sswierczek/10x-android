@@ -30,8 +30,11 @@ android {
             properties.load(localPropertiesFile.inputStream())
             val apiKey = properties.getProperty("TMDB_API_KEY", "")
             buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
+            val openRouterKey = properties.getProperty("OPEN_ROUTER_KEY", "")
+            buildConfigField("String", "OPEN_ROUTER_KEY", "\"$openRouterKey\"")
         } else {
             buildConfigField("String", "TMDB_API_KEY", "\"\"")
+            buildConfigField("String", "OPEN_ROUTER_KEY", "\"\"")
         }
     }
 
@@ -94,7 +97,7 @@ dependencies {
 
     // Kotlin Serialization
     implementation(libs.kotlin.serialization.json)
-    
+
     // Coil for image loading
     implementation(libs.coil.compose)
 

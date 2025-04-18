@@ -155,7 +155,7 @@ fun AddMovieScreen(
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Discover",
+                title = "Search",
                 onBackClick = { navController.navigateUp() }
             )
         },
@@ -181,7 +181,7 @@ fun AddMovieScreen(
                         searchText = query
                         viewModel.updateSearchQuery(query)
                     },
-                    placeholder = { Text("Search for a movie...") },
+                    placeholder = { Text("Find movies to rate them...") },
                     modifier = Modifier.weight(1f),
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                     singleLine = true
@@ -210,7 +210,7 @@ fun AddMovieScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Search for a movie to add to your journal")
+                                Text("Search for a movie to add to your journal.")
                             }
                         }
 

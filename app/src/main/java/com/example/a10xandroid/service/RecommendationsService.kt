@@ -45,43 +45,34 @@ class RecommendationsService @Inject constructor(
     }
 
     private fun prepareMovieContext(userMovies: List<MovieEntry>): String {
-        val movieDescriptions = userMovies.map { movie ->
+        val movieList = userMovies.joinToString("\n") { entry ->
+            "- ${entry.title} (${entry.rating}/10): ${entry.notes}"
+        }
+
+        return if (movieList.isNotEmpty()) {
             """
-            Title: ${movie.title}
-            Overview: ${movie.overview}
-            Rating: ${movie.rating}
-            Notes: ${movie.notes ?: "No notes"}
-            TMDB ID: ${movie.tmdbId}
-            """.trimIndent()
-        }.joinToString("\n\n")
+            Based on the following movies the user has watched and rated:
 
-        return """
-            Based on the following movies in the user's journal:
+            $movieList
 
-            $movieDescriptions
+            Please recommend 3 different movies that the user might enjoy.
+            DO NOT recommend the same TMDB ID as all listed above.
+            Return ONLY a JSON object with the following format:
+            {"movieIds": ["TMDB_ID1", "TMDB_ID2", "TMDB_ID3"]}
 
-            Please recommend 3 movies that the user might enjoy based on their preferences.
-            IMPORTANT: You MUST ONLY recommend movies that exist in the TMDB database.
-            For each movie, you MUST:
-            1. Search for the movie on themoviedb.org to find its exact TMDB ID
-            2. Verify that the movie exists in TMDB by checking its details
-            3. Use ONLY the exact TMDB ID from the movie's page
+            Make sure to use valid TMDB IDs. Do not include any additional text or explanation.
+            """
+        } else {
+            """
+            The user has not rated any movies yet.
 
-            Your response MUST be a valid JSON object with EXACTLY this structure:
-            {
-              "movieIds": ["TMDB_ID1", "TMDB_ID2", "TMDB_ID3"]
-            }
+            Please recommend 3 popular movies that most people enjoy.
+            Return ONLY a JSON object with the following format:
+            {"movieIds": ["TMDB_ID1", "TMDB_ID2", "TMDB_ID3"]}
 
-            CRITICAL REQUIREMENTS:
-            1. ONLY include valid TMDB IDs as strings (e.g., "550" for Fight Club)
-            2. ONLY include movies that you have verified exist in TMDB
-            3. DO NOT include any text outside the JSON structure
-            4. DO NOT include any explanations or additional information
-            5. DO NOT include any movies without valid TMDB IDs
-            6. The response must be a single, valid JSON object
-
-            REMEMBER: Your entire response must be ONLY the JSON object, nothing else.
-        """.trimIndent()
+            Make sure to use valid TMDB IDs. Do not include any additional text or explanation.
+            """
+        }
     }
 
     /**
@@ -109,12 +100,12 @@ class RecommendationsService @Inject constructor(
                                 You MUST verify each movie exists in TMDB before including it.
                                 You MUST use exact TMDB IDs from themoviedb.org.
                                 You MUST follow the exact response format specified.
-                                
+
                                 Your response MUST be a valid JSON object with EXACTLY this structure:
                                 {
                                   "movieIds": ["TMDB_ID1", "TMDB_ID2", "TMDB_ID3"]
                                 }
-                                
+
                                 CRITICAL REQUIREMENTS:
                                 1. ONLY include valid TMDB IDs as strings (e.g., "550" for Fight Club)
                                 2. ONLY include movies that you have verified exist in TMDB
@@ -140,18 +131,18 @@ class RecommendationsService @Inject constructor(
                     xTitle = "10x Android App",
                     request = request
                 )
-                
+
                 Log.d(TAG, "Received response from OpenRouter API")
-                
+
                 // Get the content from the first choice's message
                 val content = response.choices.firstOrNull()?.message?.content
                     ?: throw IOException("Empty response from OpenRouter API")
-                
+
                 Log.d(TAG, "Response content: ${content.take(500)}...")
-                
+
                 // Parse the content to get movie IDs
                 val movieIds = extractMovieIdsFromContent(content)
-                
+
                 // Check if we got any valid movie IDs
                 if (movieIds.isEmpty()) {
                     Log.w(TAG, "No valid movie IDs found in the response")
@@ -164,7 +155,7 @@ class RecommendationsService @Inject constructor(
                     delay(RETRY_DELAY_MS * retryCount)
                     continue
                 }
-                
+
                 // Fetch movie details from TMDB API
                 return fetchMovieDetails(movieIds)
             } catch (e: IOException) {
@@ -200,35 +191,35 @@ class RecommendationsService @Inject constructor(
     private fun extractMovieIdsFromContent(content: String): List<String> {
         try {
             Log.d(TAG, "Extracting movie IDs from content")
-            
+
             // Parse the content as JSON to get the movie IDs
             val movieIdsJson = json.parseToJsonElement(content).jsonObject
-            
+
             // Get the movie IDs array
             val movieIdsArray = movieIdsJson["movieIds"]?.jsonArray
                 ?: return emptyList()
-            
+
             Log.d(TAG, "Found ${movieIdsArray.size} movie IDs")
-            
+
             val validMovieIds = mutableListOf<String>()
-            
+
             for (item in movieIdsArray) {
                 try {
                     val movieId = item.jsonPrimitive.content
-                    
+
                     // Validate TMDB ID
                     if (!validateTmdbId(movieId)) {
                         Log.w(TAG, "Invalid TMDB ID: $movieId")
                         continue
                     }
-                    
+
                     validMovieIds.add(movieId)
                     Log.d(TAG, "Successfully parsed movie ID: $movieId")
                 } catch (e: Exception) {
                     Log.w(TAG, "Failed to parse movie ID", e)
                 }
             }
-            
+
             return validMovieIds
         } catch (e: Exception) {
             Log.e(TAG, "Failed to extract movie IDs from content", e)

@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.a10xandroid.R
 import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.navigation.NavRoutes
 import com.example.a10xandroid.ui.common.StateStatus
@@ -123,8 +125,8 @@ fun JournalScreen(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Face,
-                        contentDescription = "Get recommendations"
+                        painter = painterResource(id = R.drawable.ic_magic_wand),
+                        contentDescription = "Get AI recommendations"
                     )
                 }
             }

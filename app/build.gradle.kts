@@ -32,9 +32,12 @@ android {
             buildConfigField("String", "TMDB_API_KEY", "\"$apiKey\"")
             val openRouterKey = properties.getProperty("OPEN_ROUTER_KEY", "")
             buildConfigField("String", "OPEN_ROUTER_KEY", "\"$openRouterKey\"")
+            val testuserkey = properties.getProperty("TESTUSER_PASSWORD", "")
+            buildConfigField("String", "TESTUSER_PASSWORD", "\"$testuserkey\"")
         } else {
             buildConfigField("String", "TMDB_API_KEY", "\"\"")
             buildConfigField("String", "OPEN_ROUTER_KEY", "\"\"")
+            buildConfigField("String", "TESTUSER_PASSWORD", "\"\"")
         }
     }
 

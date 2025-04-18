@@ -247,6 +247,7 @@ class RecommendationsService @Inject constructor(
 
         for (movieId in movieIds) {
             try {
+                Log.d(TAG, "Fetching movie details for ID: $movieId")
                 val movieDetails = tmdbRepository.getMovieDetails(movieId).first()
 
                 if (movieDetails != null) {
@@ -264,7 +265,7 @@ class RecommendationsService @Inject constructor(
                         "Successfully fetched movie details: ${movieDetails.title} (ID: $movieId)"
                     )
                 } else {
-                    Log.w(TAG, "Failed to fetch movie details for ID: $movieId")
+                    Log.w(TAG, "Failed to fetch movie details for ID: $movieId (null response)")
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "Error fetching movie details for ID: $movieId", e)

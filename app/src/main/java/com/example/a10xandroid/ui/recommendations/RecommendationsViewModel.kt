@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.a10xandroid.data.api.model.TmdbMovieDetailsApiResponse
 import com.example.a10xandroid.data.dto.RecommendedMovieDTO
 import com.example.a10xandroid.data.model.MovieEntry
+import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.data.repository.MovieRepository
 import com.example.a10xandroid.data.repository.TmdbRepository
 import com.example.a10xandroid.service.RecommendationsService
@@ -16,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,7 +31,8 @@ private const val TAG = "RecommendationsViewModel"
 class RecommendationsViewModel @Inject constructor(
     private val recommendationsService: RecommendationsService,
     private val movieRepository: MovieRepository,
-    private val tmdbRepository: TmdbRepository
+    private val tmdbRepository: TmdbRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     // UI state as StateFlow
@@ -48,11 +51,26 @@ class RecommendationsViewModel @Inject constructor(
             _uiState.update { it.copy(status = StateStatus.LOADING, errorMessage = null) }
 
             try {
+                // Get current user ID
+                val currentUser = authRepository.currentUser.first()
+                if (currentUser == null) {
+                    Log.e(TAG, "No user logged in")
+                    _uiState.update {
+                        it.copy(
+                            status = StateStatus.ERROR,
+                            errorMessage = "You must be logged in to get recommendations"
+                        )
+                    }
+                    return@launch
+                }
+
                 // Get user movies
-                val userMovies = movieRepository.getMovieEntries("current_user")
+                val userMovies = movieRepository.getMovieEntries(currentUser.uid)
+                Log.d(TAG, "Found ${userMovies.size} movies in user's journal")
 
                 // If user has no movies, return empty state
                 if (userMovies.isEmpty()) {
+                    Log.d(TAG, "No movies found in user's journal, showing empty state")
                     _uiState.update {
                         it.copy(
                             status = StateStatus.SUCCESS,
@@ -63,29 +81,18 @@ class RecommendationsViewModel @Inject constructor(
                 }
 
                 // Get recommendations from service
-                recommendationsService.getRecommendations(userMovies).collect { result ->
-                    result.fold(
-                        onSuccess = { recommendations ->
-                            // Process recommendations to view models
-                            val viewModels = processRecommendations(recommendations)
+                Log.d(TAG, "Requesting recommendations from service")
+                val recommendations = recommendationsService.getRecommendations(userMovies)
+                Log.d(TAG, "Received ${recommendations.size} recommendations from service")
+                // Process recommendations to view models
+                val viewModels = processRecommendations(recommendations)
+                Log.d(TAG, "Processed ${viewModels.size} recommendations to view models")
 
-                            _uiState.update {
-                                it.copy(
-                                    status = StateStatus.SUCCESS,
-                                    recommendations = viewModels,
-                                    errorMessage = null
-                                )
-                            }
-                        },
-                        onFailure = { error ->
-                            Log.e(TAG, "Error loading recommendations", error)
-                            _uiState.update {
-                                it.copy(
-                                    status = StateStatus.ERROR,
-                                    errorMessage = error.message ?: "Failed to load recommendations"
-                                )
-                            }
-                        }
+                _uiState.update {
+                    it.copy(
+                        status = StateStatus.SUCCESS,
+                        recommendations = viewModels,
+                        errorMessage = null
                     )
                 }
             } catch (e: Exception) {
@@ -114,8 +121,22 @@ class RecommendationsViewModel @Inject constructor(
             }
 
             try {
+                // Get current user ID
+                val currentUser = authRepository.currentUser.first()
+                if (currentUser == null) {
+                    Log.e(TAG, "No user logged in")
+                    _uiState.update {
+                        it.copy(
+                            status = StateStatus.ERROR,
+                            errorMessage = "You must be logged in to get recommendations",
+                            isRefreshing = false
+                        )
+                    }
+                    return@launch
+                }
+
                 // Get user movies
-                val userMovies = movieRepository.getMovieEntries("current_user")
+                val userMovies = movieRepository.getMovieEntries(currentUser.uid)
 
                 // If user has no movies, return empty state
                 if (userMovies.isEmpty()) {
@@ -130,32 +151,16 @@ class RecommendationsViewModel @Inject constructor(
                 }
 
                 // Get recommendations from service
-                recommendationsService.getRecommendations(userMovies).collect { result ->
-                    result.fold(
-                        onSuccess = { recommendations ->
-                            // Process recommendations to view models
-                            val viewModels = processRecommendations(recommendations)
+                val recommendations = recommendationsService.getRecommendations(userMovies)
+                // Process recommendations to view models
+                val viewModels = processRecommendations(recommendations)
 
-                            _uiState.update {
-                                it.copy(
-                                    status = StateStatus.SUCCESS,
-                                    recommendations = viewModels,
-                                    errorMessage = null,
-                                    isRefreshing = false
-                                )
-                            }
-                        },
-                        onFailure = { error ->
-                            Log.e(TAG, "Error refreshing recommendations", error)
-                            _uiState.update {
-                                it.copy(
-                                    status = StateStatus.ERROR,
-                                    errorMessage = error.message
-                                        ?: "Failed to refresh recommendations",
-                                    isRefreshing = false
-                                )
-                            }
-                        }
+                _uiState.update {
+                    it.copy(
+                        status = StateStatus.SUCCESS,
+                        recommendations = viewModels,
+                        errorMessage = null,
+                        isRefreshing = false
                     )
                 }
             } catch (e: Exception) {
@@ -175,30 +180,32 @@ class RecommendationsViewModel @Inject constructor(
      * Process recommendations and convert to view models
      */
     private suspend fun processRecommendations(recommendations: List<RecommendedMovieDTO>): List<RecommendationMovieViewModel> {
+        Log.d(TAG, "Processing ${recommendations.size} recommendations")
         return recommendations.map { recommendation ->
             try {
+                Log.d(TAG, "Processing recommendation: ${recommendation.title} (TMDB ID: ${recommendation.tmdbId})")
                 // Get additional details from TMDB
-                var tmdbMovie: TmdbMovieDetailsApiResponse? = null
-                tmdbRepository.getMovieDetails(recommendation.tmdbId).collect { response ->
-                    tmdbMovie = response
-                }
+                val tmdbMovie = tmdbRepository.getMovieDetails(recommendation.tmdbId).first()
+                Log.d(TAG, "Received TMDB details for ${recommendation.title}: ${tmdbMovie != null}")
 
                 if (tmdbMovie != null) {
                     // Create view model with additional details from TMDB
+                    Log.d(TAG, "Creating view model with TMDB details for ${recommendation.title}")
                     RecommendationMovieViewModel(
                         id = "recommendation_${recommendation.tmdbId}",
                         tmdbId = recommendation.tmdbId,
                         title = recommendation.title,
-                        posterUrl = tmdbMovie?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" },
-                        backdropUrl = tmdbMovie?.backdropPath?.let { "https://image.tmdb.org/t/p/w500$it" },
+                        posterUrl = tmdbMovie.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" },
+                        backdropUrl = tmdbMovie.backdropPath?.let { "https://image.tmdb.org/t/p/w500$it" },
                         overview = recommendation.overview,
-                        year = tmdbMovie?.releaseDate?.take(4) ?: "",
-                        genre = tmdbMovie?.genres?.firstOrNull()?.name ?: "Unknown",
-                        rating = tmdbMovie?.voteAverage?.toFloat() ?: 0f,
+                        year = tmdbMovie.releaseDate?.take(4) ?: "",
+                        genre = "",
+                        rating = tmdbMovie.voteAverage?.toFloat() ?: 0f,
                         reason = recommendation.reason
                     )
                 } else {
                     // Return basic view model without TMDB details
+                    Log.d(TAG, "Creating basic view model without TMDB details for ${recommendation.title}")
                     RecommendationMovieViewModel(
                         id = "recommendation_${recommendation.tmdbId}",
                         tmdbId = recommendation.tmdbId,
@@ -237,10 +244,23 @@ class RecommendationsViewModel @Inject constructor(
     fun addToJournal(movie: RecommendationMovieViewModel) {
         viewModelScope.launch {
             try {
+                // Get current user ID
+                val currentUser = authRepository.currentUser.first()
+                if (currentUser == null) {
+                    Log.e(TAG, "No user logged in")
+                    _uiState.update {
+                        it.copy(
+                            status = StateStatus.ERROR,
+                            errorMessage = "You must be logged in to add movies"
+                        )
+                    }
+                    return@launch
+                }
+
                 // Create a MovieEntry from the recommendation
                 val movieEntry = MovieEntry(
                     tmdbId = movie.tmdbId,
-                    userId = "current_user",
+                    userId = currentUser.uid,
                     title = movie.title,
                     overview = movie.overview,
                     posterPath = movie.posterUrl?.removePrefix("https://image.tmdb.org/t/p/w500"),
@@ -271,7 +291,13 @@ class RecommendationsViewModel @Inject constructor(
                     Log.e(TAG, "Failed to add movie ${movie.title} to journal")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error adding movie ${movie.title} to journal", e)
+                Log.e(TAG, "Error adding movie to journal", e)
+                _uiState.update {
+                    it.copy(
+                        status = StateStatus.ERROR,
+                        errorMessage = e.message ?: "Failed to add movie to journal"
+                    )
+                }
             }
         }
     }

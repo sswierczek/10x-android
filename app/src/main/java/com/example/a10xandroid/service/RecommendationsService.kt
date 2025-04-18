@@ -1,6 +1,5 @@
 package com.example.a10xandroid.service
 
-import android.content.Context
 import android.util.Log
 import com.example.a10xandroid.BuildConfig
 import com.example.a10xandroid.data.api.OpenRouterApiService
@@ -8,133 +7,43 @@ import com.example.a10xandroid.data.api.OpenRouterMessage
 import com.example.a10xandroid.data.api.OpenRouterRequest
 import com.example.a10xandroid.data.dto.RecommendedMovieDTO
 import com.example.a10xandroid.data.model.MovieEntry
-import com.example.a10xandroid.data.repository.MovieRepository
 import com.example.a10xandroid.data.repository.TmdbRepository
-import com.example.a10xandroid.util.Result
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 import retrofit2.HttpException
 import java.io.IOException
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
-import javax.inject.Singleton
 
-/**
- * Serwis odpowiedzialny za generowanie rekomendacji filmów dla użytkownika.
- * Wykorzystuje OpenRouter API do generowania rekomendacji na podstawie filmów z dziennika użytkownika.
- */
-@Singleton
+private const val TAG = "RecommendationsService"
+private const val MAX_RETRIES = 3
+private const val RETRY_DELAY_MS = 1000L
+
 class RecommendationsService @Inject constructor(
     private val openRouterApiService: OpenRouterApiService,
-    private val movieRepository: MovieRepository,
-    private val tmdbRepository: TmdbRepository,
-    private val json: Json,
-    @ApplicationContext private val context: Context
+    private val tmdbRepository: TmdbRepository
 ) {
-    companion object {
-        private const val TAG = "RecommendationsService"
-        private const val MAX_RETRIES = 3
-        private const val RETRY_DELAY_MS = 1000L
-        private const val CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000 // 24 godziny
-    }
-
-    // Cache dla rekomendacji użytkowników
-    private val recommendationsCache = ConcurrentHashMap<String, CachedRecommendations>()
+    private val json = Json { ignoreUnknownKeys = true }
 
     /**
-     * Generuje listę rekomendowanych filmów na podstawie filmów z dziennika użytkownika.
+     * Generates movie recommendations based on the user's movie entries.
      *
-     * @param userMovies Lista filmów z dziennika użytkownika
-     * @return Flow<Result<List<RecommendedMovieDTO>>> Lista rekomendowanych filmów lub błąd
+     * @param userMovies List of user's movie entries
+     * @return List of recommended movies
      */
-    suspend fun getRecommendations(userMovies: List<MovieEntry>): Flow<Result<List<RecommendedMovieDTO>>> =
-        flow {
-            try {
-                if (userMovies.isEmpty()) {
-                    emit(Result.Success(emptyList()))
-                    return@flow
-                }
-
-                // Generowanie klucza cache na podstawie ID filmów
-                val cacheKey = generateCacheKey(userMovies)
-
-                // Sprawdzenie cache
-                val cachedRecommendations = recommendationsCache[cacheKey]
-                if (cachedRecommendations != null && !isCacheExpired(cachedRecommendations.timestamp)) {
-                    Log.d(TAG, "Using cached recommendations for key: $cacheKey")
-                    emit(Result.Success(cachedRecommendations.recommendations))
-                    return@flow
-                }
-
-                // Przygotowanie kontekstu dla modelu AI
-                val context = prepareMovieContext(userMovies)
-
-                // Generowanie rekomendacji przez OpenRouter API
-                val recommendations = generateRecommendations(context)
-
-                // Zapisanie do cache
-                recommendationsCache[cacheKey] = CachedRecommendations(
-                    recommendations = recommendations,
-                    timestamp = System.currentTimeMillis()
-                )
-
-                emit(Result.Success(recommendations))
-            } catch (e: Exception) {
-                Log.e(TAG, "Error getting recommendations", e)
-                emit(Result.Error(e))
-            }
+    suspend fun getRecommendations(userMovies: List<MovieEntry>): List<RecommendedMovieDTO> {
+        if (userMovies.isEmpty()) {
+            Log.w(TAG, "No user movies provided for recommendations")
+            return emptyList()
         }
 
-    /**
-     * Odświeża listę rekomendacji dla użytkownika.
-     *
-     * @param userId Identyfikator użytkownika
-     * @return Flow<Result<List<RecommendedMovieDTO>>> Zaktualizowana lista rekomendacji lub błąd
-     */
-    suspend fun refreshRecommendations(userId: String): Flow<Result<List<RecommendedMovieDTO>>> =
-        flow {
-            try {
-                // Pobranie aktualnej listy filmów użytkownika
-                val userMovies = movieRepository.getMovieEntries(userId)
-
-                // Generowanie nowych rekomendacji
-                val recommendations = getRecommendations(userMovies)
-
-                emitAll(recommendations)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error refreshing recommendations", e)
-                emit(Result.Error(e))
-            }
-        }
-
-    /**
-     * Generuje klucz cache na podstawie ID filmów użytkownika.
-     */
-    private fun generateCacheKey(userMovies: List<MovieEntry>): String {
-        // Sortowanie ID filmów, aby zapewnić spójność klucza
-        val sortedIds = userMovies.map { it.tmdbId }.sorted()
-        return sortedIds.joinToString("_")
+        val context = prepareMovieContext(userMovies)
+        return generateRecommendations(context)
     }
 
-    /**
-     * Sprawdza, czy cache wygasł.
-     */
-    private fun isCacheExpired(timestamp: Long): Boolean {
-        return System.currentTimeMillis() - timestamp > CACHE_EXPIRY_MS
-    }
-
-    /**
-     * Przygotowuje kontekst dla modelu AI na podstawie filmów użytkownika.
-     */
     private fun prepareMovieContext(userMovies: List<MovieEntry>): String {
         val movieDescriptions = userMovies.map { movie ->
             """
@@ -142,6 +51,7 @@ class RecommendationsService @Inject constructor(
             Overview: ${movie.overview}
             Rating: ${movie.rating}
             Notes: ${movie.notes ?: "No notes"}
+            TMDB ID: ${movie.tmdbId}
             """.trimIndent()
         }.joinToString("\n\n")
 
@@ -150,31 +60,35 @@ class RecommendationsService @Inject constructor(
 
             $movieDescriptions
 
-            Please recommend 5 movies that the user might enjoy based on their preferences.
-            For each movie, provide:
-            1. Title
-            2. Brief overview
-            3. A specific reason why this movie would appeal to the user based on their journal entries
+            Please recommend 3 movies that the user might enjoy based on their preferences.
+            IMPORTANT: You MUST ONLY recommend movies that exist in the TMDB database.
+            For each movie, you MUST:
+            1. Search for the movie on themoviedb.org to find its exact TMDB ID
+            2. Verify that the movie exists in TMDB by checking its details
+            3. Use ONLY the exact TMDB ID from the movie's page
 
-            Format your response as a JSON object with the following structure:
+            Your response MUST be a valid JSON object with EXACTLY this structure:
             {
-              "recommendations": [
-                {
-                  "id": "TMDB_ID",
-                  "title": "Movie Title",
-                  "overview": "Movie overview",
-                  "reason": "Why this movie would appeal to the user"
-                }
-              ]
+              "movieIds": ["TMDB_ID1", "TMDB_ID2", "TMDB_ID3"]
             }
+
+            CRITICAL REQUIREMENTS:
+            1. ONLY include valid TMDB IDs as strings (e.g., "550" for Fight Club)
+            2. ONLY include movies that you have verified exist in TMDB
+            3. DO NOT include any text outside the JSON structure
+            4. DO NOT include any explanations or additional information
+            5. DO NOT include any movies without valid TMDB IDs
+            6. The response must be a single, valid JSON object
+
+            REMEMBER: Your entire response must be ONLY the JSON object, nothing else.
         """.trimIndent()
     }
 
     /**
-     * Generuje rekomendacje filmów przy użyciu OpenRouter API.
+     * Generates movie recommendations using the OpenRouter API.
      *
-     * @param context Kontekst filmów użytkownika
-     * @return List<RecommendedMovieDTO> Lista rekomendowanych filmów
+     * @param context The context of the user's movies
+     * @return List of recommended movies
      */
     private suspend fun generateRecommendations(context: String): List<RecommendedMovieDTO> {
         var retryCount = 0
@@ -184,84 +98,88 @@ class RecommendationsService @Inject constructor(
             try {
                 Log.d(TAG, "Generating recommendations, attempt ${retryCount + 1}")
 
-                // Przygotowanie schematu odpowiedzi
-                val responseSchema = buildJsonObject {
-                    put("type", "object")
-                    put("properties", buildJsonObject {
-                        put("recommendations", buildJsonObject {
-                            put("type", "array")
-                            put("items", buildJsonObject {
-                                put("type", "object")
-                                put("properties", buildJsonObject {
-                                    put("id", buildJsonObject {
-                                        put("type", "string")
-                                        put("description", "TMDB ID filmu")
-                                    })
-                                    put("title", buildJsonObject {
-                                        put("type", "string")
-                                        put("description", "Tytuł filmu")
-                                    })
-                                    put("overview", buildJsonObject {
-                                        put("type", "string")
-                                        put("description", "Opis filmu")
-                                    })
-                                    put("reason", buildJsonObject {
-                                        put("type", "string")
-                                        put("description", "Powód rekomendacji")
-                                    })
-                                })
-                                put(
-                                    "required",
-                                    JsonArray(
-                                        listOf(
-                                            "id",
-                                            "title",
-                                            "overview",
-                                            "reason"
-                                        ).map { JsonPrimitive(it) })
-                                )
-                            })
-                        })
-                    })
-                    put("required", JsonArray(listOf("recommendations").map { JsonPrimitive(it) }))
-                }
-
-                // Wywołanie OpenRouter API
+                // Prepare the request according to OpenRouter's chat completion format
                 val request = OpenRouterRequest(
-                    model = "openai/gpt-3.5-turbo",
+                    model = "openai/gpt-4",
                     messages = listOf(
+                        OpenRouterMessage(
+                            role = "system",
+                            content = """
+                                You are a movie recommendation assistant that ONLY returns valid JSON objects.
+                                You MUST verify each movie exists in TMDB before including it.
+                                You MUST use exact TMDB IDs from themoviedb.org.
+                                You MUST follow the exact response format specified.
+                                
+                                Your response MUST be a valid JSON object with EXACTLY this structure:
+                                {
+                                  "movieIds": ["TMDB_ID1", "TMDB_ID2", "TMDB_ID3"]
+                                }
+                                
+                                CRITICAL REQUIREMENTS:
+                                1. ONLY include valid TMDB IDs as strings (e.g., "550" for Fight Club)
+                                2. ONLY include movies that you have verified exist in TMDB
+                                3. DO NOT include any text outside the JSON structure
+                                4. DO NOT include any explanations or additional information
+                                5. DO NOT include any movies without valid TMDB IDs
+                                6. The response must be a single, valid JSON object
+                            """.trimIndent()
+                        ),
                         OpenRouterMessage(
                             role = "user",
                             content = context
                         )
                     ),
-                    temperature = 0.7,
-                    maxTokens = 1000,
-                    responseFormat = responseSchema
+                    temperature = 0.3, // Lower temperature for more consistent output
+                    maxTokens = 2000
                 )
 
-                val response = openRouterApiService.generateResponse(
+                Log.d(TAG, "Sending request to OpenRouter API")
+                val response = openRouterApiService.createChatCompletion(
                     authorization = "Bearer ${BuildConfig.OPEN_ROUTER_KEY}",
                     httpReferer = "https://github.com/10xdevs/10x-android",
                     xTitle = "10x Android App",
                     request = request
                 )
-
-                // Parsowanie odpowiedzi
-                return parseRecommendationsResponse(response)
+                
+                Log.d(TAG, "Received response from OpenRouter API")
+                
+                // Get the content from the first choice's message
+                val content = response.choices.firstOrNull()?.message?.content
+                    ?: throw IOException("Empty response from OpenRouter API")
+                
+                Log.d(TAG, "Response content: ${content.take(500)}...")
+                
+                // Parse the content to get movie IDs
+                val movieIds = extractMovieIdsFromContent(content)
+                
+                // Check if we got any valid movie IDs
+                if (movieIds.isEmpty()) {
+                    Log.w(TAG, "No valid movie IDs found in the response")
+                    // If this is the last retry, throw an exception
+                    if (retryCount == MAX_RETRIES - 1) {
+                        throw IOException("No valid movie IDs found in the response")
+                    }
+                    // Otherwise, retry
+                    retryCount++
+                    delay(RETRY_DELAY_MS * retryCount)
+                    continue
+                }
+                
+                // Fetch movie details from TMDB API
+                return fetchMovieDetails(movieIds)
             } catch (e: IOException) {
                 Log.w(TAG, "Network error while generating recommendations", e)
                 lastException = e
                 retryCount++
                 if (retryCount < MAX_RETRIES) {
-                    kotlinx.coroutines.delay(RETRY_DELAY_MS * retryCount)
+                    delay(RETRY_DELAY_MS * retryCount)
                 }
             } catch (e: HttpException) {
                 Log.w(TAG, "HTTP error while generating recommendations: ${e.code()}", e)
                 lastException = e
                 retryCount++
                 if (retryCount < MAX_RETRIES) {
-                    kotlinx.coroutines.delay(RETRY_DELAY_MS * retryCount)
+                    delay(RETRY_DELAY_MS * retryCount)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Unexpected error while generating recommendations", e)
@@ -274,62 +192,102 @@ class RecommendationsService @Inject constructor(
     }
 
     /**
-     * Parsuje odpowiedź z OpenRouter API i konwertuje ją na listę rekomendowanych filmów.
+     * Extracts movie IDs from the content of the OpenRouter API response.
      *
-     * @param response Odpowiedź z OpenRouter API
-     * @return List<RecommendedMovieDTO> Lista rekomendowanych filmów
+     * @param content The content from the OpenRouter API response
+     * @return List of movie IDs
      */
-    private fun parseRecommendationsResponse(response: String): List<RecommendedMovieDTO> {
+    private fun extractMovieIdsFromContent(content: String): List<String> {
         try {
-            val jsonResponse = json.parseToJsonElement(response).jsonObject
-            val recommendations =
-                jsonResponse["recommendations"]?.jsonObject?.get("items")?.jsonObject
-                    ?: return emptyList()
-
-            return recommendations.entries.mapNotNull { (_, value) ->
+            Log.d(TAG, "Extracting movie IDs from content")
+            
+            // Parse the content as JSON to get the movie IDs
+            val movieIdsJson = json.parseToJsonElement(content).jsonObject
+            
+            // Get the movie IDs array
+            val movieIdsArray = movieIdsJson["movieIds"]?.jsonArray
+                ?: return emptyList()
+            
+            Log.d(TAG, "Found ${movieIdsArray.size} movie IDs")
+            
+            val validMovieIds = mutableListOf<String>()
+            
+            for (item in movieIdsArray) {
                 try {
-                    val movieObj = value.jsonObject
-                    val id = movieObj["id"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                    val title = movieObj["title"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                    val overview =
-                        movieObj["overview"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                    val reason =
-                        movieObj["reason"]?.jsonPrimitive?.content ?: return@mapNotNull null
-
-                    RecommendedMovieDTO(
-                        id = id,
-                        tmdbId = id,
-                        title = title,
-                        overview = overview,
-                        reason = reason
-                    )
+                    val movieId = item.jsonPrimitive.content
+                    
+                    // Validate TMDB ID
+                    if (!validateTmdbId(movieId)) {
+                        Log.w(TAG, "Invalid TMDB ID: $movieId")
+                        continue
+                    }
+                    
+                    validMovieIds.add(movieId)
+                    Log.d(TAG, "Successfully parsed movie ID: $movieId")
                 } catch (e: Exception) {
-                    Log.w(TAG, "Failed to parse recommendation", e)
-                    null
+                    Log.w(TAG, "Failed to parse movie ID", e)
                 }
             }
+            
+            return validMovieIds
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to parse recommendations response", e)
+            Log.e(TAG, "Failed to extract movie IDs from content", e)
             return emptyList()
         }
     }
 
     /**
-     * Czyści cache rekomendacji.
+     * Fetches movie details from the TMDB API for the given movie IDs.
+     *
+     * @param movieIds List of movie IDs
+     * @return List of recommended movies
      */
-    fun clearCache() {
-        Log.d(TAG, "Clearing recommendations cache")
-        recommendationsCache.clear()
+    private suspend fun fetchMovieDetails(movieIds: List<String>): List<RecommendedMovieDTO> {
+        val recommendations = mutableListOf<RecommendedMovieDTO>()
+
+        for (movieId in movieIds) {
+            try {
+                val movieDetails = tmdbRepository.getMovieDetails(movieId).first()
+
+                if (movieDetails != null) {
+                    recommendations.add(
+                        RecommendedMovieDTO(
+                            id = movieId,
+                            tmdbId = movieId,
+                            title = movieDetails.title,
+                            overview = movieDetails.overview,
+                            reason = "Recommended based on your preferences"
+                        )
+                    )
+                    Log.d(
+                        TAG,
+                        "Successfully fetched movie details: ${movieDetails.title} (ID: $movieId)"
+                    )
+                } else {
+                    Log.w(TAG, "Failed to fetch movie details for ID: $movieId")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Error fetching movie details for ID: $movieId", e)
+            }
+        }
+
+        return recommendations
+    }
+
+    /**
+     * Validates a TMDB ID.
+     *
+     * @param id The TMDB ID to validate
+     * @return True if the ID is valid, false otherwise
+     */
+    private fun validateTmdbId(id: String): Boolean {
+        return try {
+            // Check if the ID is a valid integer
+            val numericId = id.toInt()
+            // TMDB IDs are typically positive integers
+            numericId > 0
+        } catch (e: NumberFormatException) {
+            false
+        }
     }
 }
-
-/**
- * Klasa reprezentująca cache rekomendacji.
- *
- * @property recommendations Lista rekomendowanych filmów
- * @property timestamp Czas utworzenia cache
- */
-data class CachedRecommendations(
-    val recommendations: List<RecommendedMovieDTO>,
-    val timestamp: Long
-)

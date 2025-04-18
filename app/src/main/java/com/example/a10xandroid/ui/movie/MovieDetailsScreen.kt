@@ -202,12 +202,6 @@ fun MovieDetailsContent(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // User Rating Section
-        Text(
-            text = "Your Rating",
-            style = MaterialTheme.typography.titleMedium
-        )
-
         Column(
             modifier = Modifier.padding(vertical = 8.dp),
         ) {

@@ -71,7 +71,6 @@ fun MovieSearchResultItem(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Your rating: ${rating.toInt()}/5")
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         horizontalArrangement = Arrangement.Center,

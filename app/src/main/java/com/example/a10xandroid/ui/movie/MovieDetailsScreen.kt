@@ -21,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,6 +38,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.a10xandroid.data.model.MovieEntry
+import com.example.a10xandroid.ui.components.AppTopBar
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -55,21 +55,15 @@ fun MovieDetailsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(uiState.movieEntry?.title ?: "Movie Details") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
+            AppTopBar(
+                title = uiState.movieEntry?.title ?: "Movie Details",
+                onBackClick = { navController.popBackStack() },
                 actions = {
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = "Delete"
+                            contentDescription = "Delete",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }

@@ -21,6 +21,7 @@ fun AppTopBar(
     title: String,
     onProfileClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
+    actions: @Composable () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -30,6 +31,7 @@ fun AppTopBar(
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
+                maxLines = 1,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
             )
@@ -49,6 +51,7 @@ fun AppTopBar(
             }
         },
         actions = {
+            actions()
             if (onProfileClick != null) {
                 IconButton(onClick = onProfileClick) {
                     Icon(

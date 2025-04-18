@@ -229,7 +229,7 @@ fun LoginLink(
             contentPadding = PaddingValues(4.dp)
         ) {
             Text(
-                text = "Sign in",
+                text = "Log in",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )

@@ -12,18 +12,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * ViewModel dla ekranu rejestracji, zarządzający stanem formularza i logiką rejestracji
+ * ViewModel for the registration screen, managing form state and registration logic
  */
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    // Stan UI jako MutableStateFlow
+    // UI state as MutableStateFlow
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
-    // Aktualizacja e-maila
+    // Update email
     fun updateEmail(email: String) {
         _uiState.value = _uiState.value.copy(
             email = email,
@@ -31,7 +31,7 @@ class RegisterViewModel @Inject constructor(
         )
     }
 
-    // Aktualizacja hasła
+    // Update password
     fun updatePassword(password: String) {
         _uiState.value = _uiState.value.copy(
             password = password,
@@ -40,7 +40,7 @@ class RegisterViewModel @Inject constructor(
         )
     }
 
-    // Aktualizacja potwierdzenia hasła
+    // Update confirm password
     fun updateConfirmPassword(confirmPassword: String) {
         _uiState.value = _uiState.value.copy(
             confirmPassword = confirmPassword,
@@ -48,38 +48,38 @@ class RegisterViewModel @Inject constructor(
         )
     }
 
-    // Aktualizacja akceptacji warunków
+    // Update terms acceptance
     fun updateTermsAcceptance(accepted: Boolean) {
         _uiState.value = _uiState.value.copy(
             acceptedTerms = accepted,
-            termsError = if (accepted) null else "Musisz zaakceptować warunki korzystania"
+            termsError = if (accepted) null else "You need to accept the terms of service"
         )
     }
 
-    // Przełączanie widoczności hasła
+    // Toggle password visibility
     fun togglePasswordVisibility() {
         _uiState.value = _uiState.value.copy(
             isPasswordVisible = !_uiState.value.isPasswordVisible
         )
     }
 
-    // Przełączanie widoczności potwierdzenia hasła
+    // Toggle confirm password visibility
     fun toggleConfirmPasswordVisibility() {
         _uiState.value = _uiState.value.copy(
             isConfirmPasswordVisible = !_uiState.value.isConfirmPasswordVisible
         )
     }
 
-    // Rejestracja
+    // Register
     fun register() {
-        // Sprawdzenie poprawności danych
+        // Validate data
         val currentState = _uiState.value
         val emailError = validateEmail(currentState.email)
         val passwordError = validatePassword(currentState.password)
         val confirmPasswordError =
             validateConfirmPassword(currentState.password, currentState.confirmPassword)
         val termsError =
-            if (currentState.acceptedTerms) null else "You need to accept terms of privacy"
+            if (currentState.acceptedTerms) null else "You need to accept the terms of service"
 
         if (emailError != null || passwordError != null || confirmPasswordError != null || termsError != null) {
             _uiState.value = currentState.copy(
@@ -91,7 +91,7 @@ class RegisterViewModel @Inject constructor(
             return
         }
 
-        // Rozpoczęcie rejestracji
+        // Start registration
         _uiState.value = currentState.copy(
             isLoading = true,
             errorMessage = null
@@ -99,17 +99,17 @@ class RegisterViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Próba rejestracji
+                // Attempt registration
                 val result = authRepository.signUp(
                     email = currentState.email,
                     password = currentState.password
                 )
 
                 if (result.isSuccess) {
-                    // Rejestracja udana - nie aktualizujemy stanu,
-                    // ponieważ nastąpi nawigacja do głównego ekranu
+                    // Registration successful - we don't update state,
+                    // as navigation to the main screen will occur
                 } else {
-                    // Obsługa błędu z Result
+                    // Handle Result error
                     val exception = result.exceptionOrNull()?.let {
                         if (it is Exception) {
                             it
@@ -125,7 +125,7 @@ class RegisterViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                // Obsługa błędu rejestracji
+                // Handle registration error
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     errorMessage = getReadableErrorMessage(e)
@@ -134,59 +134,59 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    // Funkcja mapująca błędy na przyjazne komunikaty dla użytkownika
+    // Function mapping errors to user-friendly messages
     private fun getReadableErrorMessage(exception: Exception): String {
         return when {
-            // Błędy specyficzne dla Firebase Auth
+            // Firebase Auth specific errors
             exception.message?.contains("email-already-in-use") == true ->
-                "Ten adres e-mail jest już używany przez inne konto"
+                "This email address is already in use by another account"
 
             exception.message?.contains("weak-password") == true ->
-                "Hasło jest zbyt słabe. Użyj co najmniej 6 znaków"
+                "Password is too weak. Use at least 6 characters"
 
             exception.message?.contains("invalid-email") == true ->
-                "Niepoprawny format adresu e-mail"
+                "Invalid email format"
 
             exception.message?.contains("network") == true ->
-                "Problem z połączeniem internetowym. Sprawdź swoje połączenie i spróbuj ponownie"
+                "Network connection issue. Check your connection and try again"
 
             exception.message?.contains("unknown") == true ->
-                "Nieznany błąd podczas rejestracji. Spróbuj ponownie"
-            // Ogólny błąd
-            else -> exception.message ?: "Wystąpił błąd podczas rejestracji"
+                "Unknown error during registration. Please try again"
+            // General error
+            else -> exception.message ?: "An error occurred during registration"
         }
     }
 
-    // Walidacja e-maila
+    // Email validation
     private fun validateEmail(email: String): String? {
         return when {
-            email.isBlank() -> "E-mail jest wymagany"
-            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Niepoprawny format adresu e-mail"
+            email.isBlank() -> "Email is required"
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Invalid email format"
             else -> null
         }
     }
 
-    // Walidacja hasła
+    // Password validation
     private fun validatePassword(password: String): String? {
         return when {
-            password.isBlank() -> "Hasło jest wymagane"
-            password.length < 6 -> "Hasło musi zawierać co najmniej 6 znaków"
-            !password.any { it.isDigit() } -> "Hasło musi zawierać co najmniej jedną cyfrę"
-            !password.any { it.isLetter() } -> "Hasło musi zawierać co najmniej jedną literę"
+            password.isBlank() -> "Password is required"
+            password.length < 6 -> "Password must contain at least 6 characters"
+            !password.any { it.isDigit() } -> "Password must contain at least one digit"
+            !password.any { it.isLetter() } -> "Password must contain at least one letter"
             else -> null
         }
     }
 
-    // Walidacja potwierdzenia hasła
+    // Confirm password validation
     private fun validateConfirmPassword(password: String, confirmPassword: String): String? {
         return when {
-            confirmPassword.isBlank() -> "Potwierdzenie hasła jest wymagane"
-            confirmPassword != password -> "Hasła nie są identyczne"
+            confirmPassword.isBlank() -> "Password confirmation is required"
+            confirmPassword != password -> "Passwords do not match"
             else -> null
         }
     }
 
-    // Czyszczenie błędu ogólnego
+    // Clear general error
     fun clearErrorMessage() {
         _uiState.value = _uiState.value.copy(
             errorMessage = null

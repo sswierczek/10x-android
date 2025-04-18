@@ -1,8 +1,8 @@
 package com.example.a10xandroid.di
 
-import com.example.a10xandroid.data.api.OpenRouterApiService
-import com.example.a10xandroid.data.repository.OpenRouterRepository
-import com.example.a10xandroid.data.repository.OpenRouterRepositoryImpl
+import com.example.a10xandroid.data.openrouter.OpenRouterApiService
+import com.example.a10xandroid.data.openrouter.OpenRouterRepository
+import com.example.a10xandroid.data.openrouter.OpenRouterRepositoryImpl
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides

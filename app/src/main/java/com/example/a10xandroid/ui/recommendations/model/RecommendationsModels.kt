@@ -1,8 +1,8 @@
 package com.example.a10xandroid.ui.recommendations.model
 
-import com.example.a10xandroid.data.dto.RecommendedMovieDTO
 import com.example.a10xandroid.data.model.MovieRecommendation
 import com.example.a10xandroid.data.model.RecommendationStatus
+import com.example.a10xandroid.data.openrouter.RecommendedMovieDTO
 import com.example.a10xandroid.ui.common.StateStatus
 
 /**

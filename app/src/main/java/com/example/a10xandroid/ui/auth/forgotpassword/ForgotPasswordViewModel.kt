@@ -2,7 +2,7 @@ package com.example.a10xandroid.ui.auth.forgotpassword
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.data.auth.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,17 +53,21 @@ class ForgotPasswordViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
                 val errorMessage = when {
-                    e.message?.contains("reCAPTCHA") == true -> 
+                    e.message?.contains("reCAPTCHA") == true ->
                         "A verification step is required. Please check your email for a reCAPTCHA verification link."
-                    e.message?.contains("user-not-found") == true -> 
+
+                    e.message?.contains("user-not-found") == true ->
                         "No account found with this email address."
-                    e.message?.contains("invalid-email") == true -> 
+
+                    e.message?.contains("invalid-email") == true ->
                         "Invalid email format. Please enter a valid email address."
-                    e.message?.contains("too-many-requests") == true -> 
+
+                    e.message?.contains("too-many-requests") == true ->
                         "Too many attempts. Please try again later."
+
                     else -> e.message ?: "An error occurred while resetting password"
                 }
-                
+
                 _uiState.update {
                     it.copy(
                         isLoading = false,

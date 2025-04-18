@@ -3,8 +3,8 @@ package com.example.a10xandroid.ui.auth
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.a10xandroid.data.auth.AuthService
 import com.example.a10xandroid.data.model.User
-import com.example.a10xandroid.data.service.AuthService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

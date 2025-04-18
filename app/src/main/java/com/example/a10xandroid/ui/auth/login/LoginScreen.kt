@@ -1,7 +1,7 @@
 package com.example.a10xandroid.ui.auth.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,13 +23,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.a10xandroid.R
 import com.example.a10xandroid.navigation.NavRoutes
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 /**
  * Główny ekran logowania, zawierający wszystkie komponenty potrzebne do logowania.
@@ -58,168 +61,98 @@ fun LoginScreen(
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Logo aplikacji
-            TopLogo()
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Formularz logowania
-            LoginForm(
-                email = uiState.email,
-                password = uiState.password,
-                isPasswordVisible = uiState.isPasswordVisible,
-                emailError = uiState.emailError,
-                passwordError = uiState.passwordError,
-                isLoading = uiState.isLoading,
-                onEmailChange = { email ->
-                    viewModel.updateEmail(email)
-                    if (uiState.errorMessage != null) {
-                        viewModel.clearErrorMessage()
-                    }
-                },
-                onPasswordChange = { password ->
-                    viewModel.updatePassword(password)
-                    if (uiState.errorMessage != null) {
-                        viewModel.clearErrorMessage()
-                    }
-                },
-                onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
-                onLoginClick = {
-                    scope.launch {
-                        viewModel.login()
-                    }
-                },
-                onForgotPasswordClick = {
-                    navController.navigate(NavRoutes.FORGOT_PASSWORD)
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Link do rejestracji
-            RegistrationLink(
-                onClick = {
-                    // Nawigacja do ekranu rejestracji
-                    navController.navigate(NavRoutes.REGISTER)
-                }
-            )
-        }
-
-        // Wyświetlanie błędu logowania
-        if (uiState.errorMessage != null) {
-            ErrorMessage(
-                message = uiState.errorMessage!!,
-                isVisible = true,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp)
-            )
-        }
-
-        // Wskaźnik ładowania
-        if (uiState.isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .align(Alignment.Center),
-                contentAlignment = Alignment.Center
-            ) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    LoadingIndicator(
-                        isVisible = true,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Logo aplikacji wyświetlane na górze ekranu.
- */
-@Composable
-fun TopLogo() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Favorite,
-            contentDescription = "Logo aplikacji",
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primary
+        // App Logo
+        Image(
+            painter = painterResource(id = R.drawable.ic_app_logo_large),
+            contentDescription = "App Logo",
+            modifier = Modifier.size(120.dp)
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "MovieMind",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
+            text = "Welcome Back",
+            style = MaterialTheme.typography.headlineMedium
         )
-    }
-}
 
-/**
- * Wskaźnik ładowania wyświetlany podczas logowania.
- */
-@Composable
-fun LoadingIndicator(
-    isVisible: Boolean,
-    modifier: Modifier = Modifier
-) {
-    if (isVisible) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
+        Spacer(modifier = Modifier.height(32.dp))
+
+        OutlinedTextField(
+            value = uiState.email,
+            onValueChange = viewModel::updateEmail,
+            label = { Text("Email") },
+            isError = uiState.emailError != null,
+            supportingText = uiState.emailError?.let { { Text(it) } },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = uiState.password,
+            onValueChange = viewModel::updatePassword,
+            label = { Text("Password") },
+            isError = uiState.passwordError != null,
+            supportingText = uiState.passwordError?.let { { Text(it) } },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(
+            onClick = { navController.navigate(NavRoutes.FORGOT_PASSWORD) },
+            modifier = Modifier.align(Alignment.End)
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(24.dp),
-                strokeWidth = 2.dp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Signing in...",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Text("Forgot Password?")
         }
-    }
-}
 
-/**
- * Komunikat błędu wyświetlany w przypadku nieudanego logowania.
- */
-@Composable
-fun ErrorMessage(
-    message: String,
-    isVisible: Boolean,
-    modifier: Modifier = Modifier
-) {
-    if (isVisible) {
-        Surface(
-            color = MaterialTheme.colorScheme.errorContainer,
-            shape = MaterialTheme.shapes.medium,
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = { viewModel.login() },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !uiState.isLoading
         ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text("Login")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextButton(
+            onClick = { navController.navigate(NavRoutes.REGISTER) }
+        ) {
+            Text("Don't have an account? Register")
+        }
+
+        uiState.errorMessage?.let { error ->
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = message,
-                color = MaterialTheme.colorScheme.onErrorContainer,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(16.dp)
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }

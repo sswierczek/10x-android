@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.navigation.NavGraph
 import com.example.a10xandroid.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint

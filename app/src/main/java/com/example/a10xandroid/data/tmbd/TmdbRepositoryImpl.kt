@@ -1,15 +1,14 @@
-package com.example.a10xandroid.data.repository
+package com.example.a10xandroid.data.tmbd
 
+import android.util.Log
 import com.example.a10xandroid.BuildConfig
-import com.example.a10xandroid.data.api.TmdbApiService
-import com.example.a10xandroid.data.api.model.TmdbMovieApiResult
-import com.example.a10xandroid.data.api.model.TmdbMovieDetailsApiResponse
+import com.example.a10xandroid.data.tmbd.model.TmdbMovieApiResult
+import com.example.a10xandroid.data.tmbd.model.TmdbMovieDetailsApiResponse
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import javax.inject.Singleton
-import android.util.Log
 
 private const val TAG = "TmdbRepositoryImpl"
 
@@ -43,12 +42,18 @@ class TmdbRepositoryImpl @Inject constructor(
 
     override suspend fun getMovieDetails(movieId: String): Flow<TmdbMovieDetailsApiResponse?> =
         flow {
-            Log.d(TAG, "Getting movie details for ID: $movieId")
+            Log.d(
+                TAG,
+                "Getting movie details for ID: $movieId"
+            )
             val response = apiService.getMovieDetails(
                 movieId = movieId,
                 apiKey = apiKey
             )
-            Log.d(TAG, "Movie details received: ${response?.title}")
+            Log.d(
+                TAG,
+                "Movie details received: ${response?.title}"
+            )
             emit(response)
         }.catch { e ->
             Log.e(TAG, "Error getting movie details for ID: $movieId", e)

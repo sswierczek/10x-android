@@ -3,7 +3,7 @@ package com.example.a10xandroid.ui.auth.login
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.data.auth.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

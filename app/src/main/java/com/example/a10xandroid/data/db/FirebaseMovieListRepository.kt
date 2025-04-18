@@ -1,7 +1,8 @@
-package com.example.a10xandroid.data.repository
+package com.example.a10xandroid.data.db
 
 import com.example.a10xandroid.data.model.MovieList
 import com.example.a10xandroid.data.model.MovieListEntry
+import com.example.a10xandroid.data.repository.MovieListRepository
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -13,6 +14,8 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "FirebaseMovieListRepository"
 
 @Singleton
 class FirebaseMovieListRepository @Inject constructor(

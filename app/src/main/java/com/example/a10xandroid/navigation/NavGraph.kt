@@ -14,11 +14,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.ui.addmovie.AddMovieScreen
+import com.example.a10xandroid.ui.auth.forgotpassword.ForgotPasswordScreen
 import com.example.a10xandroid.ui.auth.login.LoginScreen
 import com.example.a10xandroid.ui.auth.register.RegisterScreen
-import com.example.a10xandroid.ui.auth.forgotpassword.ForgotPasswordScreen
 import com.example.a10xandroid.ui.journal.JournalScreen
 import com.example.a10xandroid.ui.movie.MovieDetailsScreen
 import com.example.a10xandroid.ui.profile.ProfileScreen

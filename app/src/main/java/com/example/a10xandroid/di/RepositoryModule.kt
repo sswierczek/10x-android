@@ -1,15 +1,15 @@
 package com.example.a10xandroid.di
 
-import com.example.a10xandroid.data.repository.AuthRepository
-import com.example.a10xandroid.data.repository.FirebaseAuthRepository
-import com.example.a10xandroid.data.repository.FirebaseMovieListRepository
-import com.example.a10xandroid.data.repository.FirebaseMovieRepository
+import com.example.a10xandroid.data.auth.AuthRepository
+import com.example.a10xandroid.data.db.FirebaseAuthRepository
+import com.example.a10xandroid.data.db.FirebaseMovieListRepository
+import com.example.a10xandroid.data.db.FirebaseMovieRepository
 import com.example.a10xandroid.data.repository.MovieListRepository
 import com.example.a10xandroid.data.repository.MovieRepository
 import com.example.a10xandroid.data.repository.RecommendationsRepository
-import com.example.a10xandroid.data.repository.TmdbRepository
-import com.example.a10xandroid.data.repository.TmdbRepositoryImpl
 import com.example.a10xandroid.data.repository.impl.RecommendationsRepositoryImpl
+import com.example.a10xandroid.data.tmbd.TmdbRepository
+import com.example.a10xandroid.data.tmbd.TmdbRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

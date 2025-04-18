@@ -1,7 +1,8 @@
-package com.example.a10xandroid.data.repository
+package com.example.a10xandroid.data.db
 
 import android.util.Log
 import com.example.a10xandroid.data.model.MovieEntry
+import com.example.a10xandroid.data.repository.MovieRepository
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase

@@ -1,10 +1,7 @@
-package com.example.a10xandroid.data.repository
+package com.example.a10xandroid.data.openrouter
 
 import android.util.Log
 import com.example.a10xandroid.BuildConfig
-import com.example.a10xandroid.data.api.OpenRouterApiService
-import com.example.a10xandroid.data.api.OpenRouterMessage
-import com.example.a10xandroid.data.api.OpenRouterRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -25,7 +22,7 @@ class OpenRouterRepositoryImpl @Inject constructor(
     ): Flow<String> = flow {
         try {
             Log.d(TAG, "Generating response with model: $model")
-            
+
             val request = OpenRouterRequest(
                 model = model,
                 messages = messages
@@ -49,4 +46,4 @@ class OpenRouterRepositoryImpl @Inject constructor(
             throw e
         }
     }
-} 
+}

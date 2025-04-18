@@ -1,8 +1,8 @@
-package com.example.a10xandroid.data.api
+package com.example.a10xandroid.data.tmbd
 
 import com.example.a10xandroid.BuildConfig
-import com.example.a10xandroid.data.api.model.TmdbMovieDetailsApiResponse
-import com.example.a10xandroid.data.api.model.TmdbMovieSearchApiResponse
+import com.example.a10xandroid.data.tmbd.model.TmdbMovieDetailsApiResponse
+import com.example.a10xandroid.data.tmbd.model.TmdbMovieSearchApiResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

@@ -1,7 +1,6 @@
-package com.example.a10xandroid.data.service
+package com.example.a10xandroid.data.auth
 
 import com.example.a10xandroid.data.model.MovieList
-import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.data.repository.MovieListRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest

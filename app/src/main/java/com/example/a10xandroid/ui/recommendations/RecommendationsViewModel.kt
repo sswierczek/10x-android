@@ -3,12 +3,12 @@ package com.example.a10xandroid.ui.recommendations
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.a10xandroid.data.dto.RecommendedMovieDTO
+import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.data.model.MovieEntry
-import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.data.openrouter.RecommendationsService
+import com.example.a10xandroid.data.openrouter.RecommendedMovieDTO
 import com.example.a10xandroid.data.repository.MovieRepository
-import com.example.a10xandroid.data.repository.TmdbRepository
-import com.example.a10xandroid.service.RecommendationsService
+import com.example.a10xandroid.data.tmbd.TmdbRepository
 import com.example.a10xandroid.ui.common.StateStatus
 import com.example.a10xandroid.ui.recommendations.model.RecommendationMovieViewModel
 import com.example.a10xandroid.ui.recommendations.model.RecommendationsUiState

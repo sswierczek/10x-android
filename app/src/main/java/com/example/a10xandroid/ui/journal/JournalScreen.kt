@@ -59,7 +59,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.a10xandroid.R
-import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.navigation.NavRoutes
 import com.example.a10xandroid.ui.common.StateStatus
 import com.example.a10xandroid.ui.components.AppToolbar

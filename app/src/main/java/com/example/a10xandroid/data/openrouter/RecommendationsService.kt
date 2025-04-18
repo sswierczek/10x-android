@@ -1,13 +1,9 @@
-package com.example.a10xandroid.service
+package com.example.a10xandroid.data.openrouter
 
 import android.util.Log
 import com.example.a10xandroid.BuildConfig
-import com.example.a10xandroid.data.api.OpenRouterApiService
-import com.example.a10xandroid.data.api.OpenRouterMessage
-import com.example.a10xandroid.data.api.OpenRouterRequest
-import com.example.a10xandroid.data.dto.RecommendedMovieDTO
 import com.example.a10xandroid.data.model.MovieEntry
-import com.example.a10xandroid.data.repository.TmdbRepository
+import com.example.a10xandroid.data.tmbd.TmdbRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json

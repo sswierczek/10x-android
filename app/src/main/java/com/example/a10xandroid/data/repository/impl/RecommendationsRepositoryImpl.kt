@@ -1,14 +1,14 @@
 package com.example.a10xandroid.data.repository.impl
 
 import android.util.Log
+import com.example.a10xandroid.data.auth.AuthRepository
+import com.example.a10xandroid.data.auth.getCurrentUserId
 import com.example.a10xandroid.data.model.MovieEntry
 import com.example.a10xandroid.data.model.MovieRecommendation
 import com.example.a10xandroid.data.model.RecommendationStatus
 import com.example.a10xandroid.data.model.toMap
-import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.data.repository.MovieRepository
 import com.example.a10xandroid.data.repository.RecommendationsRepository
-import com.example.a10xandroid.data.repository.getCurrentUserId
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.getValue
 import kotlinx.coroutines.tasks.await

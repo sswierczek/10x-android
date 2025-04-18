@@ -59,7 +59,7 @@ fun AppToolbar(
                 IconButton(onClick = { showProfileMenu = true }) {
                     Icon(Icons.Default.AccountCircle, contentDescription = "Profile")
                 }
-                
+
                 DropdownMenu(
                     expanded = showProfileMenu,
                     onDismissRequest = { showProfileMenu = false }
@@ -81,4 +81,4 @@ fun AppToolbar(
             actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     )
-} 
+}

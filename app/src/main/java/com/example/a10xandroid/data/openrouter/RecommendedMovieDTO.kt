@@ -1,4 +1,4 @@
-package com.example.a10xandroid.data.dto
+package com.example.a10xandroid.data.openrouter
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -18,4 +18,4 @@ data class RecommendedMovieDTO(
     @SerialName("vote_average")
     val voteAverage: Double = 0.0,
     val reason: String = ""
-) 
+)

@@ -1,6 +1,5 @@
-package com.example.a10xandroid.data.repository
+package com.example.a10xandroid.data.openrouter
 
-import com.example.a10xandroid.data.api.OpenRouterMessage
 import kotlinx.coroutines.flow.Flow
 
 interface OpenRouterRepository {
@@ -8,4 +7,4 @@ interface OpenRouterRepository {
         messages: List<OpenRouterMessage>,
         model: String = "openai/gpt-3.5-turbo"
     ): Flow<String>
-} 
+}

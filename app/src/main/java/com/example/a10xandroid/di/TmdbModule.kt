@@ -1,7 +1,7 @@
 package com.example.a10xandroid.di
 
 import android.util.Log
-import com.example.a10xandroid.data.api.TmdbApiService
+import com.example.a10xandroid.data.tmbd.TmdbApiService
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides

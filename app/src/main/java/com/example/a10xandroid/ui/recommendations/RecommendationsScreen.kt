@@ -291,10 +291,10 @@ fun RecommendationMovieCard(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
-            
+
             // Add to journal button
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End

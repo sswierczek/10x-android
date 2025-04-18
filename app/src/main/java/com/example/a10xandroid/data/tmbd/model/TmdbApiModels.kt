@@ -1,4 +1,4 @@
-package com.example.a10xandroid.data.api.model
+package com.example.a10xandroid.data.tmbd.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -105,4 +105,4 @@ data class TmdbSpokenLanguageApiResponse(
     @SerialName("iso_639_1")
     val iso6391: String,
     val name: String
-) 
+)

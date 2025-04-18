@@ -25,21 +25,21 @@ class MovieDetailsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val movieId: String = checkNotNull(savedStateHandle["movieId"])
-    
+
     private val _uiState = MutableStateFlow(MovieDetailsUiState())
     val uiState: StateFlow<MovieDetailsUiState> = _uiState.asStateFlow()
-    
+
     init {
         loadMovieDetails()
     }
-    
+
     private fun loadMovieDetails() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
                 errorMessage = null
             )
-            
+
             try {
                 val movie = movieRepository.getMovieEntry(movieId)
                 _uiState.value = _uiState.value.copy(
@@ -54,7 +54,7 @@ class MovieDetailsViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun deleteMovie() {
         viewModelScope.launch {
             try {
@@ -66,4 +66,4 @@ class MovieDetailsViewModel @Inject constructor(
             }
         }
     }
-} 
+}

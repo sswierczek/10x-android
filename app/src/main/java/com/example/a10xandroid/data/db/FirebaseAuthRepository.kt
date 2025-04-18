@@ -1,6 +1,7 @@
-package com.example.a10xandroid.data.repository
+package com.example.a10xandroid.data.db
 
 import android.util.Log
+import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.data.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -218,4 +219,3 @@ class FirebaseAuthRepository @Inject constructor(
         Result.failure(e)
     }
 }
-

@@ -1,4 +1,4 @@
-package com.example.a10xandroid.data.repository
+package com.example.a10xandroid.data.auth
 
 import com.example.a10xandroid.data.model.User
 import kotlinx.coroutines.flow.Flow
@@ -31,4 +31,4 @@ data class User(
  */
 suspend fun AuthRepository.getCurrentUserId(): String? {
     return currentUser.firstOrNull()?.uid
-} 
+}

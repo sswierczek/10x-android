@@ -1,4 +1,4 @@
-package com.example.a10xandroid.data.api
+package com.example.a10xandroid.data.openrouter
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -54,4 +54,4 @@ data class OpenRouterChoice(
     val message: OpenRouterMessage,
     @SerialName("finish_reason")
     val finishReason: String
-) 
+)

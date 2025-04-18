@@ -3,10 +3,10 @@ package com.example.a10xandroid.ui.addmovie
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.data.model.MovieEntry
-import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.data.repository.MovieRepository
-import com.example.a10xandroid.data.repository.TmdbRepository
+import com.example.a10xandroid.data.tmbd.TmdbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow

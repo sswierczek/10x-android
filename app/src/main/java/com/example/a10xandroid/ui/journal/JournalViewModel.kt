@@ -3,9 +3,9 @@ package com.example.a10xandroid.ui.journal
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.a10xandroid.data.repository.AuthRepository
+import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.data.repository.MovieRepository
-import com.example.a10xandroid.data.repository.TmdbRepository
+import com.example.a10xandroid.data.tmbd.TmdbRepository
 import com.example.a10xandroid.ui.common.StateStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -100,7 +100,7 @@ class JournalViewModel @Inject constructor(
                                         },
                                         year = movie.releaseDate?.take(4) ?: "",
                                         genre = "",
-                                        rating = movie.rating,
+                                        rating = movie.userRating ?:1,
                                         addedAt = movie.createdAt,
                                         addedAtFormatted = formattedDate
                                     )

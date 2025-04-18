@@ -8,12 +8,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,7 +46,6 @@ import com.example.a10xandroid.ui.components.AppTopBar
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,7 +101,7 @@ fun MovieDetailsScreen(
                     MovieDetailsContent(
                         movieEntry = uiState.movieEntry!!,
                         isUpdating = uiState.isUpdating,
-                        onRatingChange = viewModel::updateRating
+                        onUserRatingChange = viewModel::updateRating
                     )
                 }
             }
@@ -134,11 +137,12 @@ fun MovieDetailsScreen(
 fun MovieDetailsContent(
     movieEntry: MovieEntry,
     isUpdating: Boolean,
-    onRatingChange: (Int) -> Unit
+    onUserRatingChange: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         Text(
@@ -148,17 +152,37 @@ fun MovieDetailsContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Release date and TMDB rating
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Display TMDB rating as read-only
+            val tmdbRating = movieEntry.tmdbRating ?: 0.0
+            Text(
+                text = "TMDB Rating: ${
+                    String.format(
+                        locale = Locale.US,
+                        "%.1f",
+                        tmdbRating,
+                    )
+                }/10",
+                style = MaterialTheme.typography.bodyMedium
+            )
 
-        Text(
-            text = "⭐ ${
-                String.format(
-                    locale = Locale.UK,
-                    "%.1f",
-                    movieEntry.rating,
-                )
-            }/10 • ${movieEntry.releaseDate}",
-            style = MaterialTheme.typography.bodyMedium
-        )
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = "•",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = "${movieEntry.releaseDate}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -178,8 +202,9 @@ fun MovieDetailsContent(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        // User Rating Section
         Text(
-            text = "Rating",
+            text = "Your Rating",
             style = MaterialTheme.typography.titleMedium
         )
 
@@ -189,18 +214,21 @@ fun MovieDetailsContent(
             Row {
                 repeat(5) { index ->
                     val starValue = index + 1
+                    // Convert to user rating scale (1-5)
+                    val userRating = movieEntry.userRating ?: 1
+
                     IconButton(
                         onClick = {
                             if (!isUpdating) {
-                                onRatingChange(starValue)
+                                onUserRatingChange(starValue)
                             }
                         },
                         enabled = !isUpdating
                     ) {
                         Icon(
-                            imageVector = if (movieEntry.rating >= starValue) Icons.Filled.Star else Icons.Outlined.Star,
+                            imageVector = if (userRating >= starValue) Icons.Filled.Star else Icons.Outlined.Star,
                             contentDescription = "Rate $starValue stars",
-                            tint = if (movieEntry.rating >= starValue) {
+                            tint = if (userRating >= starValue) {
                                 MaterialTheme.colorScheme.tertiary
                             } else {
                                 MaterialTheme.colorScheme.tertiaryContainer
@@ -209,39 +237,41 @@ fun MovieDetailsContent(
                     }
                 }
             }
+        }
 
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Overview",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Text(
+            text = movieEntry.overview ?: "No overview available",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Watched on: ${formatDateFromTimestamp(movieEntry.watchDate)}",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        if (!movieEntry.notes.isNullOrBlank()) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Overview",
+                text = "Notes",
                 style = MaterialTheme.typography.titleMedium
             )
 
             Text(
-                text = movieEntry.overview ?: "No overview available",
+                text = movieEntry.notes,
                 style = MaterialTheme.typography.bodyMedium
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Watched on: ${formatDateFromTimestamp(movieEntry.watchDate)}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            if (!movieEntry.notes.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Notes",
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Text(
-                    text = movieEntry.notes,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
         }
     }
 }

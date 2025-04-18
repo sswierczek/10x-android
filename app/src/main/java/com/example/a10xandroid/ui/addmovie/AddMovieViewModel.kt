@@ -182,11 +182,12 @@ class AddMovieViewModel @Inject constructor(
                         posterPath = movieDetails?.posterPath ?: "",
                         backdropPath = movieDetails?.backdropPath ?: "",
                         releaseDate = movieDetails?.releaseDate ?: "",
-                        rating = movie.rating,
                         watchDate = System.currentTimeMillis(),
                         notes = "",
                         createdAt = System.currentTimeMillis(),
-                        updatedAt = System.currentTimeMillis()
+                        updatedAt = System.currentTimeMillis(),
+                        tmdbRating = movieDetails?.voteAverage?.toFloat(),
+                        userRating = movie.rating.toInt()
                     )
 
                     val firebaseId = movieRepository.addMovieEntry(movieEntry)

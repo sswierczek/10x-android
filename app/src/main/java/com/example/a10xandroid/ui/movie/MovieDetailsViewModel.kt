@@ -56,6 +56,10 @@ class MovieDetailsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Updates the user's rating for the movie
+     * @param newRating The new rating on a 0-10 scale (will be stored as is, but represents a 1-5 star rating)
+     */
     fun updateRating(newRating: Int) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
@@ -66,7 +70,11 @@ class MovieDetailsViewModel @Inject constructor(
             try {
                 val currentMovie = _uiState.value.movieEntry
                 if (currentMovie != null) {
-                    val updatedMovie = currentMovie.copy(rating = newRating.toFloat())
+                    // Create an updated movie with the new user rating
+                    val updatedMovie = currentMovie.copy(
+                        userRating = newRating,
+                    )
+
                     val result = movieRepository.updateMovieEntry(updatedMovie)
                     _uiState.value = _uiState.value.copy(
                         isUpdating = false,

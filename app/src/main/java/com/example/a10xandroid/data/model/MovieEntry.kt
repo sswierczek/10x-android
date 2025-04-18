@@ -12,7 +12,10 @@ data class MovieEntry(
     val posterPath: String? = null,
     val backdropPath: String? = null,
     val releaseDate: String? = null,
-    val rating: Float = 0f,
+    // Original TMDB rating (0-10 scale)
+    val tmdbRating: Float? = null,
+    // User's personal rating (1-5 scale)
+    val userRating: Int? = null,
     val watchDate: Long = System.currentTimeMillis(),
     val notes: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
@@ -28,7 +31,8 @@ data class MovieEntry(
         posterPath = null,
         backdropPath = null,
         releaseDate = null,
-        rating = 0f,
+        tmdbRating = 0f,
+        userRating = 1,
         watchDate = System.currentTimeMillis(),
         notes = null,
         createdAt = System.currentTimeMillis(),

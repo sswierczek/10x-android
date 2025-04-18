@@ -20,7 +20,7 @@ data class JournalModelForView(
     val posterUrl: String?,
     val year: String,
     val genre: String,
-    val rating: Float,
+    val rating: Int,
     val addedAt: Long,
     val addedAtFormatted: String
 )

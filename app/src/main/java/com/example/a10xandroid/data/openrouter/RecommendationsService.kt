@@ -60,7 +60,7 @@ class RecommendationsService @Inject constructor(
 
     private fun prepareContext(movies: List<MovieEntry>): String {
         val movieList = movies.joinToString("\n") {
-            "- ${it.title} (${it.releaseDate?.take(4) ?: "Unknown Year"}) - Rating: ${it.rating}/10"
+            "- ${it.title} (${it.releaseDate?.take(4) ?: "Unknown Year"}) - Rating: ${it.userRating}/5"
         }
 
         return """

@@ -264,7 +264,8 @@ class RecommendationsViewModel @Inject constructor(
                         "https://image.tmdb.org/t/p/w500"
                     ),
                     releaseDate = "${movie.year}-01-01",
-                    rating = movie.rating,
+                    tmdbRating = movie.rating,
+                    userRating = 5,
                     notes = movie.reason
                 )
 

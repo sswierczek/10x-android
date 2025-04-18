@@ -15,7 +15,8 @@ import javax.inject.Inject
 data class MovieDetailsUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
-    val movieEntry: MovieEntry? = null
+    val movieEntry: MovieEntry? = null,
+    val isUpdating: Boolean = false
 )
 
 @HiltViewModel
@@ -50,6 +51,32 @@ class MovieDetailsViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     errorMessage = e.message ?: "Failed to load movie details"
+                )
+            }
+        }
+    }
+
+    fun updateRating(newRating: Int) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isUpdating = true,
+                errorMessage = null
+            )
+
+            try {
+                val currentMovie = _uiState.value.movieEntry
+                if (currentMovie != null) {
+                    val updatedMovie = currentMovie.copy(rating = newRating.toFloat())
+                    val result = movieRepository.updateMovieEntry(updatedMovie)
+                    _uiState.value = _uiState.value.copy(
+                        isUpdating = false,
+                        movieEntry = result
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isUpdating = false,
+                    errorMessage = e.message ?: "Failed to update rating"
                 )
             }
         }

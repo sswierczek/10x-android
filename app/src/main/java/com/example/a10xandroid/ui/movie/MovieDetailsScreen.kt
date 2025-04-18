@@ -2,16 +2,15 @@ package com.example.a10xandroid.ui.movie
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,14 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.example.a10xandroid.data.model.MovieEntry
 import com.example.a10xandroid.ui.components.AppTopBar
 import java.text.SimpleDateFormat
@@ -70,134 +65,166 @@ fun MovieDetailsScreen(
             )
         }
     ) { paddingValues ->
-        if (uiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (uiState.errorMessage != null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = uiState.errorMessage ?: "",
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        } else {
-            uiState.movieEntry?.let { movie ->
-                MovieDetailsContent(
-                    movie = movie,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                uiState.errorMessage != null -> {
+                    Text(
+                        text = uiState.errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp)
+                    )
+                }
+
+                uiState.movieEntry != null -> {
+                    MovieDetailsContent(
+                        movieEntry = uiState.movieEntry!!,
+                        isUpdating = uiState.isUpdating,
+                        onRatingChange = viewModel::updateRating
+                    )
+                }
             }
         }
-    }
 
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Movie") },
-            text = { Text("Are you sure you want to delete this movie from your journal?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteMovie()
-                        navController.popBackStack()
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Delete Movie") },
+                text = { Text("Are you sure you want to delete this movie?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteMovie()
+                            showDeleteDialog = false
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Text("Delete")
                     }
-                ) {
-                    Text("Delete")
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("Cancel")
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
+            )
+        }
     }
 }
 
 @Composable
 fun MovieDetailsContent(
-    movie: MovieEntry,
-    modifier: Modifier = Modifier
+    movieEntry: MovieEntry,
+    isUpdating: Boolean,
+    onRatingChange: (Int) -> Unit
 ) {
     Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
+        modifier = Modifier
+            .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Movie Poster
-        movie.posterPath?.let { posterPath ->
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data("https://image.tmdb.org/t/p/w500$posterPath")
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Movie poster",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Title
         Text(
-            text = movie.title,
+            text = movieEntry.title,
             style = MaterialTheme.typography.headlineMedium
         )
+
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Release Date
-        movie.releaseDate?.let { date ->
-            Text(
-                text = "Released: $date",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
 
-        // Overview
         Text(
-            text = "Overview",
-            style = MaterialTheme.typography.titleMedium
-        )
-        Text(
-            text = movie.overview,
+            text = "⭐ ${
+                String.format(
+                    locale = Locale.UK,
+                    "%.1f",
+                    movieEntry.rating,
+                )
+            }/10 • ${movieEntry.releaseDate}",
             style = MaterialTheme.typography.bodyMedium
         )
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Watch Date
-        val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
         Text(
-            text = "Watched on: ${dateFormat.format(Date(movie.watchDate))}",
-            style = MaterialTheme.typography.bodyLarge
+            text = "Rating",
+            style = MaterialTheme.typography.titleMedium
         )
-        Spacer(modifier = Modifier.height(8.dp))
 
-        // Notes
-        movie.notes?.let { notes ->
-            if (notes.isNotEmpty()) {
+        Column(
+            modifier = Modifier.padding(vertical = 8.dp),
+        ) {
+            Row {
+                repeat(5) { index ->
+                    val starValue = index + 1
+                    IconButton(
+                        onClick = {
+                            if (!isUpdating) {
+                                onRatingChange(starValue)
+                            }
+                        },
+                        enabled = !isUpdating
+                    ) {
+                        Icon(
+                            imageVector = if (movieEntry.rating >= starValue) Icons.Filled.Star else Icons.Outlined.Star,
+                            contentDescription = "Rate $starValue stars",
+                            tint = if (movieEntry.rating >= starValue) {
+                                MaterialTheme.colorScheme.tertiary
+                            } else {
+                                MaterialTheme.colorScheme.tertiaryContainer
+                            },
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Overview",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = movieEntry.overview ?: "No overview available",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Watched on: ${formatDateFromTimestamp(movieEntry.watchDate)}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            if (!movieEntry.notes.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = "Notes",
                     style = MaterialTheme.typography.titleMedium
                 )
+
                 Text(
-                    text = notes,
+                    text = movieEntry.notes,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
     }
+}
+
+private fun formatDateFromTimestamp(timestamp: Long): String {
+    val date = Date(timestamp)
+    return SimpleDateFormat("MMMM d, yyyy", Locale.getDefault()).format(date)
 }

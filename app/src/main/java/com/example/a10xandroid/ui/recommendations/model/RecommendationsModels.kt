@@ -9,17 +9,17 @@ import com.example.a10xandroid.ui.common.StateStatus
  * View model for a movie recommendation
  */
 data class RecommendationMovieViewModel(
-    val id: String,                      // Movie ID in the database (or "recommendation_{tmdbId}" for recommendations)
-    val tmdbId: String,                  // Movie ID in TMDB
-    val title: String,                   // Movie title
-    val posterUrl: String?,              // Movie poster URL
-    val backdropUrl: String?,            // Movie backdrop URL
-    val overview: String,                // Movie overview
-    val year: String,                    // Production year
-    val genre: String,                   // Main genre
-    val rating: Float,                   // Movie rating
-    val reason: String?,                 // Recommendation reason (only for recommendations)
-    val saved: Boolean = false           // Whether the movie is saved to the journal
+    val id: String,
+    val tmdbId: String,
+    val title: String,
+    val posterUrl: String?,
+    val backdropUrl: String?,
+    val overview: String,
+    val year: String,
+    val genre: String,
+    val rating: Float,
+    val reason: String?,
+    val saved: Boolean = false
 ) {
     companion object {
         /**
@@ -31,10 +31,10 @@ data class RecommendationMovieViewModel(
                 tmdbId = dto.id.toString(),
                 title = dto.title,
                 posterUrl = dto.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" },
-                backdropUrl = null, // Not available in DTO
+                backdropUrl = null,
                 overview = dto.overview,
                 year = dto.releaseDate.take(4),
-                genre = "", // Not available in DTO
+                genre = "",
                 rating = dto.voteAverage.toFloat(),
                 reason = dto.reason
             )
@@ -56,7 +56,7 @@ data class RecommendationMovieViewModel(
                 },
                 overview = movie.overview,
                 year = movie.releaseDate?.take(4) ?: "",
-                genre = "", // Not available in MovieRecommendation
+                genre = "",
                 rating = movie.rating ?: 0f,
                 reason = movie.reason,
                 saved = movie.status == RecommendationStatus.SAVED
@@ -69,10 +69,10 @@ data class RecommendationMovieViewModel(
  * UI state for the recommendations screen
  */
 data class RecommendationsUiState(
-    val status: StateStatus = StateStatus.LOADING,  // UI state
-    val errorMessage: String? = null,               // Error message
-    val recommendations: List<RecommendationMovieViewModel> = emptyList(), // List of recommendations
-    val isRefreshing: Boolean = false               // Whether refreshing is in progress
+    val status: StateStatus = StateStatus.LOADING,
+    val errorMessage: String? = null,
+    val recommendations: List<RecommendationMovieViewModel> = emptyList(),
+    val isRefreshing: Boolean = false
 ) {
     val isLoading: Boolean
         get() = status == StateStatus.LOADING

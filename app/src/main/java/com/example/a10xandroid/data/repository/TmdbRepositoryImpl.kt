@@ -12,6 +12,7 @@ import javax.inject.Singleton
 import android.util.Log
 
 private const val TAG = "TmdbRepositoryImpl"
+
 /**
  * Implementation of the TMDB repository.
  */

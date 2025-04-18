@@ -3,7 +3,6 @@ package com.example.a10xandroid.ui.recommendations
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.a10xandroid.data.api.model.TmdbMovieDetailsApiResponse
 import com.example.a10xandroid.data.dto.RecommendedMovieDTO
 import com.example.a10xandroid.data.model.MovieEntry
 import com.example.a10xandroid.data.repository.AuthRepository
@@ -183,10 +182,16 @@ class RecommendationsViewModel @Inject constructor(
         Log.d(TAG, "Processing ${recommendations.size} recommendations")
         return recommendations.map { recommendation ->
             try {
-                Log.d(TAG, "Processing recommendation: ${recommendation.title} (TMDB ID: ${recommendation.tmdbId})")
+                Log.d(
+                    TAG,
+                    "Processing recommendation: ${recommendation.title} (TMDB ID: ${recommendation.tmdbId})"
+                )
                 // Get additional details from TMDB
                 val tmdbMovie = tmdbRepository.getMovieDetails(recommendation.tmdbId).first()
-                Log.d(TAG, "Received TMDB details for ${recommendation.title}: ${tmdbMovie != null}")
+                Log.d(
+                    TAG,
+                    "Received TMDB details for ${recommendation.title}: ${tmdbMovie != null}"
+                )
 
                 if (tmdbMovie != null) {
                     // Create view model with additional details from TMDB
@@ -205,7 +210,10 @@ class RecommendationsViewModel @Inject constructor(
                     )
                 } else {
                     // Return basic view model without TMDB details
-                    Log.d(TAG, "Creating basic view model without TMDB details for ${recommendation.title}")
+                    Log.d(
+                        TAG,
+                        "Creating basic view model without TMDB details for ${recommendation.title}"
+                    )
                     RecommendationMovieViewModel(
                         id = "recommendation_${recommendation.tmdbId}",
                         tmdbId = recommendation.tmdbId,
@@ -264,8 +272,10 @@ class RecommendationsViewModel @Inject constructor(
                     title = movie.title,
                     overview = movie.overview,
                     posterPath = movie.posterUrl?.removePrefix("https://image.tmdb.org/t/p/w500"),
-                    backdropPath = movie.backdropUrl?.removePrefix("https://image.tmdb.org/t/p/w500"),
-                    releaseDate = "${movie.year}-01-01", // Default to January 1st since we only have the year
+                    backdropPath = movie.backdropUrl?.removePrefix(
+                        "https://image.tmdb.org/t/p/w500"
+                    ),
+                    releaseDate = "${movie.year}-01-01",
                     rating = movie.rating,
                     notes = movie.reason
                 )

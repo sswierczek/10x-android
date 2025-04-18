@@ -120,7 +120,7 @@ class RecommendationsService @Inject constructor(
                             content = context
                         )
                     ),
-                    temperature = 0.3, // Lower temperature for more consistent output
+                    temperature = 0.3,
                     maxTokens = 2000
                 )
 

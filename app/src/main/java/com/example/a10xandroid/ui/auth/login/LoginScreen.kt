@@ -100,8 +100,7 @@ fun LoginScreen(
                     }
                 },
                 onForgotPasswordClick = {
-                    // Nawigacja do ekranu resetowania hasła
-                    // W przyszłej implementacji
+                    navController.navigate(NavRoutes.FORGOT_PASSWORD)
                 }
             )
 

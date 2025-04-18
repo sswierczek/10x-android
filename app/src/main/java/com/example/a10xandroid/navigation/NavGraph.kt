@@ -18,6 +18,7 @@ import com.example.a10xandroid.data.repository.AuthRepository
 import com.example.a10xandroid.ui.addmovie.AddMovieScreen
 import com.example.a10xandroid.ui.auth.login.LoginScreen
 import com.example.a10xandroid.ui.auth.register.RegisterScreen
+import com.example.a10xandroid.ui.auth.forgotpassword.ForgotPasswordScreen
 import com.example.a10xandroid.ui.journal.JournalScreen
 import com.example.a10xandroid.ui.movie.MovieDetailsScreen
 import com.example.a10xandroid.ui.profile.ProfileScreen
@@ -35,6 +36,7 @@ object NavRoutes {
     const val ADD_MOVIE = "add-movie"
     const val RECOMMENDATIONS = "recommendations"
     const val PROFILE = "profile"
+    const val FORGOT_PASSWORD = "forgot-password"
 }
 
 @Composable
@@ -124,6 +126,11 @@ fun NavGraph(
         composable(NavRoutes.REGISTER) {
             Log.d(TAG, "Composing REGISTER screen")
             RegisterScreen(navController = navController)
+        }
+
+        composable(NavRoutes.FORGOT_PASSWORD) {
+            Log.d(TAG, "Composing FORGOT_PASSWORD screen")
+            ForgotPasswordScreen(navController = navController)
         }
 
         composable(NavRoutes.JOURNAL) {

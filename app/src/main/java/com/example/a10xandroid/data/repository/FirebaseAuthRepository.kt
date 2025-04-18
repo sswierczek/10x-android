@@ -144,9 +144,14 @@ class FirebaseAuthRepository @Inject constructor(
     }
 
     override suspend fun resetPassword(email: String): Result<Unit> = try {
+        // For password reset, we need to use a different approach
+        // Firebase requires reCAPTCHA verification for password reset
+        // We'll use the standard sendPasswordResetEmail method
+        // The user will need to complete reCAPTCHA verification in the email they receive
         auth.sendPasswordResetEmail(email).await()
         Result.success(Unit)
     } catch (e: Exception) {
+        Log.e(TAG, "Error resetting password", e)
         Result.failure(e)
     }
 

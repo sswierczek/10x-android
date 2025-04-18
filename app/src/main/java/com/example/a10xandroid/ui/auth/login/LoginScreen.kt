@@ -70,9 +70,9 @@ fun LoginScreen(
     ) {
         // App Logo
         Image(
-            painter = painterResource(id = R.drawable.ic_app_logo_large),
-            contentDescription = "App Logo",
-            modifier = Modifier.size(120.dp)
+            painter = painterResource(id = R.drawable.img),
+            contentDescription = "Smart Movies AI Logo",
+            modifier = Modifier.size(200.dp)
         )
 
         Spacer(modifier = Modifier.height(24.dp))

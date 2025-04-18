@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.data.repository.MovieRepository
-import com.example.a10xandroid.data.tmbd.TmdbRepository
 import com.example.a10xandroid.ui.common.StateStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +27,6 @@ private const val TAG = "JournalViewModel"
 @HiltViewModel
 class JournalViewModel @Inject constructor(
     private val movieRepository: MovieRepository,
-    private val tmdbRepository: TmdbRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 

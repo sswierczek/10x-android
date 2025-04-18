@@ -10,8 +10,6 @@ import com.example.a10xandroid.data.openrouter.RecommendedMovieDTO
 import com.example.a10xandroid.data.repository.MovieRepository
 import com.example.a10xandroid.data.tmbd.TmdbRepository
 import com.example.a10xandroid.ui.common.StateStatus
-import com.example.a10xandroid.ui.recommendations.model.RecommendationMovieViewModel
-import com.example.a10xandroid.ui.recommendations.model.RecommendationsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +20,21 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "RecommendationsViewModel"
+
+data class RecommendationsUiState(
+    val status: StateStatus = StateStatus.LOADING,
+    val recommendations: List<RecommendationMovieViewModel> = emptyList(),
+    val errorMessage: String? = null,
+    val isRefreshing: Boolean = false,
+    val snackbarMessage: String? = null
+) {
+    val isLoading: Boolean
+        get() = status == StateStatus.LOADING
+    val hasError: Boolean
+        get() = status == StateStatus.ERROR
+    val isEmpty: Boolean
+        get() = !isLoading && !hasError && recommendations.isEmpty()
+}
 
 /**
  * ViewModel for the RecommendationsScreen
@@ -57,7 +70,8 @@ class RecommendationsViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             status = StateStatus.ERROR,
-                            errorMessage = "You must be logged in to get recommendations"
+                            errorMessage = "You must be logged in to get recommendations",
+                            snackbarMessage = "Please log in to see recommendations"
                         )
                     }
                     return@launch
@@ -67,10 +81,22 @@ class RecommendationsViewModel @Inject constructor(
                 val userMovies = movieRepository.getMovieEntries(currentUser.uid)
                 Log.d(TAG, "Found ${userMovies.size} movies in user's journal")
 
+                if (userMovies.isEmpty()) {
+                    _uiState.update {
+                        it.copy(
+                            status = StateStatus.SUCCESS,
+                            recommendations = emptyList(),
+                            snackbarMessage = "Add some movies to your journal to get recommendations"
+                        )
+                    }
+                    return@launch
+                }
+
                 // Get recommendations from service
                 Log.d(TAG, "Requesting recommendations from service")
                 val recommendations = recommendationsService.getRecommendations(userMovies)
                 Log.d(TAG, "Received ${recommendations.size} recommendations from service")
+
                 // Process recommendations to view models
                 val viewModels = processRecommendations(recommendations)
                 Log.d(TAG, "Processed ${viewModels.size} recommendations to view models")
@@ -79,7 +105,8 @@ class RecommendationsViewModel @Inject constructor(
                     it.copy(
                         status = StateStatus.SUCCESS,
                         recommendations = viewModels,
-                        errorMessage = null
+                        errorMessage = null,
+                        snackbarMessage = "Found ${viewModels.size} recommendations for you"
                     )
                 }
             } catch (e: Exception) {
@@ -87,7 +114,8 @@ class RecommendationsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         status = StateStatus.ERROR,
-                        errorMessage = e.message ?: "Failed to load recommendations"
+                        errorMessage = e.message ?: "Failed to load recommendations",
+                        snackbarMessage = "Error: ${e.message}"
                     )
                 }
             }
@@ -116,7 +144,8 @@ class RecommendationsViewModel @Inject constructor(
                         it.copy(
                             status = StateStatus.ERROR,
                             errorMessage = "You must be logged in to get recommendations",
-                            isRefreshing = false
+                            isRefreshing = false,
+                            snackbarMessage = "Please log in to refresh recommendations"
                         )
                     }
                     return@launch
@@ -131,7 +160,8 @@ class RecommendationsViewModel @Inject constructor(
                         it.copy(
                             status = StateStatus.SUCCESS,
                             recommendations = emptyList(),
-                            isRefreshing = false
+                            isRefreshing = false,
+                            snackbarMessage = "Add some movies to your journal to get recommendations"
                         )
                     }
                     return@launch
@@ -147,7 +177,8 @@ class RecommendationsViewModel @Inject constructor(
                         status = StateStatus.SUCCESS,
                         recommendations = viewModels,
                         errorMessage = null,
-                        isRefreshing = false
+                        isRefreshing = false,
+                        snackbarMessage = "Refreshed! Found ${viewModels.size} recommendations"
                     )
                 }
             } catch (e: Exception) {
@@ -156,7 +187,8 @@ class RecommendationsViewModel @Inject constructor(
                     it.copy(
                         status = StateStatus.ERROR,
                         errorMessage = e.message ?: "Failed to refresh recommendations",
-                        isRefreshing = false
+                        isRefreshing = false,
+                        snackbarMessage = "Error: ${e.message}"
                     )
                 }
             }
@@ -247,7 +279,8 @@ class RecommendationsViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             status = StateStatus.ERROR,
-                            errorMessage = "You must be logged in to add movies"
+                            errorMessage = "You must be logged in to add movies",
+                            snackbarMessage = "Please log in to add movies to your journal"
                         )
                     }
                     return@launch
@@ -283,21 +316,30 @@ class RecommendationsViewModel @Inject constructor(
                                 } else {
                                     recommendation
                                 }
-                            }
+                            },
+                            snackbarMessage = "${movie.title} added to your journal"
                         )
                     }
                 } else {
                     Log.e(TAG, "Failed to add movie ${movie.title} to journal")
+                    _uiState.update {
+                        it.copy(snackbarMessage = "Failed to add ${movie.title} to journal")
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error adding movie to journal", e)
                 _uiState.update {
                     it.copy(
                         status = StateStatus.ERROR,
-                        errorMessage = e.message ?: "Failed to add movie to journal"
+                        errorMessage = e.message ?: "Failed to add movie to journal",
+                        snackbarMessage = "Error: ${e.message}"
                     )
                 }
             }
         }
+    }
+
+    fun clearSnackbarMessage() {
+        _uiState.update { it.copy(snackbarMessage = null) }
     }
 }

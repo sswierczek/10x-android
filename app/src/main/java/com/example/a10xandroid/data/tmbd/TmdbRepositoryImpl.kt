@@ -2,8 +2,6 @@ package com.example.a10xandroid.data.tmbd
 
 import android.util.Log
 import com.example.a10xandroid.BuildConfig
-import com.example.a10xandroid.data.tmbd.model.TmdbMovieApiResult
-import com.example.a10xandroid.data.tmbd.model.TmdbMovieDetailsApiResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow

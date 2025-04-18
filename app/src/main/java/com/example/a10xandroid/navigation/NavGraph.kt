@@ -135,7 +135,7 @@ fun NavGraph(
 
         composable(NavRoutes.JOURNAL) {
             Log.d(TAG, "Composing JOURNAL screen")
-            JournalScreen(authRepository = authRepository, navController = navController)
+            JournalScreen(navController = navController)
         }
 
         composable(NavRoutes.ADD_MOVIE) {
@@ -167,8 +167,7 @@ fun NavGraph(
                     "${backStackEntry.arguments?.getString("movieId")}"
             )
             MovieDetailsScreen(
-                navController = navController,
-                movieId = backStackEntry.arguments?.getString("movieId") ?: ""
+                navController = navController
             )
         }
     }

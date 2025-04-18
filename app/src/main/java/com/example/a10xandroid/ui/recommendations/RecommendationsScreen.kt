@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -36,10 +37,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -61,11 +66,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.a10xandroid.ui.components.AppTopBar
-import com.example.a10xandroid.ui.recommendations.model.RecommendationMovieViewModel
 import kotlin.math.cos
 import kotlin.math.sin
-
-private const val TAG = "RecommendationsScreen"
 
 /**
  * Main screen for displaying movie recommendations
@@ -77,6 +79,15 @@ fun RecommendationsScreen(
     viewModel: RecommendationsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Show snackbar when message is available
+    LaunchedEffect(uiState.snackbarMessage) {
+        uiState.snackbarMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearSnackbarMessage()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -93,7 +104,8 @@ fun RecommendationsScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -123,8 +135,6 @@ fun RecommendationsScreen(
                 else -> {
                     RecommendationsList(
                         recommendations = uiState.recommendations,
-                        isRefreshing = uiState.isRefreshing,
-                        onRefresh = { viewModel.refreshRecommendations() },
                         onAddToJournal = { movie -> viewModel.addToJournal(movie) }
                     )
                 }
@@ -401,8 +411,6 @@ fun EmptyStateView(
 @Composable
 fun RecommendationsList(
     recommendations: List<RecommendationMovieViewModel>,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
     onAddToJournal: (RecommendationMovieViewModel) -> Unit
 ) {
     LazyColumn(
@@ -502,17 +510,35 @@ fun RecommendationMovieCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Action button
-            Button(
-                onClick = onAddToJournal,
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Add to Journal")
+            if (movie.saved) {
+                // Show a disabled button with "Added" text when movie is already saved
+                Button(
+                    onClick = { /* No action needed */ },
+                    modifier = Modifier.align(Alignment.End),
+                    enabled = false
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Added to Journal")
+                }
+            } else {
+                // Show the regular "Add to Journal" button
+                Button(
+                    onClick = onAddToJournal,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Add to Journal")
+                }
             }
         }
     }

@@ -1,8 +1,28 @@
 package com.example.a10xandroid.ui.journal
 
 import android.util.Log
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -35,7 +55,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -63,12 +82,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.a10xandroid.R
-import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.navigation.NavRoutes
 import com.example.a10xandroid.ui.common.StateStatus
 import com.example.a10xandroid.ui.components.AppTopBar
@@ -76,19 +93,13 @@ import kotlinx.coroutines.delay
 
 private const val TAG = "JournalScreen"
 
-/**
- * Główny ekran dziennika filmowego
- */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun JournalScreen(
     navController: NavController,
     viewModel: JournalViewModel = hiltViewModel(),
-    authRepository: AuthRepository
 ) {
     Log.d(TAG, "JournalScreen composable called")
     val uiState by viewModel.uiState.collectAsState()
-    val currentUser by authRepository.currentUser.collectAsStateWithLifecycle(initialValue = null)
 
     // Log when the screen becomes active
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -99,9 +110,6 @@ fun JournalScreen(
             }
         })
     }
-
-    var showAddMovieDialog by remember { mutableStateOf(false) }
-    var showRecommendationsDialog by remember { mutableStateOf(false) }
 
     // Floating action button animations
     val fabScale = remember { Animatable(0.8f) }
@@ -224,7 +232,6 @@ fun SortOrderSelector(
     onOrderSelected: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val buttonColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
 
     Row(
         modifier = Modifier
@@ -420,7 +427,6 @@ fun EmptyStateView(navController: NavController) {
 /**
  * Lista filmów z animacjami
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoviesList(
     movies: List<JournalModelForView>,

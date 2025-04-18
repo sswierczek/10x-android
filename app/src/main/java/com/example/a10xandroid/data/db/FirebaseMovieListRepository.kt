@@ -15,11 +15,9 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val TAG = "FirebaseMovieListRepository"
-
 @Singleton
 class FirebaseMovieListRepository @Inject constructor(
-    private val database: FirebaseDatabase
+    database: FirebaseDatabase
 ) : MovieListRepository {
 
     private val listsRef = database.getReference("lists")

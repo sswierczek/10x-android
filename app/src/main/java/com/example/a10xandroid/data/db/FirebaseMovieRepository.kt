@@ -18,7 +18,7 @@ private const val TAG = "FirebaseMovieRepository"
 
 @Singleton
 class FirebaseMovieRepository @Inject constructor(
-    private val database: FirebaseDatabase
+    database: FirebaseDatabase
 ) : MovieRepository {
 
     private val moviesRef = database.getReference("movies")

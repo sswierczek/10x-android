@@ -7,25 +7,25 @@
         <item name="colorPrimaryContainer">@color/brand_blue</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnPrimaryContainer">@color/white</item>
-        
+
         <!-- Secondary brand colors -->
         <item name="colorSecondary">@color/brand_accent</item>
         <item name="colorSecondaryContainer">@color/brand_teal</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorOnSecondaryContainer">@color/white</item>
-        
+
         <!-- Tertiary colors -->
         <item name="colorTertiary">@color/brand_teal</item>
         <item name="colorTertiaryContainer">@color/brand_accent</item>
         <item name="colorOnTertiary">@color/white</item>
         <item name="colorOnTertiaryContainer">@color/white</item>
-        
+
         <!-- Status bar and navigation bar colors -->
         <item name="android:statusBarColor">@color/brand_primary</item>
         <item name="android:navigationBarColor">@color/brand_primary</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
-        
+
         <!-- Background colors -->
         <item name="android:colorBackground">@color/white</item>
         <item name="colorSurface">@color/surface_light</item>
@@ -33,32 +33,38 @@
         <item name="colorOnBackground">@color/brand_primary</item>
         <item name="colorOnSurface">@color/brand_primary</item>
         <item name="colorOnSurfaceVariant">@color/white</item>
-        
+
         <!-- Error colors -->
         <item name="colorError">@color/error_light</item>
         <item name="colorOnError">@color/white</item>
-        
+
         <!-- Text colors -->
         <item name="android:textColorPrimary">@color/brand_primary</item>
         <item name="android:textColorSecondary">@color/brand_blue</item>
-        
+
         <!-- Shape and elevation -->
-        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.A10xAndroid.SmallComponent</item>
-        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.A10xAndroid.MediumComponent</item>
-        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.A10xAndroid.LargeComponent</item>
+        <item name="shapeAppearanceSmallComponent">
+            @style/ShapeAppearance.A10xAndroid.SmallComponent
+        </item>
+        <item name="shapeAppearanceMediumComponent">
+            @style/ShapeAppearance.A10xAndroid.MediumComponent
+        </item>
+        <item name="shapeAppearanceLargeComponent">
+            @style/ShapeAppearance.A10xAndroid.LargeComponent
+        </item>
     </style>
-    
+
     <!-- Shape appearances -->
     <style name="ShapeAppearance.A10xAndroid.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">8dp</item>
     </style>
-    
+
     <style name="ShapeAppearance.A10xAndroid.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">12dp</item>
     </style>
-    
+
     <style name="ShapeAppearance.A10xAndroid.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">16dp</item>

@@ -1,7 +1,5 @@
 package com.example.a10xandroid.data.tmbd
 
-import com.example.a10xandroid.data.tmbd.model.TmdbMovieDetailsApiResponse
-import com.example.a10xandroid.data.tmbd.model.TmdbMovieSearchApiResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

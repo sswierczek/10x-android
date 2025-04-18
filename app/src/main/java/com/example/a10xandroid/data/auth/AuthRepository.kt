@@ -17,14 +17,6 @@ interface AuthRepository {
     suspend fun refreshUserData(): Result<Unit>
 }
 
-data class User(
-    val uid: String,
-    val email: String,
-    val displayName: String? = null,
-    val photoUrl: String? = null,
-    val isEmailVerified: Boolean = false
-)
-
 /**
  * Gets the current user ID
  * @return User ID or null if not logged in

@@ -192,13 +192,12 @@ class AddMovieViewModel @Inject constructor(
 
                     val firebaseId = movieRepository.addMovieEntry(movieEntry)
                     Log.d(TAG, "Added movie to repository with Firebase ID: $firebaseId")
+                    _uiState.value = _uiState.value.copy(
+                        isAddingMovie = false,
+                        snackbarMessage = "Movie added to journal"
+                    )
                 }
 
-
-                _uiState.value = _uiState.value.copy(
-                    isAddingMovie = false,
-                    snackbarMessage = "Movie added to journal"
-                )
             } catch (e: Exception) {
                 Log.e(TAG, "Error adding movie to journal", e)
                 _uiState.value = _uiState.value.copy(

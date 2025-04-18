@@ -6,7 +6,6 @@ import com.example.a10xandroid.data.model.MovieEntry
 import com.example.a10xandroid.data.tmbd.TmdbRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
-import kotlinx.serialization.json.Json
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
@@ -19,7 +18,6 @@ class RecommendationsService @Inject constructor(
     private val openRouterApiService: OpenRouterApiService,
     private val tmdbRepository: TmdbRepository
 ) {
-    private val json = Json { ignoreUnknownKeys = true }
 
     private val systemPrompt = """
         You are a movie recommendation assistant that ONLY returns valid TMDB IDs.

@@ -1,7 +1,5 @@
 package com.example.a10xandroid.data.tmbd
 
-import com.example.a10xandroid.data.tmbd.model.TmdbMovieApiResult
-import com.example.a10xandroid.data.tmbd.model.TmdbMovieDetailsApiResponse
 import kotlinx.coroutines.flow.Flow
 
 /**

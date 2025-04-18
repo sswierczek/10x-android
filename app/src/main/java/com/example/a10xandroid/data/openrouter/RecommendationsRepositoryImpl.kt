@@ -1,4 +1,4 @@
-package com.example.a10xandroid.data.repository.impl
+package com.example.a10xandroid.data.openrouter
 
 import android.util.Log
 import com.example.a10xandroid.data.auth.AuthRepository
@@ -19,7 +19,7 @@ private const val TAG = "RecommendationsRepositoryImpl"
 
 @Singleton
 class RecommendationsRepositoryImpl @Inject constructor(
-    private val database: FirebaseDatabase,
+    database: FirebaseDatabase,
     private val authRepository: AuthRepository,
     private val movieRepository: MovieRepository
 ) : RecommendationsRepository {
@@ -53,7 +53,11 @@ class RecommendationsRepositoryImpl @Inject constructor(
                 }
                 .filter { it.status == RecommendationStatus.PENDING }
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting recommendations", e)
+            Log.e(
+                TAG,
+                "Error getting recommendations",
+                e
+            )
             emptyList()
         }
     }
@@ -83,7 +87,11 @@ class RecommendationsRepositoryImpl @Inject constructor(
                 .await()
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error dismissing recommendation", e)
+            Log.e(
+                TAG,
+                "Error dismissing recommendation",
+                e
+            )
             false
         }
     }
@@ -139,7 +147,11 @@ class RecommendationsRepositoryImpl @Inject constructor(
                 .updateChildren(updatedRecommendation.toMap()).await()
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error adding recommendation to journal", e)
+            Log.e(
+                TAG,
+                "Error adding recommendation to journal",
+                e
+            )
             false
         }
     }

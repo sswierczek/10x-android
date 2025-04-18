@@ -1,4 +1,4 @@
-package com.example.a10xandroid.data.tmbd.model
+package com.example.a10xandroid.data.tmbd
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

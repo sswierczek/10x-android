@@ -3,14 +3,6 @@ package com.example.a10xandroid.data.repository
 import com.example.a10xandroid.data.model.MovieRecommendation
 
 /**
- * Data model for a recommended movie
- */
-data class RecommendedMovie(
-    val tmdbId: String,
-    val reason: String
-)
-
-/**
  * Repository responsible for managing movie recommendations
  */
 interface RecommendationsRepository {

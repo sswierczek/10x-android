@@ -5,7 +5,7 @@
     <color name="brand_accent">#F83AAF</color>
     <color name="brand_teal">#16D6C3</color>
     <color name="brand_blue">#0F74D3</color>
-    
+
     <!-- Light theme colors -->
     <color name="primary_light">#0A1726</color>
     <color name="primary_variant_light">#0F74D3</color>
@@ -19,7 +19,7 @@
     <color name="on_background_light">#0A1726</color>
     <color name="on_surface_light">#0A1726</color>
     <color name="on_error_light">#FFFFFF</color>
-    
+
     <!-- Dark theme colors -->
     <color name="primary_dark">#0F74D3</color>
     <color name="primary_variant_dark">#0A1726</color>
@@ -33,7 +33,7 @@
     <color name="on_background_dark">#FFFFFF</color>
     <color name="on_surface_dark">#FFFFFF</color>
     <color name="on_error_dark">#FFFFFF</color>
-    
+
     <!-- Common colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>

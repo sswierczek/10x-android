@@ -104,7 +104,7 @@ private fun ProfileHeader(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = name,
+                text = "Account",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )

@@ -25,7 +25,7 @@ object TmdbModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor { message ->
-            Log.d(TAG, "TMDB API: $message")
+            Log.d(TAG, "HTTP: $message")
         }.apply {
             level = HttpLoggingInterceptor.Level.BODY
         }

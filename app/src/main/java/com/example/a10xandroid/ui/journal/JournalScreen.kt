@@ -404,9 +404,9 @@ fun MovieCard(
                             imageVector = if (movie.rating >= starValue) Icons.Filled.Star else Icons.Outlined.Star,
                             contentDescription = "Rate $starValue stars",
                             tint = if (movie.rating >= starValue) {
-                                MaterialTheme.colorScheme.primary
+                                MaterialTheme.colorScheme.tertiary
                             } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                                MaterialTheme.colorScheme.tertiaryContainer
                             },
                             modifier = Modifier.size(16.dp)
                         )

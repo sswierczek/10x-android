@@ -15,14 +15,6 @@ interface OpenRouterApiService {
         @Header("X-Title") xTitle: String,
         @Body request: OpenRouterRequest
     ): OpenRouterResponse
-
-    @POST("v1/chat/completions")
-    suspend fun generateResponse(
-        @Header("Authorization") authorization: String,
-        @Header("HTTP-Referer") httpReferer: String,
-        @Header("X-Title") xTitle: String,
-        @Body request: OpenRouterRequest
-    ): String
 }
 
 @Serializable

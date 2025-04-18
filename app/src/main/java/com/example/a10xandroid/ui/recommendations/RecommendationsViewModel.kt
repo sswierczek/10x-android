@@ -67,18 +67,6 @@ class RecommendationsViewModel @Inject constructor(
                 val userMovies = movieRepository.getMovieEntries(currentUser.uid)
                 Log.d(TAG, "Found ${userMovies.size} movies in user's journal")
 
-                // If user has no movies, return empty state
-                if (userMovies.isEmpty()) {
-                    Log.d(TAG, "No movies found in user's journal, showing empty state")
-                    _uiState.update {
-                        it.copy(
-                            status = StateStatus.SUCCESS,
-                            recommendations = emptyList()
-                        )
-                    }
-                    return@launch
-                }
-
                 // Get recommendations from service
                 Log.d(TAG, "Requesting recommendations from service")
                 val recommendations = recommendationsService.getRecommendations(userMovies)

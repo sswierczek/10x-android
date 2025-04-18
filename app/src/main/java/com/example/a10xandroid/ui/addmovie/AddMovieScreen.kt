@@ -83,9 +83,9 @@ fun MovieSearchResultItem(
                                 imageVector = if (rating >= starValue) Icons.Filled.Star else Icons.Outlined.Star,
                                 contentDescription = "Rate $starValue stars",
                                 tint = if (rating >= starValue) {
-                                    MaterialTheme.colorScheme.primary
+                                    MaterialTheme.colorScheme.tertiaryContainer
                                 } else {
-                                    MaterialTheme.colorScheme.onSecondary
+                                    MaterialTheme.colorScheme.tertiary
                                 },
                                 modifier = Modifier
                                     .size(32.dp)

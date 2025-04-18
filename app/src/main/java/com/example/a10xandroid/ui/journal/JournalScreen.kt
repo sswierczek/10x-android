@@ -130,39 +130,44 @@ fun JournalScreen(
             }
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Sort order selector
+            // Sort order selector - now first in the Column
             SortOrderSelector(
                 currentOrder = uiState.sortOrder,
                 onOrderSelected = { viewModel.toggleSortOrder() }
             )
-
-            // Main content
-            LoadingStateHandler(
-                state = uiState,
-                navController = navController,
-                content = {
-                    if (uiState.movies.isEmpty()) {
-                        Log.d(TAG, "Movies list is empty, showing EmptyStateView")
-                        EmptyStateView(navController)
-                    } else {
-                        Log.d(TAG, "Showing MoviesList with ${uiState.movies.size} movies")
-                        MoviesList(
-                            movies = uiState.movies,
-                            onRemove = { movieId ->
-                                viewModel.deleteMovie(movieId)
-                            },
-                            navController = navController,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
+            
+            // Spacer to create some separation
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            // Main content - takes remaining space
+            Box(modifier = Modifier.weight(1f)) {
+                LoadingStateHandler(
+                    state = uiState,
+                    navController = navController,
+                    content = {
+                        if (uiState.movies.isEmpty()) {
+                            Log.d(TAG, "Movies list is empty, showing EmptyStateView")
+                            EmptyStateView(navController)
+                        } else {
+                            Log.d(TAG, "Showing MoviesList with ${uiState.movies.size} movies")
+                            MoviesList(
+                                movies = uiState.movies,
+                                onRemove = { movieId ->
+                                    viewModel.deleteMovie(movieId)
+                                },
+                                navController = navController,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }
@@ -183,7 +188,7 @@ fun SortOrderSelector(
         verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedButton(
-            onClick = onOrderSelected
+            onClick = onOrderSelected,
         ) {
             Text(
                 text = if (currentOrder == SortOrder.DATE_ADDED_DESC) "Newest First" else "Oldest First"

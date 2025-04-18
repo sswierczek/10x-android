@@ -105,12 +105,12 @@ fun JournalScreen(
         },
         floatingActionButton = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 FloatingActionButton(
                     onClick = { navController.navigate(NavRoutes.RECOMMENDATIONS) },
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                    contentColor = MaterialTheme.colorScheme.onTertiary
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_magic_wand),

@@ -54,7 +54,7 @@ fun RecommendationsScreen(
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Movie Recommendations",
+                title = "Recommendations",
                 onBackClick = { navController.navigateUp() },
             )
         }
@@ -240,14 +240,7 @@ fun RecommendationMovieCard(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "${movie.year} • ${movie.genre}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "Rating: ${movie.rating}/10",
+                        text = "⭐ ${String.format("%.1f",movie.rating)}/10 • ${movie.year}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

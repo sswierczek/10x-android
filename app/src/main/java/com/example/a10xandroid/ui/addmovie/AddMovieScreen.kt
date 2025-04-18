@@ -155,7 +155,7 @@ fun AddMovieScreen(
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Add Movie",
+                title = "Discover",
                 onBackClick = { navController.navigateUp() }
             )
         },

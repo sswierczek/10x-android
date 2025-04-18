@@ -63,13 +63,7 @@ fun RegisterForm(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Utwórz konto",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
-        // Pole e-mail
+        // Email field
         EmailField(
             value = email,
             onValueChange = onEmailChange,
@@ -80,7 +74,7 @@ fun RegisterForm(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Pole hasła
+        // Password field
         PasswordField(
             value = password,
             onValueChange = onPasswordChange,
@@ -93,7 +87,7 @@ fun RegisterForm(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Pole potwierdzenia hasła
+        // Confirm password field
         ConfirmPasswordField(
             value = confirmPassword,
             onValueChange = onConfirmPasswordChange,
@@ -106,7 +100,7 @@ fun RegisterForm(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Akceptacja warunków
+        // Terms acceptance
         TermsCheckbox(
             checked = acceptedTerms,
             onCheckedChange = onTermsChange,
@@ -116,7 +110,7 @@ fun RegisterForm(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Przycisk rejestracji
+        // Register button
         RegisterButton(
             onClick = onRegisterClick,
             isEnabled = !isLoading && email.isNotBlank() && password.isNotBlank() &&
@@ -141,8 +135,8 @@ fun EmailField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("E-mail") },
-        placeholder = { Text("Wprowadź adres e-mail") },
+        label = { Text("Email") },
+        placeholder = { Text("Enter your email") },
         singleLine = true,
         isError = error != null,
         supportingText = {
@@ -153,7 +147,7 @@ fun EmailField(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Filled.Person,
-                contentDescription = "Ikona e-mail"
+                contentDescription = "Email icon"
             )
         },
         keyboardOptions = KeyboardOptions(
@@ -184,8 +178,8 @@ fun PasswordField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("Hasło") },
-        placeholder = { Text("Wprowadź hasło") },
+        label = { Text("Password") },
+        placeholder = { Text("Enter your password") },
         singleLine = true,
         isError = error != null,
         supportingText = {
@@ -197,14 +191,14 @@ fun PasswordField(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Filled.Lock,
-                contentDescription = "Ikona hasła"
+                contentDescription = "Password icon"
             )
         },
         trailingIcon = {
             IconButton(onClick = onTogglePasswordVisibility) {
                 Icon(
                     imageVector = if (isPasswordVisible) Icons.Filled.Check else Icons.Filled.Close,
-                    contentDescription = if (isPasswordVisible) "Ukryj hasło" else "Pokaż hasło"
+                    contentDescription = if (isPasswordVisible) "Hide password" else "Show password"
                 )
             }
         },
@@ -236,8 +230,8 @@ fun ConfirmPasswordField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("Potwierdź hasło") },
-        placeholder = { Text("Wprowadź hasło ponownie") },
+        label = { Text("Confirm Password") },
+        placeholder = { Text("Confirm your password") },
         singleLine = true,
         isError = error != null,
         supportingText = {
@@ -249,14 +243,14 @@ fun ConfirmPasswordField(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Filled.Lock,
-                contentDescription = "Ikona potwierdzenia hasła"
+                contentDescription = "Confirm password icon"
             )
         },
         trailingIcon = {
             IconButton(onClick = onTogglePasswordVisibility) {
                 Icon(
                     imageVector = if (isConfirmPasswordVisible) Icons.Filled.Check else Icons.Filled.Close,
-                    contentDescription = if (isConfirmPasswordVisible) "Ukryj hasło" else "Pokaż hasło"
+                    contentDescription = if (isConfirmPasswordVisible) "Hide password" else "Show password"
                 )
             }
         },
@@ -297,7 +291,7 @@ fun TermsCheckbox(
             )
 
             Text(
-                text = "Akceptuję warunki korzystania z aplikacji oraz politykę prywatności",
+                text = "I accept the terms of service and privacy policy",
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 4.dp)
             )
@@ -337,7 +331,7 @@ fun RegisterButton(
                 strokeWidth = 2.dp
             )
         } else {
-            Text("Zarejestruj się")
+            Text("Sign up")
         }
     }
 }

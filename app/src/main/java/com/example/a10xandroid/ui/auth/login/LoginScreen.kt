@@ -68,9 +68,10 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+
         // App Logo
         Image(
-            painter = painterResource(id = R.drawable.img),
+            painter = painterResource(id = R.drawable.ic_icon_app),
             contentDescription = "Smart Movies AI Logo",
             modifier = Modifier.size(200.dp)
         )
@@ -78,12 +79,10 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Welcome Back",
-            style = MaterialTheme.typography.headlineMedium
+            text = "Welcome back",
+            style = MaterialTheme.typography.headlineSmall
         )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
+        Spacer(modifier = Modifier.height(24.dp))
         OutlinedTextField(
             value = uiState.email,
             onValueChange = viewModel::updateEmail,

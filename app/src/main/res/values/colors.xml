@@ -1,15 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#FF6200EE</color>
-    <color name="primary_variant">#FF3700B3</color>
-    <color name="secondary">#FF03DAC5</color>
-    <color name="secondary_variant">#FF018786</color>
-    <color name="background">#FFFFFFFF</color>
-    <color name="surface">#FFFFFFFF</color>
-    <color name="error">#FFB00020</color>
-    <color name="on_primary">#FFFFFFFF</color>
-    <color name="on_secondary">#FF000000</color>
-    <color name="on_background">#FF000000</color>
-    <color name="on_surface">#FF000000</color>
-    <color name="on_error">#FFFFFFFF</color>
+    <!-- Brand colors from logo -->
+    <color name="brand_primary">#0A1726</color>
+    <color name="brand_accent">#F83AAF</color>
+    <color name="brand_teal">#16D6C3</color>
+    <color name="brand_blue">#0F74D3</color>
+    
+    <!-- Light theme colors -->
+    <color name="primary_light">#0A1726</color>
+    <color name="primary_variant_light">#0F74D3</color>
+    <color name="secondary_light">#F83AAF</color>
+    <color name="secondary_variant_light">#16D6C3</color>
+    <color name="background_light">#FFFFFF</color>
+    <color name="surface_light">#F5F7FA</color>
+    <color name="error_light">#B00020</color>
+    <color name="on_primary_light">#FFFFFF</color>
+    <color name="on_secondary_light">#FFFFFF</color>
+    <color name="on_background_light">#0A1726</color>
+    <color name="on_surface_light">#0A1726</color>
+    <color name="on_error_light">#FFFFFF</color>
+    
+    <!-- Dark theme colors -->
+    <color name="primary_dark">#0F74D3</color>
+    <color name="primary_variant_dark">#0A1726</color>
+    <color name="secondary_dark">#16D6C3</color>
+    <color name="secondary_variant_dark">#F83AAF</color>
+    <color name="background_dark">#0A1726</color>
+    <color name="surface_dark">#121F2E</color>
+    <color name="error_dark">#CF6679</color>
+    <color name="on_primary_dark">#FFFFFF</color>
+    <color name="on_secondary_dark">#FFFFFF</color>
+    <color name="on_background_dark">#FFFFFF</color>
+    <color name="on_surface_dark">#FFFFFF</color>
+    <color name="on_error_dark">#FFFFFF</color>
+    
+    <!-- Common colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
 </resources>

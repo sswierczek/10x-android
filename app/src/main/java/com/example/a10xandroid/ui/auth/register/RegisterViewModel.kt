@@ -79,7 +79,7 @@ class RegisterViewModel @Inject constructor(
         val confirmPasswordError =
             validateConfirmPassword(currentState.password, currentState.confirmPassword)
         val termsError =
-            if (currentState.acceptedTerms) null else "Musisz zaakceptować warunki korzystania"
+            if (currentState.acceptedTerms) null else "You need to accept terms of privacy"
 
         if (emailError != null || passwordError != null || confirmPasswordError != null || termsError != null) {
             _uiState.value = currentState.copy(
@@ -115,10 +115,10 @@ class RegisterViewModel @Inject constructor(
                             it
                         } else {
                             Exception(
-                                it.message ?: "Nieznany błąd podczas rejestracji"
+                                it.message ?: "Unknown error"
                             )
                         }
-                    } ?: Exception("Nieznany błąd podczas rejestracji")
+                    } ?: Exception("Unknown error")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = getReadableErrorMessage(exception)

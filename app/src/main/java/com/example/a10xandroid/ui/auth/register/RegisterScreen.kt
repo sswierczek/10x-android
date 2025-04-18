@@ -10,12 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,12 +29,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.a10xandroid.navigation.NavRoutes
+import com.example.a10xandroid.ui.components.AppTopBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
  * Main registration screen containing all components needed for registration.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavController,
@@ -45,117 +45,121 @@ fun RegisterScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
 
-    // Efekt dla automatycznego ukrywania komunikatu błędu po pewnym czasie
+    // Effect for automatically hiding error message after some time
     LaunchedEffect(key1 = uiState.errorMessage) {
         if (uiState.errorMessage != null) {
-            delay(5000) // Pokazuj błąd przez 5 sekund
+            delay(5000) // Show error for 5 seconds
             viewModel.clearErrorMessage()
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Column(
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Create Account",
+                onBackClick = { navController.navigateUp() }
+            )
+        }
+    ) { paddingValues ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 80.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(paddingValues)
+                .padding(16.dp)
         ) {
-            // Logo aplikacji
-            TopLogo()
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Formularz rejestracji
-            RegisterForm(
-                email = uiState.email,
-                password = uiState.password,
-                confirmPassword = uiState.confirmPassword,
-                acceptedTerms = uiState.acceptedTerms,
-                isPasswordVisible = uiState.isPasswordVisible,
-                isConfirmPasswordVisible = uiState.isConfirmPasswordVisible,
-                emailError = uiState.emailError,
-                passwordError = uiState.passwordError,
-                confirmPasswordError = uiState.confirmPasswordError,
-                termsError = uiState.termsError,
-                isLoading = uiState.isLoading,
-                onEmailChange = {
-                    viewModel.updateEmail(it)
-                    if (uiState.errorMessage != null) {
-                        viewModel.clearErrorMessage()
-                    }
-                },
-                onPasswordChange = {
-                    viewModel.updatePassword(it)
-                    if (uiState.errorMessage != null) {
-                        viewModel.clearErrorMessage()
-                    }
-                },
-                onConfirmPasswordChange = {
-                    viewModel.updateConfirmPassword(it)
-                    if (uiState.errorMessage != null) {
-                        viewModel.clearErrorMessage()
-                    }
-                },
-                onTermsChange = {
-                    viewModel.updateTermsAcceptance(it)
-                    if (uiState.errorMessage != null) {
-                        viewModel.clearErrorMessage()
-                    }
-                },
-                onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
-                onToggleConfirmPasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
-                onRegisterClick = {
-                    scope.launch {
-                        viewModel.register()
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Link do logowania
-            LoginLink(
-                onClick = {
-                    // Nawigacja do ekranu logowania
-                    navController.navigate(NavRoutes.LOGIN) {
-                        popUpTo(NavRoutes.REGISTER) { inclusive = true }
-                    }
-                }
-            )
-        }
-
-        // Wyświetlanie błędu rejestracji
-        if (uiState.errorMessage != null) {
-            ErrorMessage(
-                message = uiState.errorMessage!!,
-                isVisible = true,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp)
-            )
-        }
-
-        // Wskaźnik ładowania
-        if (uiState.isLoading) {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .align(Alignment.Center),
-                contentAlignment = Alignment.Center
+                    .padding(bottom = 80.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                    modifier = Modifier.fillMaxSize()
+                // Registration form
+                RegisterForm(
+                    email = uiState.email,
+                    password = uiState.password,
+                    confirmPassword = uiState.confirmPassword,
+                    acceptedTerms = uiState.acceptedTerms,
+                    isPasswordVisible = uiState.isPasswordVisible,
+                    isConfirmPasswordVisible = uiState.isConfirmPasswordVisible,
+                    emailError = uiState.emailError,
+                    passwordError = uiState.passwordError,
+                    confirmPasswordError = uiState.confirmPasswordError,
+                    termsError = uiState.termsError,
+                    isLoading = uiState.isLoading,
+                    onEmailChange = {
+                        viewModel.updateEmail(it)
+                        if (uiState.errorMessage != null) {
+                            viewModel.clearErrorMessage()
+                        }
+                    },
+                    onPasswordChange = {
+                        viewModel.updatePassword(it)
+                        if (uiState.errorMessage != null) {
+                            viewModel.clearErrorMessage()
+                        }
+                    },
+                    onConfirmPasswordChange = {
+                        viewModel.updateConfirmPassword(it)
+                        if (uiState.errorMessage != null) {
+                            viewModel.clearErrorMessage()
+                        }
+                    },
+                    onTermsChange = {
+                        viewModel.updateTermsAcceptance(it)
+                        if (uiState.errorMessage != null) {
+                            viewModel.clearErrorMessage()
+                        }
+                    },
+                    onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
+                    onToggleConfirmPasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
+                    onRegisterClick = {
+                        scope.launch {
+                            viewModel.register()
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Login link
+                LoginLink(
+                    onClick = {
+                        navController.navigate(NavRoutes.LOGIN) {
+                            popUpTo(NavRoutes.REGISTER) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            // Display registration error
+            if (uiState.errorMessage != null) {
+                ErrorMessage(
+                    message = uiState.errorMessage!!,
+                    isVisible = true,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 16.dp)
+                )
+            }
+
+            // Loading indicator
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .align(Alignment.Center),
+                    contentAlignment = Alignment.Center
                 ) {
-                    LoadingIndicator(
-                        isVisible = true,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    Surface(
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LoadingIndicator(
+                            isVisible = true,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
                 }
             }
         }
@@ -163,30 +167,7 @@ fun RegisterScreen(
 }
 
 /**
- * Logo aplikacji wyświetlane na górze ekranu.
- */
-@Composable
-fun TopLogo() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Favorite,
-            contentDescription = "Logo aplikacji",
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Text(
-            text = "MovieMind",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-/**
- * Wskaźnik ładowania wyświetlany podczas rejestracji.
+ * Loading indicator displayed during registration.
  */
 @Composable
 fun LoadingIndicator(
@@ -199,7 +180,7 @@ fun LoadingIndicator(
 }
 
 /**
- * Komunikat błędu wyświetlany w przypadku nieudanej rejestracji.
+ * Error message displayed in case of failed registration.
  */
 @Composable
 fun ErrorMessage(
@@ -227,7 +208,7 @@ fun ErrorMessage(
 }
 
 /**
- * Link do ekranu logowania.
+ * Link to the login screen.
  */
 @Composable
 fun LoginLink(
@@ -239,7 +220,7 @@ fun LoginLink(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Masz już konto?",
+            text = "Already have an account?",
             style = MaterialTheme.typography.bodyMedium
         )
 
@@ -248,7 +229,7 @@ fun LoginLink(
             contentPadding = PaddingValues(4.dp)
         ) {
             Text(
-                text = "Zaloguj się",
+                text = "Sign in",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )

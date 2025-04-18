@@ -48,12 +48,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.a10xandroid.ui.components.AppTopBar
 import com.example.a10xandroid.ui.components.LoadingStateHandler
 import kotlinx.coroutines.launch
 
@@ -85,7 +85,11 @@ fun MovieSearchResultItem(
                             Icon(
                                 imageVector = if (rating >= starValue) Icons.Filled.Star else Icons.Outlined.Star,
                                 contentDescription = "Rate $starValue stars",
-                                tint = if (rating >= starValue) Color.Yellow else MaterialTheme.colorScheme.primary,
+                                tint = if (rating >= starValue) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSecondary
+                                },
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clickable { rating = starValue.toFloat() }
@@ -153,17 +157,9 @@ fun AddMovieScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Add Movie") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+            AppTopBar(
+                title = "Add Movie",
+                onBackClick = { navController.navigateUp() }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }

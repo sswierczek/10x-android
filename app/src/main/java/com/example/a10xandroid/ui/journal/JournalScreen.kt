@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,7 +43,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -62,7 +65,7 @@ import com.example.a10xandroid.R
 import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.navigation.NavRoutes
 import com.example.a10xandroid.ui.common.StateStatus
-import com.example.a10xandroid.ui.components.AppToolbar
+import com.example.a10xandroid.ui.components.AppTopBar
 
 private const val TAG = "JournalScreen"
 
@@ -90,48 +93,44 @@ fun JournalScreen(
         })
     }
 
+    var showAddMovieDialog by remember { mutableStateOf(false) }
+    var showRecommendationsDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
-            AppToolbar(
+            AppTopBar(
                 title = "Journal",
-                navController = navController,
-                currentUser = currentUser,
-                showMenuButton = false
+                onProfileClick = { navController.navigate(NavRoutes.PROFILE) }
             )
         },
         floatingActionButton = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // FAB for adding a movie
                 FloatingActionButton(
-                    onClick = {
-                        Log.d(TAG, "Add movie FAB clicked, navigating to ADD_MOVIE")
-                        navController.navigate(NavRoutes.ADD_MOVIE)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = "Add movie"
-                    )
-                }
-
-                // FAB for accessing recommendations
-                FloatingActionButton(
-                    onClick = {
-                        Log.d(TAG, "Recommendations FAB clicked, navigating to RECOMMENDATIONS")
-                        navController.navigate(NavRoutes.RECOMMENDATIONS)
-                    }
+                    onClick = { navController.navigate(NavRoutes.RECOMMENDATIONS) },
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_magic_wand),
-                        contentDescription = "Get AI recommendations"
+                        contentDescription = "Get Recommendations"
+                    )
+                }
+                FloatingActionButton(
+                    onClick = { navController.navigate(NavRoutes.ADD_MOVIE) },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Movie"
                     )
                 }
             }
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -361,6 +360,9 @@ fun MovieCard(
             .clickable {
                 navController.navigate("${NavRoutes.MOVIE_DETAILS}/${movie.id}")
             },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -385,7 +387,8 @@ fun MovieCard(
             ) {
                 Text(
                     text = movie.title,
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -403,10 +406,9 @@ fun MovieCard(
                             tint = if (movie.rating >= starValue) {
                                 MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.onSecondary
+                                MaterialTheme.colorScheme.onSurfaceVariant
                             },
-                            modifier = Modifier
-                                .size(16.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -427,20 +429,18 @@ fun MovieCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                }
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedButton(
                     onClick = onRemove,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Clear,
-                        contentDescription = "Remove"
+                        contentDescription = "Remove",
+                        tint = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Remove from journal")

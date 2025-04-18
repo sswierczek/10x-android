@@ -1,144 +1,119 @@
 package com.example.a10xandroid.ui.profile
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.a10xandroid.data.model.User
-import com.example.a10xandroid.ui.auth.AuthUiState
-import com.example.a10xandroid.ui.auth.AuthViewModel
-import com.example.a10xandroid.ui.theme.Spacing
+import androidx.navigation.NavController
+import com.example.a10xandroid.R
+import com.example.a10xandroid.ui.components.AppTopBar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onSignOut: () -> Unit,
-    viewModel: AuthViewModel = hiltViewModel()
+    navController: NavController,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val currentUser by viewModel.currentUser.collectAsState(initial = null)
-    val uiState by viewModel.uiState.collectAsState(initial = AuthUiState.Initial)
+    val uiState by viewModel.uiState.collectAsState()
 
-    // Refresh user data when the screen is first displayed
-    LaunchedEffect(Unit) {
-        viewModel.refreshUserData()
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Spacing.medium),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.medium)
-    ) {
-        Text(
-            text = "Profile",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        when {
-            uiState is AuthUiState.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp)
-                    )
-                }
-            }
-
-            currentUser != null -> {
-                UserInfoCard(user = currentUser!!)
-            }
-
-            else -> {
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Profile",
+                onBackClick = { navController.navigateUp() },
+                onProfileClick = null
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (uiState.isLoading) {
+                // Show loading state
+                Text("Loading profile...")
+            } else if (uiState.errorMessage != null) {
+                // Show error state
                 Text(
-                    text = "No user data available.",
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = uiState.errorMessage!!,
                     color = MaterialTheme.colorScheme.error
                 )
-            }
-        }
+            } else {
+                // Show profile content
+                uiState.user?.let { user ->
+                    ProfileHeader(
+                        name = user.displayName ?: "No name set",
+                        email = user.email
+                    )
 
-        Button(
-            onClick = {
-                viewModel.signOut()
-                onSignOut()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = Spacing.large)
-        ) {
-            Text("Sign Out")
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Button(
+                        onClick = { viewModel.signOut() },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_logout),
+                            contentDescription = "Logout"
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Logout")
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun UserInfoCard(user: User) {
+private fun ProfileHeader(
+    name: String,
+    email: String
+) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.medium)
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
-                .padding(Spacing.medium)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(Spacing.small)
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Email",
-                style = MaterialTheme.typography.labelMedium,
+                text = name,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = email,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Text(
-                text = user.email,
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            Spacer(modifier = Modifier.height(Spacing.medium))
-
-            Text(
-                text = "Display Name",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = user.displayName ?: "Not set",
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            if (user.photoUrl != null) {
-                Spacer(modifier = Modifier.height(Spacing.medium))
-                Text(
-                    text = "Profile Photo",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = user.photoUrl,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
         }
     }
 }

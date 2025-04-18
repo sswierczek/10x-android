@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.A10xAndroid" parent="android:Theme.Material.NoActionBar">
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+    <!-- Base application theme for dark mode -->
+    <style name="Theme.A10xAndroid" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand colors -->
+        <item name="colorPrimary">@color/brand_accent</item>
+        <item name="colorPrimaryContainer">@color/brand_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+        
+        <!-- Secondary brand colors -->
+        <item name="colorSecondary">@color/brand_teal</item>
+        <item name="colorSecondaryContainer">@color/brand_blue</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
+        
+        <!-- Tertiary colors -->
+        <item name="colorTertiary">@color/brand_blue</item>
+        <item name="colorTertiaryContainer">@color/brand_teal</item>
+        <item name="colorOnTertiary">@color/white</item>
+        <item name="colorOnTertiaryContainer">@color/white</item>
+        
+        <!-- Status bar and navigation bar colors -->
+        <item name="android:statusBarColor">@color/brand_primary</item>
+        <item name="android:navigationBarColor">@color/brand_primary</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
-        <item name="android:colorPrimary">@color/primary</item>
-        <item name="android:colorPrimaryDark">@color/primary_variant</item>
-        <item name="android:colorAccent">@color/secondary</item>
-        <item name="android:colorBackground">@color/background</item>
-        <item name="android:colorError">@color/error</item>
+        
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/brand_primary</item>
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorSurfaceVariant">@color/brand_accent</item>
+        <item name="colorOnBackground">@color/white</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurfaceVariant">@color/white</item>
+        
+        <!-- Error colors -->
+        <item name="colorError">@color/error_dark</item>
+        <item name="colorOnError">@color/white</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/brand_teal</item>
+        
+        <!-- Shape and elevation -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.A10xAndroid.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.A10xAndroid.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.A10xAndroid.LargeComponent</item>
     </style>
 </resources> 

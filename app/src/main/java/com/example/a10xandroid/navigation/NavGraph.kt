@@ -150,13 +150,7 @@ fun NavGraph(
 
         composable(NavRoutes.PROFILE) {
             Log.d(TAG, "Composing PROFILE screen")
-            ProfileScreen(
-                onSignOut = {
-                    navController.navigate(NavRoutes.LOGIN) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
-            )
+            ProfileScreen(navController = navController)
         }
 
         composable(

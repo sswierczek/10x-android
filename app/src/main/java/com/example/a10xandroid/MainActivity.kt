@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.a10xandroid.data.auth.AuthRepository
 import com.example.a10xandroid.navigation.NavGraph
-import com.example.a10xandroid.ui.theme.AppTheme
+import com.example.a10xandroid.ui.theme.A10xAndroidTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AppTheme {
+            A10xAndroidTheme {
                 // Nadrzędny kontener z motywem aplikacji
                 Surface(
                     modifier = Modifier.fillMaxSize(),

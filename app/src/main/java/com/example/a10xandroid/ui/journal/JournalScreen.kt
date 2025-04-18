@@ -532,10 +532,11 @@ fun MovieCard(
                         val filled = movie.rating >= starValue
 
                         val starColor by animateColorAsState(
-                            targetValue = if (filled)
+                            targetValue = if (filled) {
                                 MaterialTheme.colorScheme.tertiary
-                            else
-                                MaterialTheme.colorScheme.tertiaryContainer,
+                            } else {
+                                MaterialTheme.colorScheme.tertiaryContainer
+                            },
                             animationSpec = tween<Color>(durationMillis = 300)
                         )
 

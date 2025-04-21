@@ -1,6 +1,5 @@
 package com.example.a10xandroid
 
-import android.util.Log
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
@@ -14,7 +13,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.a10xandroid.data.auth.AuthRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -43,7 +41,7 @@ class CompleteUserJourneyTest {
     }
 
     @Test
-    fun testCompleteUserFlow() = runTest {
+    fun testCompleteUserFlow() {
         // Auth test user
         login()
 

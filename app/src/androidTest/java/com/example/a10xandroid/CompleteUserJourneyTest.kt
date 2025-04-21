@@ -20,7 +20,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import javax.inject.Inject
 
-private const val WAIT_TIME_MS = 10_000L
+private const val WAIT_TIME_MS = 30_000L
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)

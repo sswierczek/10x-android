@@ -34,11 +34,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Create local.properties
+      - name: Create local.properties file
         run: |
-          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" > local.properties
-          echo "OPEN_ROUTER_KEY=${{ secrets.OPEN_ROUTER_KEY }}" >> local.properties
-          echo "TESTUSER_PASSWORD=${{ secrets.TESTUSER_PASSWORD }}" >> local.properties
+          printf "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}\n" > local.properties
+          printf "OPEN_ROUTER_KEY=${{ secrets.OPEN_ROUTER_KEY }}\n" >> local.properties
+          printf "TESTUSER_PASSWORD=${{ secrets.TESTUSER_PASSWORD }}\n" >> local.properties
+          echo "Created local.properties file with all secrets"
 
       - name: Create google-services.json
         run: |
@@ -68,10 +69,10 @@ jobs:
             # Wait for the emulator to fully boot
             adb wait-for-device
             adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
-            
+
             # Start logcat capture
             adb logcat > logcat.txt &
-            
+
             # Run the tests with increased timeout
             ./gradlew connectedDebugAndroidTest --info --no-daemon --max-workers=2
 
@@ -83,4 +84,4 @@ jobs:
           path: |
             **/build/reports/androidTests/
             **/build/outputs/androidTest-results/
-            logcat.txt 
+            logcat.txt

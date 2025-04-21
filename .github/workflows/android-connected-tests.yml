@@ -45,7 +45,7 @@ jobs:
           sdk.dir=/usr/local/lib/android/sdk
           TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
           OPEN_ROUTER_KEY=${{ secrets.OPEN_ROUTER_KEY }}
-          TESTUSER_PASSWORD='${{ secrets.TESTUSER_PASSWORD }}'
+          TESTUSER_PASSWORD=${{ secrets.TESTUSER_PASSWORD }}
           EOF
           echo "Created local.properties file with all secrets"
 
@@ -85,17 +85,17 @@ jobs:
             adb shell settings put global window_animation_scale 0
             adb shell settings put global transition_animation_scale 0
             adb shell settings put global animator_duration_scale 0
-            
+
             # Wait for the emulator to fully boot
             adb wait-for-device
             adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
-            
+
             # Additional stability wait
             sleep 10
-            
+
             # Start logcat capture
             adb logcat > logcat.txt &
-            
+
             # Run the tests with increased timeout
             ./gradlew connectedDebugAndroidTest --info --no-daemon --max-workers=2 -Pandroid.testInstrumentationRunnerArguments.timeout_msec=60000
 

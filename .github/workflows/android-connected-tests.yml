@@ -9,7 +9,7 @@ on:
 
 jobs:
   connected-tests:
-    runs-on: macos-latest  # Using macOS runner for better emulator performance
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code

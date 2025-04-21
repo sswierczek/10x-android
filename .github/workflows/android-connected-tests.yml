@@ -40,6 +40,11 @@ jobs:
           echo "OPEN_ROUTER_KEY=${{ secrets.OPEN_ROUTER_KEY }}" >> local.properties
           echo "TESTUSER_PASSWORD=${{ secrets.TESTUSER_PASSWORD }}" >> local.properties
 
+      - name: Create google-services.json
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+          echo "Created google-services.json file in app/"
+
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -47,20 +52,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ runner.os }}
-
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 33
-          arch: x86_64
-          target: google_apis
-          profile: pixel_6
-          force-avd-creation: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048 -no-snapshot
-          disable-animations: true
-          script: echo "Generated AVD snapshot for caching."
+          key: avd-${{ runner.os }}-api33
 
       - name: Run connected tests
         uses: reactivecircus/android-emulator-runner@v2
@@ -69,7 +61,7 @@ jobs:
           arch: x86_64
           target: google_apis
           profile: pixel_6
-          force-avd-creation: true
+          force-avd-creation: ${{ steps.avd-cache.outputs.cache-hit != 'true' }}
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048 -no-snapshot
           disable-animations: true
           script: |

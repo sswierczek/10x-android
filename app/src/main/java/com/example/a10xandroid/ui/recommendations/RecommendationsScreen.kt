@@ -32,7 +32,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -72,7 +72,6 @@ import kotlin.math.sin
 /**
  * Main screen for displaying movie recommendations
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecommendationsScreen(
     navController: NavController,
@@ -80,8 +79,7 @@ fun RecommendationsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    
-    // Show snackbar when message is available
+
     LaunchedEffect(uiState.snackbarMessage) {
         uiState.snackbarMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -151,7 +149,10 @@ fun AILoadingIndicator() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .testTag(
+                "loadingrecommendations"
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -414,7 +415,9 @@ fun RecommendationsList(
     onAddToJournal: (RecommendationMovieViewModel) -> Unit
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("recommendation_list"),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -514,7 +517,9 @@ fun RecommendationMovieCard(
                 // Show a disabled button with "Added" text when movie is already saved
                 Button(
                     onClick = { /* No action needed */ },
-                    modifier = Modifier.align(Alignment.End),
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .testTag("addedtojournal_${movie.tmdbId}"),
                     enabled = false
                 ) {
                     Icon(
@@ -529,7 +534,9 @@ fun RecommendationMovieCard(
                 // Show the regular "Add to Journal" button
                 Button(
                     onClick = onAddToJournal,
-                    modifier = Modifier.align(Alignment.End)
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .testTag("addtojourrnal_${movie.tmdbId}")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,

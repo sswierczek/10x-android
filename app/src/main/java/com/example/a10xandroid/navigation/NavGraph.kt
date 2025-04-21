@@ -23,7 +23,6 @@ import com.example.a10xandroid.ui.journal.JournalScreen
 import com.example.a10xandroid.ui.movie.MovieDetailsScreen
 import com.example.a10xandroid.ui.profile.ProfileScreen
 import com.example.a10xandroid.ui.recommendations.RecommendationsScreen
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
 private const val TAG = "NavGraph"
@@ -51,7 +50,6 @@ fun NavGraph(
 
     LaunchedEffect(Unit) {
         Log.d(TAG, "NavGraph LaunchedEffect started")
-        delay(1000) // Give Firebase Auth time to initialize
         val initialUser = authRepository.currentUser.first()
         Log.d(TAG, "Initial auth state: ${initialUser?.uid}, isNull: ${initialUser == null}")
 
@@ -63,48 +61,6 @@ fun NavGraph(
             NavRoutes.LOGIN
         }
         isInitialized = true
-    }
-
-    LaunchedEffect(key1 = currentUser) {
-        Log.d(
-            TAG,
-            "LaunchedEffect triggered with currentUser: ${currentUser?.uid}, isNull: ${currentUser == null}"
-        )
-        Log.d(TAG, "Current destination: ${navController.currentDestination?.route}")
-
-        if (currentUser == null) {
-            Log.d(TAG, "User is null, checking if we need to navigate to login")
-            if (navController.currentDestination?.route != NavRoutes.LOGIN &&
-                navController.currentDestination?.route != NavRoutes.REGISTER
-            ) {
-                Log.d(TAG, "No user, navigating to login")
-                try {
-                    navController.navigate(NavRoutes.LOGIN) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error navigating to login", e)
-                }
-            } else {
-                Log.d(TAG, "Already on login or register screen, no navigation needed")
-            }
-        } else {
-            Log.d(TAG, "User is logged in, checking if we need to navigate to journal")
-            if (navController.currentDestination?.route == NavRoutes.LOGIN ||
-                navController.currentDestination?.route == NavRoutes.REGISTER
-            ) {
-                Log.d(TAG, "User logged in, navigating to journal")
-                try {
-                    navController.navigate(NavRoutes.JOURNAL) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error navigating to journal", e)
-                }
-            } else {
-                Log.d(TAG, "Already on a screen other than login/register, no navigation needed")
-            }
-        }
     }
 
     if (!isInitialized) {
@@ -171,4 +127,47 @@ fun NavGraph(
             )
         }
     }
+
+    LaunchedEffect(key1 = currentUser) {
+        Log.d(
+            TAG,
+            "LaunchedEffect triggered with currentUser: ${currentUser?.uid}, isNull: ${currentUser == null}"
+        )
+        Log.d(TAG, "Current destination: ${navController.currentDestination?.route}")
+
+        if (currentUser == null) {
+            Log.d(TAG, "User is null, checking if we need to navigate to login")
+            if (navController.currentDestination?.route != NavRoutes.LOGIN &&
+                navController.currentDestination?.route != NavRoutes.REGISTER
+            ) {
+                Log.d(TAG, "No user, navigating to login")
+                try {
+                    navController.navigate(NavRoutes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error navigating to login", e)
+                }
+            } else {
+                Log.d(TAG, "Already on login or register screen, no navigation needed")
+            }
+        } else {
+            Log.d(TAG, "User is logged in, checking if we need to navigate to journal")
+            if (navController.currentDestination?.route == NavRoutes.LOGIN ||
+                navController.currentDestination?.route == NavRoutes.REGISTER
+            ) {
+                Log.d(TAG, "User logged in, navigating to journal")
+                try {
+                    navController.navigate(NavRoutes.JOURNAL) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error navigating to journal", e)
+                }
+            } else {
+                Log.d(TAG, "Already on a screen other than login/register, no navigation needed")
+            }
+        }
+    }
 }
+

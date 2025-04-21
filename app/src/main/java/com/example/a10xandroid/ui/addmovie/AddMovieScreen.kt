@@ -45,6 +45,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -100,13 +101,16 @@ fun MovieSearchResultItem(
                     onClick = {
                         showRatingDialog = false
                         onAddClick(movie.copy(rating = rating))
-                    }
+                    },
+                    modifier = Modifier.testTag("confirm_addtojournal")
                 ) {
                     Text("Add to Journal")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showRatingDialog = false }) {
+                TextButton(
+                    onClick = { showRatingDialog = false },
+                ) {
                     Text("Cancel")
                 }
             }
@@ -115,7 +119,8 @@ fun MovieSearchResultItem(
 
     Button(
         onClick = { showRatingDialog = true },
-        enabled = isAddingEnabled
+        enabled = isAddingEnabled,
+        modifier = Modifier.testTag("addtojourrnal_${movie.tmdbId}")
     ) {
         Text("Add to Journal")
     }
@@ -181,7 +186,11 @@ fun AddMovieScreen(
                         viewModel.updateSearchQuery(query)
                     },
                     placeholder = { Text("Find movies to rate them...") },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(
+                            "searchinput"
+                        ),
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                     singleLine = true
                 )
@@ -262,7 +271,9 @@ fun MovieSearchResultCard(
     isAddingEnabled: Boolean
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("movieitem_${movie.tmdbId}"),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(

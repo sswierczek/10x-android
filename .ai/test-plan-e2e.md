@@ -20,46 +20,45 @@ kaptAndroidTest("com.google.dagger:hilt-android-compiler:${libs.versions.hilt.ge
 ### Niestandardowy Runner testów
 ```kotlin
 @HiltAndroidTest
-class CustomTestRunner : AndroidJUnitRunner() {
+class HiltRunnerCustom : AndroidJUnitRunner() {
     override fun newApplication(cl: ClassLoader?, name: String?, context: Context?): Application {
         return super.newApplication(cl, HiltTestApplication::class.java.name, context)
     }
 }
 ```
 
-## Przypadek testowy: Kompletny przepływ dziennika filmowego
+## Przypadek testowy: Kompletny przepływ użytkownika
 
-### Scenariusz testowy: Podróż użytkownika - Dodawanie i ocenianie filmu
-Ten test zweryfikuje kompletny przepływ użytkownika logującego się, dodającego film do swojego dziennika, oceniającego go i przeglądającego rekomendacje.
+### Scenariusz testowy: Podróż użytkownika - Wyszukiwanie i ocenianie filmu
+Ten test weryfikuje kompletny przepływ użytkownika logującego się, wyszukującego film, dodającego go do dziennika i sprawdzającego rekomendacje.
 
 ### Kroki testowe:
 1. Przepływ logowania
-   - Uruchomienie aplikacji do ekranu logowania
-   - Wprowadzenie prawidłowych danych uwierzytelniających
-   - Weryfikacja pomyślnej nawigacji do ekranu dziennika
+   - Wprowadzenie danych logowania:
+     - Email: testuser@testuser.pl
+     - Hasło: [z BuildConfig.TESTUSER_PASSWORD]
+   - Weryfikacja pomyślnego zalogowania poprzez obecność ekranu dziennika
 
 2. Przepływ dodawania filmu
-   - Przejście do ekranu dodawania filmu
-   - Wprowadzenie szczegółów filmu:
-     - Tytuł: "Skazani na Shawshank"
-     - Ocena: 9.3
-     - Recenzja: "Arcydzieło o nadziei i przyjaźni"
-   - Zatwierdzenie wpisu filmu
-   - Weryfikacja pojawienia się filmu na liście dziennika
+   - Kliknięcie przycisku dodawania filmu (identyfikator: "addmoviebutton")
+   - Wyszukiwanie filmu:
+     - Wprowadzenie tekstu "Shawshank" w polu wyszukiwania
+     - Kliknięcie "Add to journal"
+   - Weryfikacja dodania filmu poprzez sprawdzenie obecności tytułu "Skazani na Shawshank"
 
 3. Przeglądanie szczegółów filmu
-   - Kliknięcie dodanego filmu
-   - Weryfikacja, czy ekran szczegółów filmu pokazuje:
-     - Prawidłowy tytuł
-     - Prawidłową ocenę
-     - Prawidłową recenzję
-   - Aktualizacja oceny do 9.5
-   - Weryfikacja odzwierciedlenia aktualizacji oceny
+   - Kliknięcie na dodany film
+   - Weryfikacja wyświetlenia oceny "9.3"
+   - Aktualizacja oceny:
+     - Kliknięcie przycisku aktualizacji oceny
+     - Wprowadzenie nowej oceny "9.5"
+     - Zapisanie zmian
+   - Weryfikacja zaktualizowanej oceny
 
 4. Sprawdzanie rekomendacji
    - Przejście do ekranu rekomendacji
-   - Weryfikacja załadowania rekomendacji opartych na AI
-   - Weryfikacja, czy rekomendacje są oparte na dodanym filmie
+   - Weryfikacja obecności wskaźnika ładowania AI
+   - Sprawdzenie wyświetlenia rekomendacji opartych na preferencjach
 
 ### Przykład implementacji:
 ```kotlin
@@ -70,7 +69,10 @@ class CompleteUserJourneyTest {
     val hiltRule = HiltAndroidRule(this)
 
     @get:Rule(order = 1)
-    val composeTestRule = createComposeRule()
+    val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Inject
+    lateinit var authRepository: AuthRepository
 
     @Before
     fun setup() {
@@ -80,60 +82,86 @@ class CompleteUserJourneyTest {
     @Test
     fun completeUserJourney() {
         // Przepływ logowania
-        composeTestRule.onNodeWithText("Email").performTextInput("testuser@testuser.pl")
-        composeTestRule.onNodeWithText("Hasło").performTextInput(BuildConfig.TESTUSER_PASSWORD)
-        composeTestRule.onNodeWithText("Zaloguj").performClick()
-        composeTestRule.onNodeWithText("Mój Dziennik").assertExists()
+        composeRule.onNodeWithText("Email")
+            .performTextInput("testuser@testuser.pl")
+        composeRule.onNodeWithText("Password")
+            .performTextInput(BuildConfig.TESTUSER_PASSWORD)
+        composeRule.onNodeWithText("Login")
+            .performClick()
 
-        // Przepływ dodawania filmu
-        composeTestRule.onNodeWithContentDescription("Dodaj Film").performClick()
-        composeTestRule.onNodeWithText("Tytuł").performTextInput("Skazani na Shawshank")
-        composeTestRule.onNodeWithText("Ocena").performTextInput("9.3")
-        composeTestRule.onNodeWithText("Recenzja").performTextInput("Arcydzieło o nadziei i przyjaźni")
-        composeTestRule.onNodeWithText("Zapisz").performClick()
+        // Weryfikacja zalogowania
+        composeRule.waitUntil(timeoutMillis = 5000) {
+            composeRule.onAllNodesWithText("Journal")
+                .fetchSemanticsNodes().size == 1
+        }
 
-        // Weryfikacja filmu w dzienniku
-        composeTestRule.onNodeWithText("Skazani na Shawshank").assertExists()
+        // Dodawanie filmu
+        composeRule.onNodeWithContentDescription("addmoviebutton")
+            .performClick()
+        composeRule.onNodeWithText("Find movies to rate them.")
+            .performTextInput("Shawshank")
+        composeRule.onNodeWithText("Add to journal")
+            .performClick()
 
-        // Przeglądanie i aktualizacja szczegółów filmu
-        composeTestRule.onNodeWithText("Skazani na Shawshank").performClick()
-        composeTestRule.onNodeWithText("9.3").assertExists()
-        composeTestRule.onNodeWithContentDescription("Aktualizuj Ocenę").performClick()
-        composeTestRule.onNodeWithText("Ocena").performTextInput("9.5")
-        composeTestRule.onNodeWithText("Zapisz").performClick()
-        composeTestRule.onNodeWithText("9.5").assertExists()
+        // Weryfikacja dodania filmu
+        composeRule.waitUntil(timeoutMillis = 5000) {
+            composeRule.onAllNodesWithText("Skazani na Shawshank")
+                .fetchSemanticsNodes().size == 1
+        }
+
+        // Szczegóły i aktualizacja filmu
+        composeRule.onNodeWithText("Skazani na Shawshank")
+            .performClick()
+        composeRule.onNodeWithText("9.3")
+            .assertExists()
+        composeRule.onNodeWithContentDescription("Aktualizuj Ocenę")
+            .performClick()
+        composeRule.onNodeWithText("Ocena")
+            .performTextInput("9.5")
+        composeRule.onNodeWithText("Zapisz")
+            .performClick()
+
+        // Weryfikacja aktualizacji
+        composeRule.waitUntil(timeoutMillis = 5000) {
+            composeRule.onAllNodesWithText("9.5")
+                .fetchSemanticsNodes().size == 1
+        }
 
         // Sprawdzanie rekomendacji
-        composeTestRule.onNodeWithText("Rekomendacje").performClick()
-        composeTestRule.onNodeWithContentDescription("Wskaźnik ładowania AI").assertExists()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Na podstawie twoich preferencji").assertExists()
+        composeRule.onNodeWithText("Rekomendacje")
+            .performClick()
+        composeRule.onNodeWithContentDescription("Wskaźnik ładowania AI")
+            .assertExists()
+        composeRule.waitUntil(timeoutMillis = 10000) {
+            composeRule.onAllNodesWithText("Na podstawie twoich preferencji")
+                .fetchSemanticsNodes().size == 1
+        }
     }
 }
 ```
 
 ### Wymagania dotyczące danych testowych:
 - Konto testowe: testuser@testuser.pl z hasłem zdefiniowanym w BuildConfig.TESTUSER_PASSWORD
-- Zamockowane odpowiedzi dla API danych filmów
+- Zamockowane odpowiedzi dla API wyszukiwania filmów
 - Zamockowane odpowiedzi dla API rekomendacji
 
 ### Wymagania środowiska testowego:
 1. Czysty stan aplikacji przed każdym testem
-2. Zamockowane zależności zewnętrzne:
-   - Firebase Authentication
-   - API bazy danych filmów
-   - Serwis rekomendacji
+2. Skonfigurowane zależności Hilt:
+   - Wstrzyknięty AuthRepository
+   - MainActivity jako główna aktywność testowa
+3. Timeout dla operacji asynchronicznych: 5000ms (standardowy) i 10000ms (dla rekomendacji)
 
 ### Kryteria sukcesu:
-1. Wszystkie interakcje UI wykonują się bez błędów
-2. Weryfikacja persystencji danych między ekranami
-3. Zarządzanie stanem (MVVM) poprawnie aktualizuje UI
-4. Przepływ nawigacji kończy się zgodnie z oczekiwaniami
-5. Wszystkie asercje przechodzą
+1. Pomyślne zalogowanie użytkownika
+2. Poprawne wyszukanie i dodanie filmu
+3. Skuteczna aktualizacja oceny filmu
+4. Wyświetlenie rekomendacji AI
+5. Wszystkie operacje asynchroniczne kończą się w określonym czasie
 
-### Uwagi:
-- Test wykorzystuje API testowe Compose zamiast Espresso
-- Hilt dostarcza zależności testowe
-- Test koncentruje się na funkcjonalności widocznej dla użytkownika
-- Obsługuje operacje asynchroniczne za pomocą waitForIdle()
-- Weryfikuje zarówno elementy UI, jak i przepływ danych 
+### Uwagi techniczne:
+- Wykorzystanie createAndroidComposeRule zamiast createComposeRule
+- Zastosowanie waitUntil dla operacji asynchronicznych
+- Weryfikacja elementów UI poprzez semantykę Compose
+- Obsługa timeoutów dla różnych operacji
+- Wstrzykiwanie zależności poprzez @Inject 

@@ -21,9 +21,8 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.example.a10xandroid.HiltRunnerCustom"
 
-        // Load TMDB API key from local.properties
         val properties = Properties()
         val localPropertiesFile = rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
@@ -67,7 +66,6 @@ android {
 }
 
 dependencies {
-    // AndroidX and Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -77,42 +75,45 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    // Material Components
-    implementation("com.google.android.material:material:1.11.0")
+    implementation(libs.material)
 
-    // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
 
-    // Google Play Services
-    implementation("com.google.android.gms:play-services-base:18.3.0")
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
-
-    // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    // Retrofit & OkHttp
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
 
-    // Kotlin Serialization
     implementation(libs.kotlin.serialization.json)
 
-    // Coil for image loading
     implementation(libs.coil.compose)
 
-    // Testing
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+
+    testImplementation(libs.androidx.junit)
+
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.mockito.kotlin)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.junit.junit4)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
+
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.core)
+    androidTestImplementation(libs.androidx.monitor)
+    androidTestImplementation(libs.androidx.runner)
+    androidTestImplementation(libs.androidx.rules)
+    androidTestImplementation(libs.androidx.ui.test.manifest)
+    androidTestImplementation(libs.androidx.orchestrator)
+
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.compiler)
 }

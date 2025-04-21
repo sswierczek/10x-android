@@ -81,17 +81,6 @@ class RecommendationsViewModel @Inject constructor(
                 val userMovies = movieRepository.getMovieEntries(currentUser.uid)
                 Log.d(TAG, "Found ${userMovies.size} movies in user's journal")
 
-                if (userMovies.isEmpty()) {
-                    _uiState.update {
-                        it.copy(
-                            status = StateStatus.SUCCESS,
-                            recommendations = emptyList(),
-                            snackbarMessage = "Add some movies to your journal to get recommendations"
-                        )
-                    }
-                    return@launch
-                }
-
                 // Get recommendations from service
                 Log.d(TAG, "Requesting recommendations from service")
                 val recommendations = recommendationsService.getRecommendations(userMovies)
@@ -153,19 +142,6 @@ class RecommendationsViewModel @Inject constructor(
 
                 // Get user movies
                 val userMovies = movieRepository.getMovieEntries(currentUser.uid)
-
-                // If user has no movies, return empty state
-                if (userMovies.isEmpty()) {
-                    _uiState.update {
-                        it.copy(
-                            status = StateStatus.SUCCESS,
-                            recommendations = emptyList(),
-                            isRefreshing = false,
-                            snackbarMessage = "Add some movies to your journal to get recommendations"
-                        )
-                    }
-                    return@launch
-                }
 
                 // Get recommendations from service
                 val recommendations = recommendationsService.getRecommendations(userMovies)

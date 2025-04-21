@@ -12,4 +12,15 @@ data class User(
     val isEmailVerified: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val lastLoginAt: Long = System.currentTimeMillis()
-)
+) {
+    // No-argument constructor required by Firebase
+    constructor() : this(
+        uid = "",
+        email = "",
+        displayName = null,
+        photoUrl = null,
+        isEmailVerified = false,
+        createdAt = System.currentTimeMillis(),
+        lastLoginAt = System.currentTimeMillis()
+    )
+}

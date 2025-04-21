@@ -12,6 +12,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 
@@ -41,6 +42,7 @@ fun AppTopBar(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
+                        modifier = Modifier.testTag("backbutton"),
                         contentDescription = "Back",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -53,7 +55,7 @@ fun AppTopBar(
         actions = {
             actions()
             if (onProfileClick != null) {
-                IconButton(onClick = onProfileClick) {
+                IconButton(onClick = onProfileClick, modifier = Modifier.testTag("userprofile")) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Profile",

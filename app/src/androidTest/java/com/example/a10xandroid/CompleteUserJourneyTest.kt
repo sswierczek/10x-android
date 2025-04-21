@@ -92,7 +92,6 @@ class CompleteUserJourneyTest {
     }
 
     private fun login() {
-        Log.e("DEBUK", "credentials ${BuildConfig.TESTUSER_PASSWORD}")
         composeRule.onNodeWithText("Email").performTextInput("testuser@testuser.pl")
         composeRule.onNodeWithText("Password").performTextInput(BuildConfig.TESTUSER_PASSWORD)
         composeRule.onNodeWithText("Login").performClick()

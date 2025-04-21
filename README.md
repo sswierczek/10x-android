@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Android CI](https://github.com/sswierczek/10x-android/actions/workflows/android.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
 [![Code Quality](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml)
+[![Connected Tests](https://github.com/sswierczek/10x-android/actions/workflows/android-connected-tests.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/android-connected-tests.yml)
 [![Download Latest APK](https://img.shields.io/badge/Download-Latest_APK-brightgreen)](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
 
 ## Najnowsza wersja

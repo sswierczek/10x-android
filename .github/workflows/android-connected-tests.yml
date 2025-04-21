@@ -34,17 +34,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Create local.properties file
-        run: |
-          printf "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}\n" > local.properties
-          printf "OPEN_ROUTER_KEY=${{ secrets.OPEN_ROUTER_KEY }}\n" >> local.properties
-          printf "TESTUSER_PASSWORD=${{ secrets.TESTUSER_PASSWORD }}\n" >> local.properties
-          echo "Created local.properties file with all secrets"
-
       - name: Create google-services.json
         run: |
           echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
           echo "Created google-services.json file in app/"
+
+      - name: Create local.properties file
+        run: |
+          cat << EOF > local.properties
+          sdk.dir=/usr/local/lib/android/sdk
+          TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          OPEN_ROUTER_KEY=${{ secrets.OPEN_ROUTER_KEY }}
+          TESTUSER_PASSWORD='${{ secrets.TESTUSER_PASSWORD }}'
+          EOF
+          echo "Created local.properties file with all secrets"
+
+      - name: Build debug APK and test APK
+        run: ./gradlew assembleDebug assembleDebugAndroidTest --no-daemon
 
       - name: AVD cache
         uses: actions/cache@v4
@@ -73,7 +79,7 @@ jobs:
             # Start logcat capture
             adb logcat > logcat.txt &
 
-            # Run the tests with increased timeout
+            # Run the tests
             ./gradlew connectedDebugAndroidTest --info --no-daemon --max-workers=2
 
       - name: Upload test results

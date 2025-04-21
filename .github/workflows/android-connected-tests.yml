@@ -97,11 +97,7 @@ jobs:
             adb logcat > logcat.txt &
             
             # Run the tests with increased timeout
-            ./gradlew connectedDebugAndroidTest \
-              --info \
-              --no-daemon \
-              --max-workers=2 \
-              -Pandroid.testInstrumentationRunnerArguments.timeout_msec=60000
+            ./gradlew connectedDebugAndroidTest --info --no-daemon --max-workers=2 -Pandroid.testInstrumentationRunnerArguments.timeout_msec=60000
 
       - name: Upload test results
         if: always()

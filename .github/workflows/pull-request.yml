@@ -8,6 +8,7 @@ on:
       - 'Android Connected Tests'
     types:
       - completed
+      - in_progress
 
 jobs:
   pr-comment:
@@ -28,11 +29,12 @@ jobs:
               repo: context.repo.repo,
               state: 'open'
             });
-            const pr = allPRs.data.find(pr => {
-              return pr.head.sha === context.payload.workflow_run.head_sha;
-            });
-            return pr ? pr.number : null;
-          result-encoding: string
+            const pr = allPRs.data.find(pr => pr.head.sha === context.payload.workflow_run.head_sha);
+            if (!pr) {
+              console.log('No open PR found for this commit');
+              return '';
+            }
+            return pr.number.toString();
 
       - name: Get workflow statuses
         id: get-status
@@ -41,44 +43,23 @@ jobs:
         with:
           script: |
             const sha = context.payload.workflow_run.head_sha;
-            
             const workflows = ['Android CI', 'Code Quality', 'Android Connected Tests'];
             const statuses = {};
             
             for (const workflow of workflows) {
               try {
-                // Try different variations of the workflow name
-                const workflowVariations = [
-                  workflow.toLowerCase().replace(/ /g, '-'),
-                  workflow.toLowerCase().replace(/ /g, ''),
-                  workflow.toLowerCase(),
-                  workflow.toLowerCase().replace(/ /g, '-') + '.yml',
-                  workflow.toLowerCase().replace(/ /g, '') + '.yml'
-                ];
+                const runs = await github.rest.actions.listWorkflowRuns({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: workflow,
+                  head_sha: sha,
+                  per_page: 1
+                });
                 
-                let run = null;
-                for (const variation of workflowVariations) {
-                  try {
-                    const runs = await github.rest.actions.listWorkflowRuns({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      workflow_id: variation,
-                      head_sha: sha,
-                      per_page: 1
-                    });
-                    
-                    if (runs.data.total_count > 0) {
-                      run = runs.data.workflow_runs[0];
-                      break;
-                    }
-                  } catch (error) {
-                    console.log(`No runs found for variation: ${variation}`);
-                  }
-                }
-                
-                if (run) {
+                if (runs.data.total_count > 0) {
+                  const run = runs.data.workflow_runs[0];
                   statuses[workflow] = {
-                    conclusion: run.conclusion || run.status,
+                    conclusion: run.conclusion || 'in_progress',
                     status: run.status,
                     url: run.html_url
                   };
@@ -99,36 +80,14 @@ jobs:
               }
             }
             
-            const jsonString = JSON.stringify(statuses);
-            console.log('Status JSON:', jsonString);
-            
-            if (!jsonString) {
-              throw new Error('Failed to generate status JSON');
-            }
-            
-            core.setOutput('status-json', jsonString);
-            return jsonString;
+            return JSON.stringify(statuses);
 
       - name: Create or update status comment
         if: steps.get-pr.outputs.result != ''
         uses: actions/github-script@v7
         with:
           script: |
-            const statusJson = '${{ steps.get-status.outputs.status-json }}';
-            console.log('Received status JSON:', statusJson);
-            
-            if (!statusJson) {
-              throw new Error('No status data received from previous step');
-            }
-            
-            let statuses;
-            try {
-              statuses = JSON.parse(statusJson);
-              console.log('Parsed statuses:', statuses);
-            } catch (error) {
-              console.error('Failed to parse status JSON:', error);
-              throw error;
-            }
+            const statuses = JSON.parse('${{ steps.get-status.outputs.result }}');
             
             const statusEmoji = {
               success: '✅',

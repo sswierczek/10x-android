@@ -3,7 +3,7 @@ name: Pull Request Status Comment
 on:
   workflow_run:
     workflows:
-      - 'Android CI'
+      - 'Build'
       - 'Code Quality'
       - 'Android Connected Tests'
     types:
@@ -43,7 +43,7 @@ jobs:
         with:
           script: |
             const sha = context.payload.workflow_run.head_sha;
-            const workflows = ['Android CI', 'Code Quality', 'Android Connected Tests'];
+            const workflows = ['Build', 'Code Quality', 'Android Connected Tests'];
             const statuses = {};
             
             for (const workflow of workflows) {

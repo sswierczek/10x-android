@@ -1,16 +1,31 @@
 # MovieMind
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Android CI](https://github.com/sswierczek/10x-android/actions/workflows/android.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
+[![Build](https://github.com/sswierczek/10x-android/actions/workflows/build.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/build.yml)
 [![Code Quality](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/code-quality.yml)
 [![Connected Tests](https://github.com/sswierczek/10x-android/actions/workflows/android-connected-tests.yml/badge.svg)](https://github.com/sswierczek/10x-android/actions/workflows/android-connected-tests.yml)
-[![Download Latest APK](https://img.shields.io/badge/Download-Latest_APK-brightgreen)](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
+[![Latest Release](https://img.shields.io/github/v/release/sswierczek/10x-android?include_prereleases&label=Latest%20Release)](https://github.com/sswierczek/10x-android/releases/latest)
 
 ## Najnowsza wersja
 
-Możesz pobrać najnowszą wersję debugową APK z ostatniego udanego przebiegu workflow:
+Możesz pobrać najnowszą wersję aplikacji z GitHub Releases:
 
-1. Kliknij odznakę "Android CI" powyżej lub przejdź do [zakładki Actions](https://github.com/sswierczek/10x-android/actions/workflows/android.yml)
+1. Przejdź do [strony wydań](https://github.com/sswierczek/10x-android/releases/latest)
+2. Pobierz plik `app-debug.apk`
+
+### Informacje o wersji
+
+- Debug APK zawiera dodatkowe logi i narzędzia deweloperskie
+- Każde wydanie jest automatycznie generowane przez CI/CD po zmianach w gałęzi main
+- Wersja zawiera znacznik czasowy w formacie YYYYMMDD
+
+> **Uwaga:** 
+> - Musisz być zalogowany do GitHub, aby pobrać pliki
+> - Nowe wydania są tworzone automatycznie po każdym merge do main
+
+Możesz pobrać najnowszą wersję APK z ostatniego udanego przebiegu workflow:
+
+1. Kliknij odznakę "Build" powyżej lub przejdź do [zakładki Actions](https://github.com/sswierczek/10x-android/actions/workflows/build.yml)
 2. Kliknij na najnowszy udany przebieg workflow
 3. Przewiń w dół do sekcji "Artifacts"
 4. Pobierz artefakt "app-debug"

@@ -105,15 +105,14 @@ jobs:
                 };
               }
             }
-            return JSON.stringify(statuses);
+            core.setOutput('result', JSON.stringify(statuses));
 
       - name: Create or update status comment
         if: steps.get-pr.outputs.result != ''
         uses: actions/github-script@v7
         with:
           script: |
-            const statusesStr = `${{ steps.get-status.outputs.result }}`;
-            const statuses = JSON.parse(statusesStr);
+            const statuses = JSON.parse('${{ steps.get-status.outputs.result }}');
             
             const statusEmoji = {
               success: '✅',

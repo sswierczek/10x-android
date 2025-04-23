@@ -10,6 +10,7 @@ on:
       - 'Android Connected Tests'
     types:
       - completed
+      - requested
 
 jobs:
   pr-comment:

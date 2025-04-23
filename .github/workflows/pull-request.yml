@@ -10,7 +10,6 @@ on:
       - 'Android Connected Tests'
     types:
       - completed
-      - requested
 
 jobs:
   pr-comment:
@@ -58,47 +57,44 @@ jobs:
             
             for (const workflow of workflows) {
               try {
-                const workflowId = workflow.toLowerCase().replace(/ /g, '-');
-                const runs = await github.rest.actions.listWorkflowRuns({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  workflow_id: workflowId + '.yml',
-                  head_sha: sha,
-                  per_page: 1
-                });
+                // Try different variations of the workflow name
+                const workflowVariations = [
+                  workflow.toLowerCase().replace(/ /g, '-'),
+                  workflow.toLowerCase().replace(/ /g, ''),
+                  workflow.toLowerCase()
+                ];
                 
-                if (runs.data.total_count > 0) {
-                  const run = runs.data.workflow_runs[0];
+                let run = null;
+                for (const variation of workflowVariations) {
+                  const runs = await github.rest.actions.listWorkflowRuns({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    workflow_id: variation + '.yml',
+                    head_sha: sha,
+                    per_page: 1
+                  });
+                  
+                  if (runs.data.total_count > 0) {
+                    run = runs.data.workflow_runs[0];
+                    break;
+                  }
+                }
+                
+                if (run) {
                   statuses[workflow] = {
                     conclusion: run.conclusion || run.status,
                     status: run.status,
                     url: run.html_url
                   };
                 } else {
-                  const runsWithoutExt = await github.rest.actions.listWorkflowRuns({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    workflow_id: workflowId,
-                    head_sha: sha,
-                    per_page: 1
-                  });
-                  
-                  if (runsWithoutExt.data.total_count > 0) {
-                    const run = runsWithoutExt.data.workflow_runs[0];
-                    statuses[workflow] = {
-                      conclusion: run.conclusion || run.status,
-                      status: run.status,
-                      url: run.html_url
-                    };
-                  } else {
-                    statuses[workflow] = {
-                      conclusion: 'pending',
-                      status: 'pending',
-                      url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/${workflowId}.yml`
-                    };
-                  }
+                  statuses[workflow] = {
+                    conclusion: 'pending',
+                    status: 'pending',
+                    url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions`
+                  };
                 }
               } catch (error) {
+                console.error(`Error getting status for ${workflow}:`, error);
                 statuses[workflow] = {
                   conclusion: 'unknown',
                   status: 'unknown',

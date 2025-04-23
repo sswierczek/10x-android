@@ -105,24 +105,37 @@ jobs:
                 };
               }
             }
+            
             const jsonString = JSON.stringify(statuses);
-            core.setOutput('result', jsonString);
             console.log('Status JSON:', jsonString);
+            
+            if (!jsonString) {
+              throw new Error('Failed to generate status JSON');
+            }
+            
+            core.setOutput('status-json', jsonString);
+            return jsonString;
 
       - name: Create or update status comment
         if: steps.get-pr.outputs.result != ''
         uses: actions/github-script@v7
         with:
           script: |
-            const statusJson = '${{ steps.get-status.outputs.result }}';
+            const statusJson = '${{ steps.get-status.outputs.status-json }}';
             console.log('Received status JSON:', statusJson);
             
             if (!statusJson) {
-              throw new Error('No status data received');
+              throw new Error('No status data received from previous step');
             }
             
-            const statuses = JSON.parse(statusJson);
-            console.log('Parsed statuses:', statuses);
+            let statuses;
+            try {
+              statuses = JSON.parse(statusJson);
+              console.log('Parsed statuses:', statuses);
+            } catch (error) {
+              console.error('Failed to parse status JSON:', error);
+              throw error;
+            }
             
             const statusEmoji = {
               success: '✅',
